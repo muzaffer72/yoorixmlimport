@@ -9,6 +9,7 @@ import XmlManagement from "@/pages/xml-management";
 import CategoryMapping from "@/pages/category-mapping";
 import ProductImport from "@/pages/product-import";
 import Cronjob from "@/pages/cronjob";
+import SettingsPage from "@/pages/settings";
 import Sidebar from "@/components/layout/sidebar";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
           <Route path="/category-mapping" component={CategoryMapping} />
           <Route path="/product-import" component={ProductImport} />
           <Route path="/cronjob" component={Cronjob} />
+          <Route path="/settings" component={SettingsPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

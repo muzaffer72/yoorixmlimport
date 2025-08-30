@@ -17,12 +17,15 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { XmlSource, Category, CategoryMapping as CategoryMappingType } from "@shared/schema";
-import { Trash2, Save } from "lucide-react";
+import { Trash2, Save, Download, RefreshCw } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 export default function CategoryMapping() {
   const [selectedXmlSource, setSelectedXmlSource] = useState<string>("");
   const [xmlCategoryName, setXmlCategoryName] = useState("");
   const [localCategoryId, setLocalCategoryId] = useState("");
+  const [xmlCategories, setXmlCategories] = useState<string[]>([]);
+  const [extractingCategories, setExtractingCategories] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -106,6 +109,65 @@ export default function CategoryMapping() {
     }
   };
 
+  const extractCategoriesFromXml = async () => {
+    if (!selectedXmlSource) {
+      toast({
+        title: "Hata",
+        description: "Önce bir XML kaynağı seçin",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const xmlSource = xmlSources.find(source => source.id === selectedXmlSource);
+    if (!xmlSource || !xmlSource.url) {
+      toast({
+        title: "Hata",
+        description: "XML kaynağı URL'si bulunamadı",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Assume category field is set in field mapping as 'category'
+    const categoryField = xmlSource.fieldMapping?.['category'] || 'category';
+    
+    setExtractingCategories(true);
+    try {
+      const response = await apiRequest("POST", "/api/xml-sources/extract-categories", {
+        url: xmlSource.url,
+        categoryField
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setXmlCategories(data.categories);
+        toast({
+          title: "Başarılı",
+          description: `${data.count} kategori bulundu`,
+        });
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Hata",
+        description: error.message || "Kategoriler çekilirken hata oluştu",
+        variant: "destructive",
+      });
+    } finally {
+      setExtractingCategories(false);
+    }
+  };
+
+  const handleXmlSourceChange = (value: string) => {
+    setSelectedXmlSource(value);
+    setXmlCategories([]);
+    setXmlCategoryName("");
+    setLocalCategoryId("");
+  };
+
   return (
     <div>
       <Header 
@@ -123,65 +185,112 @@ export default function CategoryMapping() {
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <Label>XML Kaynağı</Label>
-                <Select 
-                  value={selectedXmlSource} 
-                  onValueChange={setSelectedXmlSource}
-                >
-                  <SelectTrigger data-testid="select-xml-source">
-                    <SelectValue placeholder="XML kaynağını seçin..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {xmlSources.map((source) => (
-                      <SelectItem key={source.id} value={source.id}>
-                        {source.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label>XML Kaynağı</Label>
+                  <Select 
+                    value={selectedXmlSource} 
+                    onValueChange={handleXmlSourceChange}
+                  >
+                    <SelectTrigger data-testid="select-xml-source">
+                      <SelectValue placeholder="XML kaynağını seçin..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {xmlSources.map((source) => (
+                        <SelectItem key={source.id} value={source.id}>
+                          {source.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-end">
+                  <Button 
+                    onClick={extractCategoriesFromXml}
+                    disabled={!selectedXmlSource || extractingCategories}
+                    data-testid="button-extract-categories"
+                    variant="outline"
+                  >
+                    {extractingCategories ? (
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="mr-2 h-4 w-4" />
+                    )}
+                    {extractingCategories ? "Çekiliyor..." : "XML'den Kategorileri Çek"}
+                  </Button>
+                </div>
               </div>
               
-              <div>
-                <Label>XML Kategori Adı</Label>
-                <Input
-                  placeholder="XML'deki kategori adı"
-                  value={xmlCategoryName}
-                  onChange={(e) => setXmlCategoryName(e.target.value)}
-                  data-testid="input-xml-category"
-                />
+              {xmlCategories.length > 0 && (
+                <div>
+                  <Label>XML Kategorileri ({xmlCategories.length} adet)</Label>
+                  <div className="mt-2 p-3 border rounded-md bg-muted/50 max-h-32 overflow-y-auto">
+                    <div className="flex flex-wrap gap-1">
+                      {xmlCategories.map((category, index) => (
+                        <span
+                          key={index}
+                          className="inline-block px-2 py-1 text-xs bg-background border rounded cursor-pointer hover:bg-accent"
+                          onClick={() => setXmlCategoryName(category)}
+                          data-testid={`xml-category-${index}`}
+                        >
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <Separator />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <Label>XML Kategori Adı</Label>
+                    <Input
+                      placeholder="XML'deki kategori adı"
+                      value={xmlCategoryName}
+                      onChange={(e) => setXmlCategoryName(e.target.value)}
+                      data-testid="input-xml-category"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label>Yerel Kategori</Label>
+                    <Select 
+                      value={localCategoryId} 
+                      onValueChange={setLocalCategoryId}
+                    >
+                      <SelectTrigger data-testid="select-local-category">
+                        <SelectValue placeholder="Yerel kategoriyi seçin..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories
+                          .filter(category => 
+                            !mappings.some(mapping => mapping.localCategoryId === category.id)
+                          )
+                          .map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))
+                        }
+                      </SelectContent>
+                    </Select>
+                  </div>
               </div>
               
-              <div>
-                <Label>Yerel Kategori</Label>
-                <Select 
-                  value={localCategoryId} 
-                  onValueChange={setLocalCategoryId}
+              <div className="mt-6">
+                <Button 
+                  onClick={handleAddMapping}
+                  disabled={createMappingMutation.isPending}
+                  data-testid="button-add-mapping"
                 >
-                  <SelectTrigger data-testid="select-local-category">
-                    <SelectValue placeholder="Yerel kategoriyi seçin..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Save className="mr-2 h-4 w-4" />
+                  {createMappingMutation.isPending ? "Ekleniyor..." : "Eşleştirme Ekle"}
+                </Button>
               </div>
-            </div>
-            
-            <div className="mt-6">
-              <Button 
-                onClick={handleAddMapping}
-                disabled={createMappingMutation.isPending}
-                data-testid="button-add-mapping"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                {createMappingMutation.isPending ? "Ekleniyor..." : "Eşleştirme Ekle"}
-              </Button>
             </div>
           </CardContent>
         </Card>

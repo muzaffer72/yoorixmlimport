@@ -75,6 +75,19 @@ export const categoryMappings = pgTable("category_mappings", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const databaseSettings = pgTable("database_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  host: text("host").notNull(),
+  port: integer("port").notNull().default(3306),
+  database: text("database").notNull(),
+  username: text("username").notNull(),
+  password: text("password").notNull(),
+  isActive: boolean("is_active").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertXmlSourceSchema = createInsertSchema(xmlSources).omit({
   id: true,
@@ -98,6 +111,12 @@ export const insertCategoryMappingSchema = createInsertSchema(categoryMappings).
   createdAt: true,
 });
 
+export const insertDatabaseSettingsSchema = createInsertSchema(databaseSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type XmlSource = typeof xmlSources.$inferSelect;
 export type InsertXmlSource = z.infer<typeof insertXmlSourceSchema>;
@@ -113,6 +132,9 @@ export type Brand = typeof brands.$inferSelect;
 
 export type CategoryMapping = typeof categoryMappings.$inferSelect;
 export type InsertCategoryMapping = z.infer<typeof insertCategoryMappingSchema>;
+
+export type DatabaseSettings = typeof databaseSettings.$inferSelect;
+export type InsertDatabaseSettings = z.infer<typeof insertDatabaseSettingsSchema>;
 
 // Keep original user schema for compatibility
 export const users = pgTable("users", {

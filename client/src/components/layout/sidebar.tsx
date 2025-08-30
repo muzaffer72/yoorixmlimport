@@ -6,6 +6,7 @@ import {
   Table, 
   Upload, 
   Clock, 
+  Settings,
   UserCircle 
 } from "lucide-react";
 
@@ -34,6 +35,11 @@ const navigationItems = [
     href: "/cronjob",
     label: "Cronjob",
     icon: Clock,
+  },
+  {
+    href: "/settings",
+    label: "Ayarlar",
+    icon: Settings,
   },
 ];
 

@@ -9,7 +9,9 @@ import {
   type Category,
   type Brand,
   type CategoryMapping,
-  type InsertCategoryMapping
+  type InsertCategoryMapping,
+  type DatabaseSettings,
+  type InsertDatabaseSettings
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -47,6 +49,13 @@ export interface IStorage {
   updateCategoryMapping(id: string, mapping: Partial<CategoryMapping>): Promise<CategoryMapping>;
   deleteCategoryMapping(id: string): Promise<boolean>;
   
+  // Database Settings methods
+  getDatabaseSettings(): Promise<DatabaseSettings[]>;
+  createDatabaseSettings(settings: InsertDatabaseSettings): Promise<DatabaseSettings>;
+  updateDatabaseSettings(id: string, settings: Partial<DatabaseSettings>): Promise<DatabaseSettings>;
+  deleteDatabaseSettings(id: string): Promise<boolean>;
+  setActiveDatabaseSettings(id: string): Promise<DatabaseSettings>;
+  
   // Statistics
   getDashboardStats(): Promise<{
     todayAddedProducts: number;
@@ -64,6 +73,7 @@ export class MemStorage implements IStorage {
   private categories: Map<string, Category>;
   private brands: Map<string, Brand>;
   private categoryMappings: Map<string, CategoryMapping>;
+  private databaseSettings: Map<string, DatabaseSettings>;
 
   constructor() {
     this.users = new Map();
@@ -73,6 +83,7 @@ export class MemStorage implements IStorage {
     this.categories = new Map();
     this.brands = new Map();
     this.categoryMappings = new Map();
+    this.databaseSettings = new Map();
     
     // Initialize with some sample data
     this.initializeSampleData();
@@ -413,6 +424,99 @@ export class MemStorage implements IStorage {
 
   async deleteCategoryMapping(id: string): Promise<boolean> {
     return this.categoryMappings.delete(id);
+  }
+
+  // Database Settings methods
+  async getDatabaseSettings(): Promise<DatabaseSettings[]> {
+    return Array.from(this.databaseSettings.values()).sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }
+
+  async createDatabaseSettings(settings: InsertDatabaseSettings): Promise<DatabaseSettings> {
+    const id = randomUUID();
+    const now = new Date();
+    
+    // If this is set as active, deactivate all others
+    if (settings.isActive) {
+      for (const [settingId, setting] of Array.from(this.databaseSettings.entries())) {
+        if (setting.isActive) {
+          this.databaseSettings.set(settingId, { ...setting, isActive: false, updatedAt: now });
+        }
+      }
+    }
+    
+    const newSettings: DatabaseSettings = { 
+      ...settings, 
+      id, 
+      createdAt: now, 
+      updatedAt: now,
+      port: settings.port || 3306,
+      isActive: settings.isActive || false
+    };
+    this.databaseSettings.set(id, newSettings);
+    return newSettings;
+  }
+
+  async updateDatabaseSettings(id: string, settings: Partial<DatabaseSettings>): Promise<DatabaseSettings> {
+    const existing = this.databaseSettings.get(id);
+    if (!existing) {
+      throw new Error("Database settings not found");
+    }
+    
+    const now = new Date();
+    
+    // If this is set as active, deactivate all others
+    if (settings.isActive) {
+      for (const [settingId, setting] of Array.from(this.databaseSettings.entries())) {
+        if (setting.isActive && settingId !== id) {
+          this.databaseSettings.set(settingId, { ...setting, isActive: false, updatedAt: now });
+        }
+      }
+    }
+    
+    const updated: DatabaseSettings = { 
+      ...existing, 
+      ...settings, 
+      updatedAt: now 
+    };
+    this.databaseSettings.set(id, updated);
+    return updated;
+  }
+
+  async deleteDatabaseSettings(id: string): Promise<boolean> {
+    const existing = this.databaseSettings.get(id);
+    if (!existing) {
+      return false;
+    }
+    
+    this.databaseSettings.delete(id);
+    return true;
+  }
+
+  async setActiveDatabaseSettings(id: string): Promise<DatabaseSettings> {
+    const existing = this.databaseSettings.get(id);
+    if (!existing) {
+      throw new Error("Database settings not found");
+    }
+    
+    const now = new Date();
+    
+    // Deactivate all others
+    for (const [settingId, setting] of Array.from(this.databaseSettings.entries())) {
+      if (setting.isActive) {
+        this.databaseSettings.set(settingId, { ...setting, isActive: false, updatedAt: now });
+      }
+    }
+    
+    // Activate this one
+    const activated: DatabaseSettings = { 
+      ...existing, 
+      isActive: true, 
+      updatedAt: now 
+    };
+    this.databaseSettings.set(id, activated);
+    return activated;
   }
 
   // Statistics
