@@ -10,7 +10,10 @@ export const xmlSources = pgTable("xml_sources", {
   status: varchar("status").notNull().default("active"), // active, inactive, error
   lastFetch: timestamp("last_fetch"),
   productCount: integer("product_count").default(0),
-  mapping: jsonb("mapping"), // JSON object for tag mappings
+  fieldMapping: jsonb("field_mapping"), // JSON object for field mappings (product fields)
+  categoryTag: text("category_tag"), // XML tag name that contains category info
+  useDefaultCategory: boolean("use_default_category").default(false),
+  defaultCategoryId: varchar("default_category_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -320,6 +320,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "XML source URL not configured" });
       }
 
+      // Get category mappings for this XML source
+      const categoryMappings = await storage.getCategoryMappings(xmlSourceId);
+      const categoryMappingMap = new Map(
+        categoryMappings.map(mapping => [mapping.xmlCategoryName, mapping.localCategoryId])
+      );
+
       // Fetch and parse XML
       const response = await fetch(xmlSource.url);
       if (!response.ok) {
@@ -332,22 +338,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parser = new xml2js.Parser({ explicitArray: false });
       const result = await parser.parseStringPromise(xmlText);
       
-      // Here you would implement the actual product import logic
-      // based on the XML structure and mappings
+      // Extract products from XML
+      const extractProducts = (data: any): any[] => {
+        const products: any[] = [];
+        
+        const traverse = (obj: any) => {
+          if (typeof obj === "object" && obj !== null) {
+            if (Array.isArray(obj)) {
+              obj.forEach(item => traverse(item));
+            } else {
+              // Check if this looks like a product object
+              const fieldMapping = xmlSource.fieldMapping || {};
+              let hasRequiredFields = false;
+              
+              // Check if we can extract a category
+              let categoryName = null;
+              if (xmlSource.categoryTag) {
+                const categoryFields = xmlSource.categoryTag.split('.');
+                let categoryValue = obj;
+                for (const field of categoryFields) {
+                  if (categoryValue && typeof categoryValue === 'object' && field in categoryValue) {
+                    categoryValue = categoryValue[field];
+                  } else {
+                    categoryValue = null;
+                    break;
+                  }
+                }
+                if (categoryValue && typeof categoryValue === 'string') {
+                  categoryName = categoryValue;
+                }
+              }
+              
+              // Check if category is mapped or use default
+              let targetCategoryId = null;
+              if (categoryName && categoryMappingMap.has(categoryName)) {
+                targetCategoryId = categoryMappingMap.get(categoryName);
+                hasRequiredFields = true;
+              } else if (xmlSource.useDefaultCategory && xmlSource.defaultCategoryId) {
+                targetCategoryId = xmlSource.defaultCategoryId;
+                hasRequiredFields = true;
+              }
+              
+              // Only process if we have a valid category
+              if (hasRequiredFields && targetCategoryId) {
+                // Extract field values based on field mapping
+                const extractValue = (mapping: string | undefined) => {
+                  if (!mapping) return null;
+                  const fields = mapping.split('.');
+                  let value = obj;
+                  for (const field of fields) {
+                    if (value && typeof value === 'object' && field in value) {
+                      value = value[field];
+                    } else {
+                      return null;
+                    }
+                  }
+                  return value;
+                };
+                
+                const productData = {
+                  name: extractValue(fieldMapping?.name) || "Unnamed Product",
+                  price: parseFloat(extractValue(fieldMapping?.price) as string) || 0,
+                  description: extractValue(fieldMapping?.description) || "",
+                  sku: extractValue(fieldMapping?.sku) || "",
+                  barcode: extractValue(fieldMapping?.barcode) || "",
+                  currentStock: parseInt(extractValue(fieldMapping?.currentStock) as string) || 0,
+                  unit: extractValue(fieldMapping?.unit) || "adet",
+                  categoryId: targetCategoryId,
+                  xmlSourceId: xmlSourceId,
+                  minimumOrderQuantity: 1,
+                };
+                
+                // Only add if required fields are present
+                if (productData.name && productData.price > 0) {
+                  products.push(productData);
+                }
+              }
+              
+              // Continue traversing
+              for (const key in obj) {
+                traverse(obj[key]);
+              }
+            }
+          }
+        };
+        
+        traverse(data);
+        return products;
+      };
+
+      const extractedProducts = extractProducts(result);
+      let processedCount = 0;
+      
+      // Create products in storage
+      for (const productData of extractedProducts) {
+        try {
+          await storage.createProduct(productData);
+          processedCount++;
+        } catch (error) {
+          console.error("Failed to create product:", error);
+        }
+      }
       
       await storage.createActivityLog({
         type: "xml_synced",
         title: "XML kaynağı güncellendi",
-        description: `${xmlSource.name} - XML'den ürünler güncellendi`,
+        description: `${xmlSource.name} - ${processedCount} ürün işlendi`,
         entityId: xmlSourceId,
         entityType: "xml_source"
       });
 
       res.json({ 
         message: "XML import başarıyla tamamlandı",
-        processed: 0 // This would be the actual count
+        processed: processedCount,
+        found: extractedProducts.length
       });
     } catch (error) {
+      console.error("XML import error:", error);
       res.status(500).json({ message: "XML import sırasında hata oluştu" });
     }
   });
