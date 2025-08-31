@@ -144,10 +144,21 @@ export default function XmlSourceForm() {
       
       if (response.ok) {
         setXmlCategories(data.categories);
-        toast({
-          title: "Başarılı",
-          description: `${data.count} kategori bulundu`,
-        });
+        
+        // Show sample data if no categories found to help debug
+        if (data.count === 0 && data.sampleData) {
+          console.log("XML Sample Data:", data.sampleData);
+          toast({
+            title: "Uyarı",
+            description: `${data.count} kategori bulundu. XML yapısını konsol loglarından kontrol edin.`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Başarılı",
+            description: `${data.count} kategori bulundu`,
+          });
+        }
       } else {
         throw new Error(data.message);
       }

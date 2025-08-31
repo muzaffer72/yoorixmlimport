@@ -358,10 +358,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categories = extractCategoriesIterative(result);
       console.log("Category extraction completed. Found:", categories.length, "categories");
       
+      // Show sample data from XML to help debug
+      const sampleData = JSON.stringify(result, null, 2).substring(0, 2000);
+      console.log("Sample XML data:", sampleData);
+      
       res.json({ 
         message: "Kategoriler başarıyla çekildi",
         categories: categories.sort(),
-        count: categories.length
+        count: categories.length,
+        sampleData: sampleData + "..."
       });
     } catch (error: any) {
       console.error("Category extraction error:", error);
