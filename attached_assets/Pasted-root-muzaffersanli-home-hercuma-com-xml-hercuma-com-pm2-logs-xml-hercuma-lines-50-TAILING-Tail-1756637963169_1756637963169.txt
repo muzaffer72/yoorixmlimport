@@ -1,0 +1,56 @@
+root@muzaffersanli:/home/hercuma.com/xml.hercuma.com# pm2 logs xml-hercuma --lines 50
+[TAILING] Tailing last 50 lines for [xml-hercuma] process (change the value with --lines option)
+/root/.pm2/logs/xml-hercuma-out.log last 50 lines:
+/root/.pm2/logs/xml-hercuma-error.log last 50 lines:
+7|xml-herc | Error: DATABASE_URL must be set. Did you forget to provision a database?
+7|xml-herc |     at file:///home/hercuma.com/xml.hercuma.com/dist/index.js:452:9
+7|xml-herc |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+7|xml-herc |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+7|xml-herc | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /home/hercuma.com/xml.hercuma.com/dist/index.js
+7|xml-herc |     at packageResolve (node:internal/modules/esm/resolve:841:9)
+7|xml-herc |     at moduleResolve (node:internal/modules/esm/resolve:914:18)
+7|xml-herc |     at defaultResolve (node:internal/modules/esm/resolve:1119:11)
+7|xml-herc |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:542:12)
+7|xml-herc |     at ModuleLoader.resolve (node:internal/modules/esm/loader:511:25)
+7|xml-herc |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:241:38)
+7|xml-herc |     at ModuleJob._link (node:internal/modules/esm/module_job:126:49) {
+7|xml-herc |   code: 'ERR_MODULE_NOT_FOUND'
+7|xml-herc | }
+7|xml-herc | (node:671203) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+7|xml-herc | (Use `node --trace-deprecation ...` to show where the warning was created)
+7|xml-herc | Error: DATABASE_URL must be set. Did you forget to provision a database?
+7|xml-herc |     at file:///home/hercuma.com/xml.hercuma.com/dist/index.js:452:9
+7|xml-herc |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+7|xml-herc |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+7|xml-herc | (node:673562) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+7|xml-herc | (Use `node --trace-deprecation ...` to show where the warning was created)
+7|xml-herc | Error: DATABASE_URL must be set. Did you forget to provision a database?
+7|xml-herc |     at file:///home/hercuma.com/xml.hercuma.com/dist/index.js:452:9
+7|xml-herc |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+7|xml-herc |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+7|xml-herc | (node:674805) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+7|xml-herc | (Use `node --trace-deprecation ...` to show where the warning was created)
+7|xml-herc | Error: DATABASE_URL must be set. Did you forget to provision a database?
+7|xml-herc |     at file:///home/hercuma.com/xml.hercuma.com/dist/index.js:452:9
+7|xml-herc |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+7|xml-herc |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+7|xml-herc | (node:674886) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+7|xml-herc | (Use `node --trace-deprecation ...` to show where the warning was created)
+7|xml-herc | Error: DATABASE_URL must be set. Did you forget to provision a database?
+7|xml-herc |     at file:///home/hercuma.com/xml.hercuma.com/dist/index.js:452:9
+7|xml-herc |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+7|xml-herc |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+7|xml-herc | (node:676213) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+7|xml-herc | (Use `node --trace-deprecation ...` to show where the warning was created)
+7|xml-herc | Error: DATABASE_URL must be set. Did you forget to provision a database?
+7|xml-herc |     at file:///home/hercuma.com/xml.hercuma.com/dist/index.js:452:9
+7|xml-herc |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+7|xml-herc |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+7|xml-herc | (node:676625) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+7|xml-herc | (Use `node --trace-deprecation ...` to show where the warning was created)
+7|xml-herc | Error: DATABASE_URL must be set. Did you forget to provision a database?
+7|xml-herc |     at file:///home/hercuma.com/xml.hercuma.com/dist/index.js:452:9
+7|xml-herc |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+7|xml-herc |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+
+
