@@ -1,10 +1,11 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertXmlSourceSchema, insertCategoryMappingSchema, insertDatabaseSettingsSchema } from "@shared/schema";
+import { insertXmlSourceSchema, insertCategoryMappingSchema, insertDatabaseSettingsSchema, insertGeminiSettingsSchema } from "@shared/schema";
 import { z } from "zod";
 import * as xml2js from "xml2js";
 import { ObjectStorageService } from "./objectStorage";
+import { GeminiService } from "./geminiService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -832,6 +833,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error searching for public object:", error);
       return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Gemini AI endpoints
+  app.post("/api/gemini/test-api-key", async (req, res) => {
+    try {
+      const { apiKey } = req.body;
+      if (!apiKey) {
+        return res.status(400).json({ message: "API anahtarı gerekli" });
+      }
+
+      const geminiService = new GeminiService();
+      const models = await geminiService.testApiKeyAndGetModels(apiKey);
+      
+      res.json({ 
+        success: true, 
+        models 
+      });
+    } catch (error: any) {
+      res.status(400).json({ 
+        success: false, 
+        message: error.message 
+      });
+    }
+  });
+
+  app.get("/api/gemini-settings", async (req, res) => {
+    try {
+      const settings = await storage.getGeminiSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch Gemini settings" });
+    }
+  });
+
+  app.post("/api/gemini-settings", async (req, res) => {
+    try {
+      const data = insertGeminiSettingsSchema.parse(req.body);
+      const settings = await storage.createGeminiSettings(data);
+      res.status(201).json(settings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create Gemini settings" });
+      }
+    }
+  });
+
+  app.put("/api/gemini-settings/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = req.body;
+      const settings = await storage.updateGeminiSettings(id, data);
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update Gemini settings" });
+    }
+  });
+
+  // AI-powered category mapping
+  app.post("/api/category-mappings/ai-map", async (req, res) => {
+    try {
+      const { xmlSourceId } = req.body;
+      
+      if (!xmlSourceId) {
+        return res.status(400).json({ message: "XML source ID is required" });
+      }
+
+      const result = await storage.aiMapCategories(xmlSourceId);
+      res.json(result);
+    } catch (error: any) {
+      console.error("AI mapping error:", error);
+      res.status(500).json({ message: error.message || "AI eşleştirme sırasında hata oluştu" });
     }
   });
 

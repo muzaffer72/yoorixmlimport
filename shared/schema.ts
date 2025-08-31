@@ -95,6 +95,15 @@ export const databaseSettings = pgTable("database_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const geminiSettings = pgTable("gemini_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  apiKey: text("api_key").notNull(),
+  selectedModel: text("selected_model").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertXmlSourceSchema = createInsertSchema(xmlSources).omit({
   id: true,
@@ -124,6 +133,12 @@ export const insertDatabaseSettingsSchema = createInsertSchema(databaseSettings)
   updatedAt: true,
 });
 
+export const insertGeminiSettingsSchema = createInsertSchema(geminiSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type XmlSource = typeof xmlSources.$inferSelect;
 export type InsertXmlSource = z.infer<typeof insertXmlSourceSchema>;
@@ -143,6 +158,9 @@ export type InsertCategoryMapping = z.infer<typeof insertCategoryMappingSchema>;
 
 export type DatabaseSettings = typeof databaseSettings.$inferSelect;
 export type InsertDatabaseSettings = z.infer<typeof insertDatabaseSettingsSchema>;
+
+export type GeminiSettings = typeof geminiSettings.$inferSelect;
+export type InsertGeminiSettings = z.infer<typeof insertGeminiSettingsSchema>;
 
 // Keep original user schema for compatibility
 export const users = pgTable("users", {

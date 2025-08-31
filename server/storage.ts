@@ -12,7 +12,10 @@ import {
   type InsertCategoryMapping,
   type DatabaseSettings,
   type InsertDatabaseSettings,
-  categories
+  type GeminiSettings,
+  type InsertGeminiSettings,
+  categories,
+  geminiSettings
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -75,6 +78,28 @@ export interface IStorage {
   deleteDatabaseSettings(id: string): Promise<boolean>;
   setActiveDatabaseSettings(id: string): Promise<DatabaseSettings>;
   
+  // Gemini Settings methods
+  getGeminiSettings(): Promise<GeminiSettings[]>;
+  createGeminiSettings(settings: InsertGeminiSettings): Promise<GeminiSettings>;
+  updateGeminiSettings(id: string, settings: Partial<GeminiSettings>): Promise<GeminiSettings>;
+  deleteDatabaseSettings(id: string): Promise<boolean>;
+  
+  // AI mapping method
+  aiMapCategories(xmlSourceId: string): Promise<{
+    mappings: Array<{
+      xmlCategory: string;
+      suggestedCategory: Category | null;
+      confidence: number;
+      reasoning: string;
+    }>;
+    summary: {
+      total: number;
+      mapped: number;
+      unmapped: number;
+      averageConfidence: number;
+    };
+  }>;
+  
   // Statistics
   getDashboardStats(): Promise<{
     todayAddedProducts: number;
@@ -93,6 +118,7 @@ export class MemStorage implements IStorage {
   private brands: Map<string, Brand>;
   private categoryMappings: Map<string, CategoryMapping>;
   private databaseSettings: Map<string, DatabaseSettings>;
+  private geminiSettings: Map<string, GeminiSettings>;
 
   constructor() {
     this.users = new Map();
@@ -103,6 +129,7 @@ export class MemStorage implements IStorage {
     this.brands = new Map();
     this.categoryMappings = new Map();
     this.databaseSettings = new Map();
+    this.geminiSettings = new Map();
     
     // Initialize with some sample data
     this.initializeSampleData();
@@ -674,6 +701,125 @@ export class MemStorage implements IStorage {
       updatedProducts,
       activeXmlSources,
       totalOperations: todayLogs.length,
+    };
+  }
+
+  // Gemini Settings methods
+  async getGeminiSettings(): Promise<GeminiSettings[]> {
+    try {
+      return await db.select().from(geminiSettings);
+    } catch (error) {
+      console.error("Error fetching Gemini settings:", error);
+      return Array.from(this.geminiSettings.values());
+    }
+  }
+
+  async createGeminiSettings(settings: InsertGeminiSettings): Promise<GeminiSettings> {
+    try {
+      const [newSettings] = await db
+        .insert(geminiSettings)
+        .values(settings)
+        .returning();
+      return newSettings;
+    } catch (error) {
+      console.error("Error creating Gemini settings:", error);
+      // Fallback to memory
+      const id = randomUUID();
+      const now = new Date();
+      const newSettings: GeminiSettings = { 
+        ...settings, 
+        id, 
+        createdAt: now, 
+        updatedAt: now 
+      };
+      this.geminiSettings.set(id, newSettings);
+      return newSettings;
+    }
+  }
+
+  async updateGeminiSettings(id: string, settings: Partial<GeminiSettings>): Promise<GeminiSettings> {
+    try {
+      const [updated] = await db
+        .update(geminiSettings)
+        .set({ ...settings, updatedAt: new Date() })
+        .where(eq(geminiSettings.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error("Error updating Gemini settings:", error);
+      // Fallback to memory
+      const existing = this.geminiSettings.get(id);
+      if (!existing) {
+        throw new Error("Gemini settings not found");
+      }
+      const updated: GeminiSettings = { 
+        ...existing, 
+        ...settings, 
+        updatedAt: new Date() 
+      };
+      this.geminiSettings.set(id, updated);
+      return updated;
+    }
+  }
+
+  // AI-powered category mapping
+  async aiMapCategories(xmlSourceId: string): Promise<{
+    mappings: Array<{
+      xmlCategory: string;
+      suggestedCategory: Category | null;
+      confidence: number;
+      reasoning: string;
+    }>;
+    summary: {
+      total: number;
+      mapped: number;
+      unmapped: number;
+      averageConfidence: number;
+    };
+  }> {
+    const xmlSource = await this.getXmlSource(xmlSourceId);
+    if (!xmlSource || !xmlSource.extractedCategories) {
+      throw new Error("XML source not found or no categories extracted");
+    }
+
+    const xmlCategories = Array.isArray(xmlSource.extractedCategories) 
+      ? xmlSource.extractedCategories as string[]
+      : [];
+      
+    const localCategories = await this.getCategories();
+    
+    // Get active Gemini settings
+    const allGeminiSettings = await this.getGeminiSettings();
+    const activeSettings = allGeminiSettings.find(s => s.isActive);
+    
+    if (!activeSettings) {
+      throw new Error("Gemini API ayarları bulunamadı. Lütfen önce ayarlar sayfasından Gemini API'yi yapılandırın.");
+    }
+
+    const { GeminiService } = await import("./geminiService");
+    const geminiService = new GeminiService(activeSettings.apiKey);
+    
+    const mappings = await geminiService.mapCategoriesWithAI(
+      xmlCategories, 
+      localCategories.map(cat => ({ id: cat.id, name: cat.name })),
+      activeSettings.selectedModel
+    );
+    
+    // Calculate summary
+    const mapped = mappings.filter(m => m.suggestedCategory).length;
+    const unmapped = mappings.length - mapped;
+    const averageConfidence = mappings.length > 0 
+      ? mappings.reduce((sum, m) => sum + m.confidence, 0) / mappings.length 
+      : 0;
+
+    return {
+      mappings,
+      summary: {
+        total: mappings.length,
+        mapped,
+        unmapped,
+        averageConfidence
+      }
     };
   }
 }
