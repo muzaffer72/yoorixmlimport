@@ -552,6 +552,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete all category mappings for a specific XML source
+  app.delete("/api/category-mappings/source/:xmlSourceId", async (req, res) => {
+    try {
+      const { xmlSourceId } = req.params;
+      const deletedCount = await pageStorage.deleteAllCategoryMappingsForSource(xmlSourceId);
+      res.json({ 
+        message: `${deletedCount} kategori eşleştirmesi silindi`,
+        deletedCount 
+      });
+    } catch (error) {
+      console.error("Failed to delete all category mappings:", error);
+      res.status(500).json({ message: "Kategori eşleştirmeleri silinirken hata oluştu" });
+    }
+  });
+
   // Auto-mapping endpoint
   app.post("/api/category-mappings/auto-map", async (req, res) => {
     try {

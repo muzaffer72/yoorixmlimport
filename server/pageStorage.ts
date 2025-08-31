@@ -360,6 +360,19 @@ export class PageStorage {
     return true;
   }
 
+  async deleteAllCategoryMappingsForSource(xmlSourceId: string): Promise<number> {
+    const data = this.loadJsonFile('category-mappings.json', { mappings: [] });
+    const initialCount = data.mappings.length;
+    
+    // Bu XML source'a ait tüm mapping'leri filtrele
+    data.mappings = data.mappings.filter((map: any) => map.xmlSourceId !== xmlSourceId);
+    
+    const deletedCount = initialCount - data.mappings.length;
+    this.saveJsonFile('category-mappings.json', data);
+    
+    return deletedCount;
+  }
+
   // Settings Management
   async getGeminiSettings(): Promise<any> {
     const data = this.loadJsonFile('settings.json', { 

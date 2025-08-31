@@ -117,6 +117,27 @@ export default function CategoryMapping() {
     },
   });
 
+  const deleteAllMappingsMutation = useMutation({
+    mutationFn: async (xmlSourceId: string) => {
+      const response = await apiRequest("DELETE", `/api/category-mappings/source/${xmlSourceId}`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Başarılı",
+        description: data.message || "Tüm kategori eşleştirmeleri silindi",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/category-mappings"] });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Kategori eşleştirmeleri silinirken hata oluştu",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddMapping = () => {
     if (!selectedXmlSource || !xmlCategoryName || !localCategoryId) {
       toast({
@@ -137,6 +158,21 @@ export default function CategoryMapping() {
   const handleDeleteMapping = (id: string) => {
     if (confirm("Bu kategori eşleştirmesini silmek istediğinizden emin misiniz?")) {
       deleteMappingMutation.mutate(id);
+    }
+  };
+
+  const handleDeleteAllMappings = () => {
+    if (!selectedXmlSource) {
+      toast({
+        title: "Hata",
+        description: "Önce XML kaynağı seçin",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (confirm("Bu XML kaynağının tüm kategori eşleştirmelerini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")) {
+      deleteAllMappingsMutation.mutate(selectedXmlSource);
     }
   };
 
@@ -463,10 +499,26 @@ export default function CategoryMapping() {
         {selectedXmlSource && (
           <Card>
             <CardHeader>
-              <CardTitle>Mevcut Eşleştirmeler</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Seçili XML kaynağı için kategori eşleştirmeleri
-              </p>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle>Mevcut Eşleştirmeler</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Seçili XML kaynağı için kategori eşleştirmeleri
+                  </p>
+                </div>
+                {mappings.length > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteAllMappings}
+                    disabled={deleteAllMappingsMutation.isPending}
+                    data-testid="button-delete-all-mappings"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {deleteAllMappingsMutation.isPending ? "Siliniyor..." : "Tümünü Sil"}
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {mappingsLoading ? (
