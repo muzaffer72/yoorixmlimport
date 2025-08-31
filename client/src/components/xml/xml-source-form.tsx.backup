@@ -35,9 +35,6 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
   const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
   const [xmlCategories, setXmlCategories] = useState<string[]>([]);
   const [videoProvider, setVideoProvider] = useState<string>("none");
-  const [profitMarginType, setProfitMarginType] = useState<string>("none");
-  const [profitMarginPercent, setProfitMarginPercent] = useState<string>("");
-  const [profitMarginFixed, setProfitMarginFixed] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -518,6 +515,78 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
                     </div>
                   </div>
                   
+                  {/* Profit Margin Configuration */}
+                  <div className="mb-6 p-4 border rounded-lg bg-green-50/50 dark:bg-green-900/10">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="h-5 w-5 text-green-600 flex items-center justify-center text-sm">%</div>
+                      <Label className="text-base font-medium text-green-700 dark:text-green-400">Kar Oranı Ayarları</Label>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Profit Margin Type */}
+                      <div>
+                        <Label className="text-sm font-medium">Kar Oranı Türü</Label>
+                        <RadioGroup
+                          value={profitMarginType}
+                          onValueChange={setProfitMarginType}
+                          className="mt-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="none" id="profit-none" />
+                            <Label htmlFor="profit-none" className="text-sm cursor-pointer">
+                              Kar Oranı Yok
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="percent" id="profit-percent" />
+                            <Label htmlFor="profit-percent" className="text-sm cursor-pointer">
+                              Yüzde (%) Kar
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="fixed" id="profit-fixed" />
+                            <Label htmlFor="profit-fixed" className="text-sm cursor-pointer">
+                              Sabit Kar (TL)
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                      
+                      {/* Percent Margin */}
+                      {profitMarginType === "percent" && (
+                        <div>
+                          <Label className="text-sm font-medium">Kar Yüzdesi (%)</Label>
+                          <Input
+                            type="number"
+                            placeholder="Örn: 25"
+                            value={profitMarginPercent}
+                            onChange={(e) => setProfitMarginPercent(e.target.value)}
+                            className="mt-2"
+                            data-testid="input-profit-percent"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            XML fiyatına % kar eklenecek
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Fixed Margin */}
+                      {profitMarginType === "fixed" && (
+                        <div>
+                          <Label className="text-sm font-medium">Sabit Kar (TL)</Label>
+                          <Input
+                            type="number"
+                            placeholder="Örn: 50"
+                            value={profitMarginFixed}
+                            onChange={(e) => setProfitMarginFixed(e.target.value)}
+                            className="mt-2"
+                            data-testid="input-profit-fixed"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            XML fiyatına sabit tutar eklenecek
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
