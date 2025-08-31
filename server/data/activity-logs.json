@@ -164,6 +164,17 @@
       "oldValue": null,
       "newValue": null,
       "entityId": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "enginithalat - 0 ürün işlendi",
+      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "entityType": "xml_source",
+      "id": "e41a1eff-782e-48ee-9d1d-e9f96dc254f8",
+      "createdAt": "2025-08-31T14:06:39.302Z",
+      "oldValue": null,
+      "newValue": null
     }
   ]
 }
