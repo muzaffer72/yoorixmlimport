@@ -298,48 +298,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await parser.parseStringPromise(xmlText);
       console.log("XML parsed successfully for categories");
       
-      // Extract categories from XML - simplified approach for your specific XML structure
-      const extractCategoriesSimple = (rootObj: any): string[] => {
+      // Extract categories from XML using iterative approach to prevent stack overflow
+      const extractCategoriesIterative = (rootObj: any): string[] => {
         const categories = new Set<string>();
-        console.log("Looking for category field:", categoryField);
-        console.log("Root object keys:", Object.keys(rootObj));
-        
-        // Handle the specific case: Urunler.Urun.kategori_son
-        if (categoryField === "Urunler.Urun.kategori_son") {
-          console.log("Using special handler for Urunler.Urun.kategori_son");
-          
-          if (rootObj.Urunler && rootObj.Urunler.Urun && Array.isArray(rootObj.Urunler.Urun)) {
-            console.log("Found Urunler.Urun array with", rootObj.Urunler.Urun.length, "items");
-            
-            // Process first 1000 items for performance
-            const itemsToProcess = Math.min(rootObj.Urunler.Urun.length, 1000);
-            for (let i = 0; i < itemsToProcess; i++) {
-              const urun = rootObj.Urunler.Urun[i];
-              if (urun && urun.kategori_son && typeof urun.kategori_son === 'string') {
-                const category = urun.kategori_son.trim();
-                if (category) {
-                  categories.add(category);
-                  if (i < 10) { // Log first 10 for debugging
-                    console.log(`✓ Found category ${i+1}:`, category);
-                  }
-                }
-              }
-            }
-            
-            console.log("Total unique categories found:", categories.size);
-            return Array.from(categories);
-          } else {
-            console.log("ERROR: Urunler.Urun structure not found or not an array");
-            return [];
-          }
-        }
-        
-        // Fallback to generic approach for other paths
-        console.log("Using generic approach for path:", categoryField);
-        const fields = categoryField.split('.');
         const queue: any[] = [rootObj];
-        const maxItems = 5000;
+        const fields = categoryField.split('.');
+        const maxItems = 10000; // Limit items processed for performance
         let processedItems = 0;
+        
+        console.log("Looking for category field:", categoryField, "split into:", fields);
         
         while (queue.length > 0 && processedItems < maxItems) {
           const current = queue.shift();
@@ -349,29 +316,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
             continue;
           }
           
-          // Try to follow the path
+          // Check if this object has the category field
+          // Handle both direct paths and array paths
           let value = current;
           let foundPath = true;
+          let pathTrace = [];
           
-          for (const field of fields) {
+          for (let i = 0; i < fields.length; i++) {
+            const field = fields[i];
+            
             if (value && typeof value === 'object' && field in value) {
               value = value[field];
+              pathTrace.push(field);
+              
+              // If this value is an array and we have more fields to process,
+              // we need to check each array item for the remaining path
+              if (Array.isArray(value) && i < fields.length - 1) {
+                const remainingFields = fields.slice(i + 1);
+                
+                // Process each array item for the remaining path
+                for (const arrayItem of value) {
+                  if (typeof arrayItem === 'object' && arrayItem !== null) {
+                    let subValue = arrayItem;
+                    let subFoundPath = true;
+                    
+                    for (const subField of remainingFields) {
+                      if (subValue && typeof subValue === 'object' && subField in subValue) {
+                        subValue = subValue[subField];
+                      } else {
+                        subFoundPath = false;
+                        break;
+                      }
+                    }
+                    
+                    if (subFoundPath && subValue && typeof subValue === 'string' && subValue.trim()) {
+                      categories.add(subValue.trim());
+                      console.log("✓ Found category from array:", subValue.trim());
+                    }
+                  }
+                }
+                foundPath = false; // Skip the normal path checking since we handled arrays
+                break;
+              }
             } else {
               foundPath = false;
               break;
             }
           }
           
+          // Debug: Show what we found at each step (only for first few items)
+          if (processedItems <= 3) {
+            console.log(`Item ${processedItems}: Looking for path [${fields.join('.')}], found path [${pathTrace.join('.')}], foundPath: ${foundPath}, value type: ${typeof value}, value:`, typeof value === 'string' ? value.substring(0, 50) : Array.isArray(value) ? `Array[${value.length}]` : value);
+          }
+          
+          // Handle direct path (non-array case)
           if (foundPath && value && typeof value === 'string' && value.trim()) {
             categories.add(value.trim());
-            if (categories.size <= 10) {
-              console.log("✓ Found category:", value.trim());
-            }
+            console.log("✓ Found category:", value.trim());
           }
           
           // Add children to queue
           if (Array.isArray(current)) {
-            const itemsToProcess = Math.min(current.length, 50);
+            // Process only first few items of large arrays for performance
+            const itemsToProcess = Math.min(current.length, 100);
             for (let i = 0; i < itemsToProcess; i++) {
               queue.push(current[i]);
             }
@@ -384,7 +391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
-        console.log("Generic approach - Processed items:", processedItems, "Found categories:", categories.size);
+        console.log("Processed items:", processedItems, "Found categories:", categories.size);
         return Array.from(categories);
       };
 
