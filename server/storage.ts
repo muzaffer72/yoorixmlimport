@@ -82,7 +82,7 @@ export interface IStorage {
   getGeminiSettings(): Promise<GeminiSettings[]>;
   createGeminiSettings(settings: InsertGeminiSettings): Promise<GeminiSettings>;
   updateGeminiSettings(id: string, settings: Partial<GeminiSettings>): Promise<GeminiSettings>;
-  deleteDatabaseSettings(id: string): Promise<boolean>;
+  deleteGeminiSettings(id: string): Promise<boolean>;
   
   // AI mapping method
   aiMapCategories(xmlSourceId: string): Promise<{
@@ -759,6 +759,17 @@ export class MemStorage implements IStorage {
       };
       this.geminiSettings.set(id, updated);
       return updated;
+    }
+  }
+
+  async deleteGeminiSettings(id: string): Promise<boolean> {
+    try {
+      await db.delete(geminiSettings).where(eq(geminiSettings.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting Gemini settings:", error);
+      // Fallback to memory
+      return this.geminiSettings.delete(id);
     }
   }
 

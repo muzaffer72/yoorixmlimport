@@ -893,6 +893,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/gemini-settings/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteGeminiSettings(id);
+      if (success) {
+        res.json({ message: "Gemini ayarı başarıyla silindi" });
+      } else {
+        res.status(404).json({ message: "Gemini ayarı bulunamadı" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete Gemini settings" });
+    }
+  });
+
   // AI-powered category mapping
   app.post("/api/category-mappings/ai-map", async (req, res) => {
     try {

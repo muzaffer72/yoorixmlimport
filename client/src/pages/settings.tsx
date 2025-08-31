@@ -28,8 +28,9 @@ import {
   type InsertGeminiSettings 
 } from "@shared/schema";
 import { z } from "zod";
-import { Database, TestTube, Trash2, Settings, CheckCircle, Brain, Key } from "lucide-react";
+import { Database, TestTube, Trash2, Settings, CheckCircle, Brain, Key, Edit } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const dbFormSchema = insertDatabaseSettingsSchema.extend({
   name: z.string().min(1, "Veritabanı adı gerekli"),
@@ -50,6 +51,7 @@ export default function SettingsPage() {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [isTestingApiKey, setIsTestingApiKey] = useState(false);
   const [availableModels, setAvailableModels] = useState<{name: string, displayName: string}[]>([]);
+  const [editingGemini, setEditingGemini] = useState<{ id: string; name: string; apiKey: string; selectedModel: string } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -241,6 +243,49 @@ export default function SettingsPage() {
     },
   });
 
+  const deleteGeminiSettingMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("DELETE", `/api/gemini-settings/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Gemini ayarı silindi",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/gemini-settings"] });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Gemini ayarı silinirken hata oluştu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateGeminiSettingMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<GeminiSettings> }) => {
+      const response = await apiRequest("PUT", `/api/gemini-settings/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Gemini ayarı güncellendi",
+      });
+      setEditingGemini(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/gemini-settings"] });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Gemini ayarı güncellenirken hata oluştu",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onDbSubmit = (data: z.infer<typeof dbFormSchema>) => {
     createDatabaseSettingMutation.mutate(data);
   };
@@ -293,6 +338,34 @@ export default function SettingsPage() {
 
   const handleSetActiveGemini = (id: string) => {
     setActiveGeminiMutation.mutate(id);
+  };
+
+  const handleDeleteGemini = (id: string) => {
+    if (confirm("Bu Gemini ayarını silmek istediğinizden emin misiniz?")) {
+      deleteGeminiSettingMutation.mutate(id);
+    }
+  };
+
+  const handleEditGemini = (setting: GeminiSettings) => {
+    setEditingGemini({
+      id: setting.id,
+      name: setting.name,
+      apiKey: setting.apiKey,
+      selectedModel: setting.selectedModel
+    });
+  };
+
+  const handleUpdateGemini = () => {
+    if (!editingGemini) return;
+    
+    updateGeminiSettingMutation.mutate({
+      id: editingGemini.id,
+      data: {
+        name: editingGemini.name,
+        apiKey: editingGemini.apiKey,
+        selectedModel: editingGemini.selectedModel
+      }
+    });
   };
 
   return (
@@ -612,6 +685,25 @@ export default function SettingsPage() {
                               <CheckCircle className="h-4 w-4" />
                             </Button>
                           )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-blue-600 hover:text-blue-800"
+                            onClick={() => handleEditGemini(setting)}
+                            data-testid={`button-edit-gemini-${setting.id}`}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600 hover:text-red-800"
+                            onClick={() => handleDeleteGemini(setting.id)}
+                            disabled={deleteGeminiSettingMutation.isPending}
+                            data-testid={`button-delete-gemini-${setting.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -701,6 +793,93 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Gemini Settings Dialog */}
+      <Dialog open={!!editingGemini} onOpenChange={(open) => !open && setEditingGemini(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Gemini AI Ayarını Düzenle</DialogTitle>
+            <DialogDescription>
+              Gemini AI ayarlarını güncelleyebilirsiniz.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingGemini && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Ayar Adı
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded-md"
+                  value={editingGemini.name}
+                  onChange={(e) => setEditingGemini({
+                    ...editingGemini,
+                    name: e.target.value
+                  })}
+                  placeholder="Ayar adını girin"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  API Anahtarı
+                </label>
+                <input
+                  type="password"
+                  className="w-full p-2 border rounded-md"
+                  value={editingGemini.apiKey}
+                  onChange={(e) => setEditingGemini({
+                    ...editingGemini,
+                    apiKey: e.target.value
+                  })}
+                  placeholder="Gemini API anahtarını girin"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Model Seçimi
+                </label>
+                <Select
+                  value={editingGemini.selectedModel}
+                  onValueChange={(value) => setEditingGemini({
+                    ...editingGemini,
+                    selectedModel: value
+                  })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Model seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableModels.map((model) => (
+                      <SelectItem key={model.name} value={model.name}>
+                        {model.displayName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditingGemini(null)}
+            >
+              İptal
+            </Button>
+            <Button
+              onClick={handleUpdateGemini}
+              disabled={updateGeminiSettingMutation.isPending || !editingGemini?.name || !editingGemini?.apiKey || !editingGemini?.selectedModel}
+            >
+              {updateGeminiSettingMutation.isPending ? "Güncelleniyor..." : "Güncelle"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
