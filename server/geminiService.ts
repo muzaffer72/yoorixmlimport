@@ -25,22 +25,43 @@ export class GeminiService {
       let availableModels: GeminiModel[] = [];
       
       try {
-        // API'den model listesini getir
-        const modelList = await testClient.models.list();
+        // API'den model listesini getir - farklı yöntemler dene
+        let modelList;
+        
+        try {
+          modelList = await testClient.models.list();
+        } catch (e) {
+          // Alternatif yöntem
+          try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+            if (response.ok) {
+              const data = await response.json();
+              modelList = data.models;
+            }
+          } catch (fetchError) {
+            console.log("Fetch ile model listesi alınamadı:", fetchError);
+          }
+        }
         
         if (modelList && Array.isArray(modelList)) {
-          availableModels = modelList.map((model: any) => ({
-            name: model.name || model,
-            displayName: model.displayName || model.name || model,
-            description: model.description || "",
-            supportedGenerationMethods: model.supportedGenerationMethods || ["generateContent"]
-          }));
+          availableModels = modelList
+            .filter((model: any) => {
+              // Sadece generateContent destekleyen modelleri al
+              const methods = model.supportedGenerationMethods || [];
+              return methods.includes('generateContent');
+            })
+            .map((model: any) => ({
+              name: model.name?.replace('models/', '') || model,
+              displayName: model.displayName || model.name?.replace('models/', '') || model,
+              description: model.description || "",
+              supportedGenerationMethods: model.supportedGenerationMethods || ["generateContent"]
+            }));
         }
       } catch (listError: any) {
         console.log("Model listesi alınamadı, varsayılan modeller kullanılıyor:", listError.message);
       }
 
-      // Eğer API'den model listesi alınamadıysa, varsayılan modelleri kullan
+      // Eğer API'den model listesi alınamadıysa, en güncel varsayılan modelleri kullan
       if (availableModels.length === 0) {
         availableModels = [
           {
@@ -50,9 +71,21 @@ export class GeminiService {
             supportedGenerationMethods: ["generateContent"]
           },
           {
+            name: "gemini-1.5-pro-latest",
+            displayName: "Gemini 1.5 Pro (Latest)",
+            description: "En güncel Pro model",
+            supportedGenerationMethods: ["generateContent"]
+          },
+          {
             name: "gemini-1.5-pro",
             displayName: "Gemini 1.5 Pro", 
             description: "Gelişmiş analiz için optimize edilmiş",
+            supportedGenerationMethods: ["generateContent"]
+          },
+          {
+            name: "gemini-1.5-flash-latest",
+            displayName: "Gemini 1.5 Flash (Latest)",
+            description: "En güncel Flash model",
             supportedGenerationMethods: ["generateContent"]
           },
           {
@@ -65,6 +98,12 @@ export class GeminiService {
             name: "gemini-1.5-flash-8b",
             displayName: "Gemini 1.5 Flash 8B",
             description: "Küçük ve hızlı model",
+            supportedGenerationMethods: ["generateContent"]
+          },
+          {
+            name: "gemini-1.0-pro-latest",
+            displayName: "Gemini 1.0 Pro (Latest)",
+            description: "En güncel 1.0 Pro model",
             supportedGenerationMethods: ["generateContent"]
           },
           {
