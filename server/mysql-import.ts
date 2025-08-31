@@ -236,8 +236,8 @@ export async function importProductToMySQL(product: {
         null, // special_discount_end
         product.price * 0.7 || 0, // purchase_cost (fiyatın %70'i)
         product.barcode || '', // barcode
-        product.videoProvider || '', // video_provider
-        product.videoUrl || '', // video_url
+        product.videoProvider === "none" ? '' : (product.videoProvider || ''), // video_provider
+        product.videoProvider === "none" ? '' : (product.videoUrl || ''), // video_url
         '[]', // colors (JSON)
         '[]', // attribute_sets (JSON)
         '', // vat_taxes

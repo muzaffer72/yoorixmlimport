@@ -34,7 +34,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
   const [xmlCategories, setXmlCategories] = useState<string[]>([]);
-  const [videoProvider, setVideoProvider] = useState<string>("mp4");
+  const [videoProvider, setVideoProvider] = useState<string>("none");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -194,6 +194,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
   };
 
   const videoProviders = [
+    { key: "none", label: "Video Yok" },
     { key: "mp4", label: "MP4 Dosya" },
     { key: "youtube", label: "YouTube" },
     { key: "vimeo", label: "Vimeo" },

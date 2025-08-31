@@ -35,6 +35,7 @@ const optionalFields = [
 ];
 
 const videoProviders = [
+  { key: "none", label: "Video Yok" },
   { key: "mp4", label: "MP4 Dosya" },
   { key: "youtube", label: "YouTube" },
   { key: "vimeo", label: "Vimeo" },
@@ -47,7 +48,7 @@ export default function XmlMappingForm({
 }: XmlMappingFormProps) {
   const [mapping, setMapping] = useState<Record<string, string>>(initialMapping);
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
-  const [videoProvider, setVideoProvider] = useState<string>(initialMapping.video_provider || "mp4");
+  const [videoProvider, setVideoProvider] = useState<string>(initialMapping.video_provider || "none");
   const { toast } = useToast();
 
   const handleMappingChange = (field: string, value: string) => {
@@ -90,7 +91,7 @@ export default function XmlMappingForm({
   const handleReset = () => {
     setMapping({});
     setCustomValues({});
-    setVideoProvider("mp4");
+    setVideoProvider("none");
   };
 
   const renderFieldSelect = (field: { key: string; label: string; required?: boolean }) => (
