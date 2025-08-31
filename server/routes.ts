@@ -744,10 +744,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         };
         
+        console.log(`🔍 XML traverse başlatılıyor...`);
         traverse(data);
+        console.log(`🔍 XML traverse tamamlandı. Toplam ürün: ${products.length}`);
         return products;
       };
 
+      console.log(`🔍 BAŞLANGIC DEBUG: XML parse sonucu:`, typeof result, Object.keys(result || {}));
+      console.log(`🔍 FIELD MAPPING DEBUG:`, fieldMapping);
+      console.log(`🔍 XML SOURCE DEBUG:`, xmlSource);
+      
       const extractedProducts = extractProducts(result);
       console.log(`🔍 DEBUG: XML'den çıkarılan ürün sayısı: ${extractedProducts.length}`);
       console.log(`🔍 DEBUG: XML yapısı kontrol:`, Object.keys(result).slice(0, 5));
