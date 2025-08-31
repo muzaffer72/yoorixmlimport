@@ -19,11 +19,19 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { insertDatabaseSettingsSchema, type InsertDatabaseSettings, type DatabaseSettings } from "@shared/schema";
+import { 
+  insertDatabaseSettingsSchema, 
+  insertGeminiSettingsSchema,
+  type InsertDatabaseSettings, 
+  type DatabaseSettings,
+  type GeminiSettings,
+  type InsertGeminiSettings 
+} from "@shared/schema";
 import { z } from "zod";
-import { Database, TestTube, Trash2, Settings, CheckCircle } from "lucide-react";
+import { Database, TestTube, Trash2, Settings, CheckCircle, Brain, Key } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const formSchema = insertDatabaseSettingsSchema.extend({
+const dbFormSchema = insertDatabaseSettingsSchema.extend({
   name: z.string().min(1, "Veritabanı adı gerekli"),
   host: z.string().min(1, "Host gerekli"),
   port: z.number().min(1, "Port gerekli").max(65535, "Geçersiz port"),
@@ -32,13 +40,21 @@ const formSchema = insertDatabaseSettingsSchema.extend({
   password: z.string().min(1, "Şifre gerekli"),
 });
 
+const geminiFormSchema = insertGeminiSettingsSchema.extend({
+  name: z.string().min(1, "Ayar adı gerekli"),
+  apiKey: z.string().min(1, "API anahtarı gerekli"),
+  selectedModel: z.string().min(1, "Model seçimi gerekli"),
+});
+
 export default function SettingsPage() {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [isTestingApiKey, setIsTestingApiKey] = useState(false);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const dbForm = useForm<z.infer<typeof dbFormSchema>>({
+    resolver: zodResolver(dbFormSchema),
     defaultValues: {
       name: "",
       host: "",
@@ -50,8 +66,22 @@ export default function SettingsPage() {
     },
   });
 
+  const geminiForm = useForm<z.infer<typeof geminiFormSchema>>({
+    resolver: zodResolver(geminiFormSchema),
+    defaultValues: {
+      name: "",
+      apiKey: "",
+      selectedModel: "",
+      isActive: false,
+    },
+  });
+
   const { data: databaseSettings = [] } = useQuery<DatabaseSettings[]>({
     queryKey: ["/api/database-settings"],
+  });
+
+  const { data: geminiSettings = [] } = useQuery<GeminiSettings[]>({
+    queryKey: ["/api/gemini-settings"],
   });
 
   const createDatabaseSettingMutation = useMutation({
@@ -64,7 +94,7 @@ export default function SettingsPage() {
         title: "Başarılı",
         description: "Veritabanı ayarları başarıyla eklendi",
       });
-      form.reset();
+      dbForm.reset();
       queryClient.invalidateQueries({ queryKey: ["/api/database-settings"] });
     },
     onError: () => {
@@ -77,7 +107,7 @@ export default function SettingsPage() {
   });
 
   const testConnectionMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
+    mutationFn: async (data: z.infer<typeof dbFormSchema>) => {
       const response = await apiRequest("POST", "/api/database-settings/test-connection", data);
       return response.json();
     },
@@ -138,12 +168,80 @@ export default function SettingsPage() {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  // Gemini API mutations
+  const testApiKeyMutation = useMutation({
+    mutationFn: async (apiKey: string) => {
+      const response = await apiRequest("POST", "/api/gemini/test-api-key", { apiKey });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        setAvailableModels(data.models);
+        toast({
+          title: "API Anahtarı Geçerli",
+          description: `${data.models.length} model bulundu`,
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "API Anahtarı Hatası",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createGeminiSettingMutation = useMutation({
+    mutationFn: async (data: InsertGeminiSettings) => {
+      const response = await apiRequest("POST", "/api/gemini-settings", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Gemini ayarları başarıyla eklendi",
+      });
+      geminiForm.reset();
+      setAvailableModels([]);
+      queryClient.invalidateQueries({ queryKey: ["/api/gemini-settings"] });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Gemini ayarları eklenirken hata oluştu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const setActiveGeminiMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("PUT", `/api/gemini-settings/${id}`, { isActive: true });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Aktif Gemini ayarı değiştirildi",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/gemini-settings"] });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Aktif Gemini ayarı değiştirilirken hata oluştu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onDbSubmit = (data: z.infer<typeof dbFormSchema>) => {
     createDatabaseSettingMutation.mutate(data);
   };
 
   const handleTestConnection = () => {
-    const data = form.getValues();
+    const data = dbForm.getValues();
     if (!data.host || !data.database || !data.username) {
       toast({
         title: "Hata",
@@ -168,11 +266,35 @@ export default function SettingsPage() {
     setActiveDatabaseMutation.mutate(id);
   };
 
+  const onGeminiSubmit = (data: z.infer<typeof geminiFormSchema>) => {
+    createGeminiSettingMutation.mutate(data);
+  };
+
+  const handleTestApiKey = () => {
+    const apiKey = geminiForm.getValues("apiKey");
+    if (!apiKey) {
+      toast({
+        title: "Hata",
+        description: "Lütfen API anahtarını girin",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsTestingApiKey(true);
+    testApiKeyMutation.mutate(apiKey, {
+      onSettled: () => setIsTestingApiKey(false),
+    });
+  };
+
+  const handleSetActiveGemini = (id: string) => {
+    setActiveGeminiMutation.mutate(id);
+  };
+
   return (
     <div>
       <Header 
         title="Ayarlar" 
-        description="Veritabanı bağlantı ayarlarını yönetin"
+        description="Veritabanı ve AI ayarlarını yönetin"
       />
       
       <div className="p-8 space-y-8">
@@ -188,7 +310,7 @@ export default function SettingsPage() {
             </p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={dbForm.handleSubmit(onDbSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="name">Bağlantı Adı</Label>
@@ -196,11 +318,11 @@ export default function SettingsPage() {
                     id="name"
                     placeholder="Örn: Ana Veritabanı"
                     data-testid="input-db-name"
-                    {...form.register("name")}
+                    {...dbForm.register("name")}
                   />
-                  {form.formState.errors.name && (
+                  {dbForm.formState.errors.name && (
                     <p className="text-sm text-destructive mt-1">
-                      {form.formState.errors.name.message}
+                      {dbForm.formState.errors.name.message}
                     </p>
                   )}
                 </div>
@@ -211,11 +333,11 @@ export default function SettingsPage() {
                     id="host"
                     placeholder="localhost veya IP adresi"
                     data-testid="input-db-host"
-                    {...form.register("host")}
+                    {...dbForm.register("host")}
                   />
-                  {form.formState.errors.host && (
+                  {dbForm.formState.errors.host && (
                     <p className="text-sm text-destructive mt-1">
-                      {form.formState.errors.host.message}
+                      {dbForm.formState.errors.host.message}
                     </p>
                   )}
                 </div>
@@ -227,11 +349,11 @@ export default function SettingsPage() {
                     type="number"
                     placeholder="3306"
                     data-testid="input-db-port"
-                    {...form.register("port", { valueAsNumber: true })}
+                    {...dbForm.register("port", { valueAsNumber: true })}
                   />
-                  {form.formState.errors.port && (
+                  {dbForm.formState.errors.port && (
                     <p className="text-sm text-destructive mt-1">
-                      {form.formState.errors.port.message}
+                      {dbForm.formState.errors.port.message}
                     </p>
                   )}
                 </div>
@@ -242,11 +364,11 @@ export default function SettingsPage() {
                     id="database"
                     placeholder="Veritabanı adı"
                     data-testid="input-db-database"
-                    {...form.register("database")}
+                    {...dbForm.register("database")}
                   />
-                  {form.formState.errors.database && (
+                  {dbForm.formState.errors.database && (
                     <p className="text-sm text-destructive mt-1">
-                      {form.formState.errors.database.message}
+                      {dbForm.formState.errors.database.message}
                     </p>
                   )}
                 </div>
@@ -257,11 +379,11 @@ export default function SettingsPage() {
                     id="username"
                     placeholder="MySQL kullanıcı adı"
                     data-testid="input-db-username"
-                    {...form.register("username")}
+                    {...dbForm.register("username")}
                   />
-                  {form.formState.errors.username && (
+                  {dbForm.formState.errors.username && (
                     <p className="text-sm text-destructive mt-1">
-                      {form.formState.errors.username.message}
+                      {dbForm.formState.errors.username.message}
                     </p>
                   )}
                 </div>
@@ -273,11 +395,11 @@ export default function SettingsPage() {
                     type="password"
                     placeholder="MySQL şifresi"
                     data-testid="input-db-password"
-                    {...form.register("password")}
+                    {...dbForm.register("password")}
                   />
-                  {form.formState.errors.password && (
+                  {dbForm.formState.errors.password && (
                     <p className="text-sm text-destructive mt-1">
-                      {form.formState.errors.password.message}
+                      {dbForm.formState.errors.password.message}
                     </p>
                   )}
                 </div>
@@ -287,8 +409,8 @@ export default function SettingsPage() {
                 <Switch 
                   id="isActive" 
                   data-testid="switch-db-active"
-                  checked={form.watch("isActive") || false}
-                  onCheckedChange={(checked) => form.setValue("isActive", checked)}
+                  checked={dbForm.watch("isActive") || false}
+                  onCheckedChange={(checked) => dbForm.setValue("isActive", checked)}
                 />
                 <Label htmlFor="isActive">Bu bağlantıyı aktif yap</Label>
               </div>
@@ -315,6 +437,183 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Gemini AI Settings Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Brain className="mr-2 h-5 w-5" />
+              Gemini AI Ayarları
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Google Gemini API ayarlarını yapılandırın
+            </p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={geminiForm.handleSubmit(onGeminiSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="gemini-name">Ayar Adı</Label>
+                  <Input
+                    id="gemini-name"
+                    placeholder="Örn: Ana Gemini API"
+                    data-testid="input-gemini-name"
+                    {...geminiForm.register("name")}
+                  />
+                  {geminiForm.formState.errors.name && (
+                    <p className="text-sm text-destructive mt-1">
+                      {geminiForm.formState.errors.name.message}
+                    </p>
+                  )}
+                </div>
+                
+                <div>
+                  <Label htmlFor="gemini-api-key">API Anahtarı</Label>
+                  <Input
+                    id="gemini-api-key"
+                    type="password"
+                    placeholder="Gemini API anahtarınızı girin"
+                    data-testid="input-gemini-api-key"
+                    {...geminiForm.register("apiKey")}
+                  />
+                  {geminiForm.formState.errors.apiKey && (
+                    <p className="text-sm text-destructive mt-1">
+                      {geminiForm.formState.errors.apiKey.message}
+                    </p>
+                  )}
+                </div>
+                
+                <div className="md:col-span-2">
+                  <Label htmlFor="gemini-model">Model Seçimi</Label>
+                  <Select
+                    value={geminiForm.watch("selectedModel") || ""}
+                    onValueChange={(value) => geminiForm.setValue("selectedModel", value)}
+                    disabled={availableModels.length === 0}
+                  >
+                    <SelectTrigger data-testid="select-gemini-model">
+                      <SelectValue placeholder={
+                        availableModels.length === 0 
+                          ? "Önce API anahtarını test edin" 
+                          : "Model seçin"
+                      } />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableModels.map((model) => (
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {geminiForm.formState.errors.selectedModel && (
+                    <p className="text-sm text-destructive mt-1">
+                      {geminiForm.formState.errors.selectedModel.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  id="gemini-active" 
+                  data-testid="switch-gemini-active"
+                  checked={geminiForm.watch("isActive") || false}
+                  onCheckedChange={(checked) => geminiForm.setValue("isActive", checked)}
+                />
+                <Label htmlFor="gemini-active">Bu ayarı aktif yap</Label>
+              </div>
+              
+              <div className="flex space-x-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleTestApiKey}
+                  disabled={isTestingApiKey || testApiKeyMutation.isPending}
+                  data-testid="button-test-gemini-api"
+                >
+                  <Key className="mr-2 h-4 w-4" />
+                  {isTestingApiKey ? "Test Ediliyor..." : "API Anahtarını Test Et"}
+                </Button>
+                
+                <Button
+                  type="submit"
+                  disabled={createGeminiSettingMutation.isPending || availableModels.length === 0}
+                  data-testid="button-save-gemini-settings"
+                >
+                  <Brain className="mr-2 h-4 w-4" />
+                  {createGeminiSettingMutation.isPending ? "Kaydediliyor..." : "Ayarları Kaydet"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Existing Gemini Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Mevcut Gemini AI Ayarları</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Kayıtlı Gemini AI ayarlarınızı yönetin
+            </p>
+          </CardHeader>
+          <CardContent>
+            {geminiSettings.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Henüz Gemini AI ayarı eklenmemiş
+              </p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Ayar Adı</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Durum</TableHead>
+                    <TableHead>İşlemler</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {geminiSettings.map((setting) => (
+                    <TableRow key={setting.id} data-testid={`gemini-setting-${setting.id}`}>
+                      <TableCell>
+                        <div className="font-medium">{setting.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          API: ****{setting.apiKey.slice(-4)}
+                        </div>
+                      </TableCell>
+                      <TableCell>{setting.selectedModel}</TableCell>
+                      <TableCell>
+                        {setting.isActive ? (
+                          <Badge className="bg-green-600 text-white">
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                            Aktif
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">Pasif</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          {!setting.isActive && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-green-600 hover:text-green-800"
+                              onClick={() => handleSetActiveGemini(setting.id)}
+                              disabled={setActiveGeminiMutation.isPending}
+                              data-testid={`button-activate-gemini-${setting.id}`}
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
 
