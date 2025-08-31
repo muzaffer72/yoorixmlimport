@@ -789,7 +789,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   externalLink: "",
                   isRefundable: false, // Excel: "0"  
                   cashOnDelivery: false, // Excel: "0"
-                  shortDescription: descValue ? descValue.replace(/<[^>]*>/g, '').substring(0, 1000) : nameValue || "Kısa açıklama mevcut değil",
+                  shortDescription: descValue ? descValue.replace(/<[^>]*>/g, '').substring(0, 200) : nameValue || "Kısa açıklama mevcut değil",
                   description: descValue || (obj['_'] && typeof obj['_'] === 'string') ? obj['_'] : `${nameValue} hakkında detaylı bilgi için iletişime geçiniz.`,
                   metaTitle: (nameValue || "Demo Product") + " - Meta Title",
                   metaDescription: "Demo meta description for " + (nameValue || "product"),
