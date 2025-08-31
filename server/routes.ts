@@ -369,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Debug: Show what we found at each step (only for first few items)
           if (processedItems <= 3) {
-            console.log(`Item ${processedItems}: Looking for path [${fields.join('.')}], found path [${pathTrace.join('.')}], foundPath: ${foundPath}, value type: ${typeof value}, value:`, typeof value === 'string' ? value.substring(0, 50) : Array.isArray(value) ? `Array[${value.length}]` : value);
+            console.log(`Item ${processedItems}: Looking for path [${fields.join('.')}], found path [${pathTrace.join('.')}], foundPath: ${foundPath}, value type: ${typeof value}, value:`, typeof value === 'string' && value ? value.substring(0, 50) : Array.isArray(value) ? `Array[${value.length}]` : value);
           }
           
           // Handle direct path (non-array case)
