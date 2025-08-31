@@ -1,15 +1,15 @@
 import { sql } from "drizzle-orm";
-import { mysqlTable, text, varchar, int, decimal, timestamp, boolean, json } from "drizzle-orm/mysql-core";
+import { pgTable, text, varchar, integer, decimal, timestamp, boolean, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const xmlSources = mysqlTable("xml_sources", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+export const xmlSources = pgTable("xml_sources", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   url: text("url").notNull(),
   status: varchar("status", { length: 50 }).notNull().default("active"), // active, inactive, error
   lastFetch: timestamp("last_fetch"),
-  productCount: int("product_count").default(0),
+  productCount: integer("product_count").default(0),
   fieldMapping: json("field_mapping"), // JSON object for field mappings (product fields)
   categoryTag: text("category_tag"), // XML tag name that contains category info
   useDefaultCategory: boolean("use_default_category").default(false),
@@ -19,8 +19,8 @@ export const xmlSources = mysqlTable("xml_sources", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const activityLogs = mysqlTable("activity_logs", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+export const activityLogs = pgTable("activity_logs", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   type: varchar("type", { length: 50 }).notNull(), // product_added, stock_updated, price_updated, xml_synced
   title: text("title").notNull(),
   description: text("description"),
@@ -31,8 +31,8 @@ export const activityLogs = mysqlTable("activity_logs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const cronjobs = mysqlTable("cronjobs", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+export const cronjobs = pgTable("cronjobs", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   xmlSourceId: varchar("xml_source_id", { length: 36 }).notNull(),
   frequency: varchar("frequency", { length: 50 }).notNull(), // hourly, daily, weekly, custom
@@ -41,21 +41,21 @@ export const cronjobs = mysqlTable("cronjobs", {
   lastRun: timestamp("last_run"),
   nextRun: timestamp("next_run"),
   lastRunStatus: varchar("last_run_status", { length: 50 }), // success, failed, running
-  runCount: int("run_count").default(0),
-  failureCount: int("failure_count").default(0),
+  runCount: integer("run_count").default(0),
+  failureCount: integer("failure_count").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const products = mysqlTable("products", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+export const products = pgTable("products", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   categoryId: varchar("category_id", { length: 36 }),
   brandId: varchar("brand_id", { length: 36 }),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   unit: text("unit").notNull(),
-  currentStock: int("current_stock").notNull(),
-  minimumOrderQuantity: int("minimum_order_quantity").notNull(),
+  currentStock: integer("current_stock").notNull(),
+  minimumOrderQuantity: integer("minimum_order_quantity").notNull(),
   slug: text("slug"),
   barcode: text("barcode"),
   sku: text("sku"),
@@ -77,32 +77,32 @@ export const products = mysqlTable("products", {
 });
 
 // Mevcut sistem - String ID'li categories
-export const categories = mysqlTable("categories", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+export const categories = pgTable("categories", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   parentId: varchar("parent_id", { length: 36 }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const brands = mysqlTable("brands", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+export const brands = pgTable("brands", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const categoryMappings = mysqlTable("category_mappings", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+export const categoryMappings = pgTable("category_mappings", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   xmlSourceId: varchar("xml_source_id", { length: 36 }).notNull(),
   xmlCategoryName: text("xml_category_name").notNull(),
   localCategoryId: varchar("local_category_id", { length: 36 }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const databaseSettings = mysqlTable("database_settings", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+export const databaseSettings = pgTable("database_settings", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   host: text("host").notNull(),
-  port: int("port").notNull().default(3306),
+  port: integer("port").notNull().default(3306),
   database: text("database").notNull(),
   username: text("username").notNull(),
   password: text("password").notNull(),
@@ -111,8 +111,8 @@ export const databaseSettings = mysqlTable("database_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const geminiSettings = mysqlTable("gemini_settings", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+export const geminiSettings = pgTable("gemini_settings", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   apiKey: text("api_key").notNull(),
   selectedModel: text("selected_model").notNull(),
   isActive: boolean("is_active").default(true),
@@ -166,7 +166,6 @@ export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 
 export type Category = typeof categories.$inferSelect;
-export type CategoryLanguage = typeof categoryLanguages.$inferSelect;
 export type Brand = typeof brands.$inferSelect;
 
 export type CategoryMapping = typeof categoryMappings.$inferSelect;
@@ -193,8 +192,8 @@ export type Cronjob = typeof cronjobs.$inferSelect;
 export type InsertCronjob = z.infer<typeof insertCronjobSchema>;
 
 // Keep original user schema for compatibility
-export const users = mysqlTable("users", {
-  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+export const users = pgTable("users", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull(),
   password: text("password").notNull(),
 });
