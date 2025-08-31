@@ -109,55 +109,39 @@ export default function CategoryMapping() {
     }
   };
 
-  const extractCategoriesFromXml = async () => {
+  const loadStoredCategories = () => {
     if (!selectedXmlSource) {
       toast({
         title: "Hata",
-        description: "Önce bir XML kaynağı seçin",
+        description: "Önce XML kaynağı seçin",
         variant: "destructive",
       });
       return;
     }
 
     const xmlSource = xmlSources.find(source => source.id === selectedXmlSource);
-    if (!xmlSource || !xmlSource.url) {
+    if (!xmlSource) {
       toast({
         title: "Hata",
-        description: "XML kaynağı URL'si bulunamadı",
+        description: "XML kaynağı bulunamadı",
         variant: "destructive",
       });
       return;
     }
 
-    // Assume category field is set in field mapping as 'category'
-    const categoryField = xmlSource.fieldMapping?.['category'] || 'category';
-    
-    setExtractingCategories(true);
-    try {
-      const response = await apiRequest("POST", "/api/xml-sources/extract-categories", {
-        url: xmlSource.url,
-        categoryField
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setXmlCategories(data.categories);
-        toast({
-          title: "Başarılı",
-          description: `${data.count} kategori bulundu`,
-        });
-      } else {
-        throw new Error(data.message);
-      }
-    } catch (error: any) {
+    // Use stored categories if available
+    if (xmlSource.extractedCategories && Array.isArray(xmlSource.extractedCategories)) {
+      setXmlCategories(xmlSource.extractedCategories);
       toast({
-        title: "Hata",
-        description: error.message || "Kategoriler çekilirken hata oluştu",
+        title: "Başarılı",
+        description: `${xmlSource.extractedCategories.length} kategori yüklendi`,
+      });
+    } else {
+      toast({
+        title: "Uyarı",
+        description: "Bu XML kaynağında önceden çekilen kategori bulunamadı. XML eklerken kategorileri çektiğinizden emin olun.",
         variant: "destructive",
       });
-    } finally {
-      setExtractingCategories(false);
     }
   };
 
@@ -166,6 +150,11 @@ export default function CategoryMapping() {
     setXmlCategories([]);
     setXmlCategoryName("");
     setLocalCategoryId("");
+    
+    // Auto-load stored categories when XML source is selected
+    if (value) {
+      setTimeout(() => loadStoredCategories(), 100);
+    }
   };
 
   return (
@@ -208,17 +197,13 @@ export default function CategoryMapping() {
                 
                 <div className="flex items-end">
                   <Button 
-                    onClick={extractCategoriesFromXml}
-                    disabled={!selectedXmlSource || extractingCategories}
-                    data-testid="button-extract-categories"
+                    onClick={loadStoredCategories}
+                    disabled={!selectedXmlSource}
+                    data-testid="button-load-categories"
                     variant="outline"
                   >
-                    {extractingCategories ? (
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Download className="mr-2 h-4 w-4" />
-                    )}
-                    {extractingCategories ? "Çekiliyor..." : "XML'den Kategorileri Çek"}
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Kategorileri Yükle
                   </Button>
                 </div>
               </div>

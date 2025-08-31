@@ -14,6 +14,7 @@ export const xmlSources = pgTable("xml_sources", {
   categoryTag: text("category_tag"), // XML tag name that contains category info
   useDefaultCategory: boolean("use_default_category").default(false),
   defaultCategoryId: varchar("default_category_id"),
+  extractedCategories: jsonb("extracted_categories"), // Store extracted XML categories
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

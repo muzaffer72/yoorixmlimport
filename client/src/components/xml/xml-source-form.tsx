@@ -117,6 +117,7 @@ export default function XmlSourceForm() {
     const submitData = {
       ...data,
       fieldMapping: Object.keys(fieldMapping).length > 0 ? fieldMapping : undefined,
+      extractedCategories: xmlCategories.length > 0 ? xmlCategories : undefined,
     };
     createXmlSourceMutation.mutate(submitData);
   };
