@@ -739,30 +739,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   targetCategoryId
                 });
                 
-                // Excel örneğindeki gibi varsayılan değerler + gerekli alanlar
+                // Excel örneğinizdeki TAM veri yapısı
                 const productData = {
-                  name: nameValue || "Ürün Adı Belirtilmemiş",
-                  price: parseFloat(priceValue as string) || 1.00, // Min 1 TL
-                  description: descValue || nameValue || "Ürün açıklaması mevcut değil",
-                  sku: skuValue || `AUTO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                  barcode: barcodeValue || "",
-                  currentStock: parseInt(stockValue as string) || 1, // Min 1 adet
-                  unit: unitValue || "Adet",
-                  categoryId: targetCategoryId,
-                  xmlSourceId: xmlSourceId,
+                  name: nameValue || "Demo Product",
+                  categoryId: targetCategoryId, // XML'den gelen kategori
+                  brandId: 1, // Excel örneğindeki varsayılan brand_id
+                  price: parseFloat(priceValue as string) || 55.00,
+                  unit: unitValue || "pc",
+                  barcode: barcodeValue || `YR-${Date.now()}`,
+                  sku: skuValue || `DEM-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+                  tags: "xml,import,auto", // Excel örneğindeki format
+                  slug: (nameValue || "demo-product").toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
+                  currentStock: parseInt(stockValue as string) || 100,
                   minimumOrderQuantity: 1,
+                  videoProvider: "youtube", // Excel örneğindeki varsayılan
+                  videoUrl: "https://www.youtube.com/c/SpaGreenCreative",
+                  isCatalog: false, // Excel: "0"
+                  externalLink: "",
+                  isRefundable: false, // Excel: "0"  
+                  cashOnDelivery: false, // Excel: "0"
+                  shortDescription: descValue || nameValue || "Demo Product short description",
+                  description: descValue || nameValue || "Demo product long description",
+                  metaTitle: (nameValue || "Demo Product") + " - Meta Title",
+                  metaDescription: "Demo meta description for " + (nameValue || "product"),
+                  // Sistem alanları
+                  xmlSourceId: xmlSourceId,
                   thumbnail: thumbnailUrl && typeof thumbnailUrl === 'string' && thumbnailUrl.trim() ? thumbnailUrl.trim() : null,
                   images: imageUrls.length > 0 ? imageUrls : null,
-                  // Excel örneğindeki zorunlu alanlar
-                  brandId: null,
-                  slug: null,
-                  tags: null,
-                  isApproved: true,
-                  isCatalog: false,
-                  externalLink: null,
-                  isRefundable: true,
-                  cashOnDelivery: true,
-                  shortDescription: descValue || nameValue || ""
+                  isApproved: true
                 };
                 
                 console.log(`🔍 ÜRÜN VERİSİ HAZIRLANDI:`, productData);
