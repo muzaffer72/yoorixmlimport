@@ -804,7 +804,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Kategori eşleştirme bilgilerini kontrol et
-      const categoryMappings = await pageStorage.getCategoryMappings();
       console.log(`📋 Toplam kategori eşleştirmesi: ${categoryMappings.length}`);
       
       if (categoryMappings.length > 0) {
