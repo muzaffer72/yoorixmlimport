@@ -549,6 +549,17 @@
       "createdAt": "2025-08-31T18:06:23.662Z",
       "oldValue": null,
       "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "enginithalat - 17 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
+      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "entityType": "xml_source",
+      "id": "d5285b5c-7cc0-4762-b5be-0f86bfabc2d1",
+      "createdAt": "2025-08-31T18:09:00.390Z",
+      "oldValue": null,
+      "newValue": null
     }
   ]
 }

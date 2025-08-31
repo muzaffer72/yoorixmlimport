@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Save, RotateCcw } from "lucide-react";
+import { Save, RotateCcw, Video } from "lucide-react";
 
 interface XmlMappingFormProps {
   xmlTags: string[];
@@ -28,11 +29,15 @@ const optionalFields = [
   { key: "barcode", label: "Barkod" },
   { key: "sku", label: "SKU" },
   { key: "tags", label: "Etiketler (tags)" },
-  { key: "video_provider", label: "Video Sağlayıcı" },
-  { key: "video_url", label: "Video URL" },
   { key: "short_description", label: "Kısa Açıklama (short_description)" },
   { key: "description", label: "Açıklama (description)" },
   { key: "external_link", label: "Harici Link" },
+];
+
+const videoProviders = [
+  { key: "mp4", label: "MP4 Dosya" },
+  { key: "youtube", label: "YouTube" },
+  { key: "vimeo", label: "Vimeo" },
 ];
 
 export default function XmlMappingForm({ 
@@ -42,6 +47,7 @@ export default function XmlMappingForm({
 }: XmlMappingFormProps) {
   const [mapping, setMapping] = useState<Record<string, string>>(initialMapping);
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
+  const [videoProvider, setVideoProvider] = useState<string>(initialMapping.video_provider || "mp4");
   const { toast } = useToast();
 
   const handleMappingChange = (field: string, value: string) => {
@@ -75,12 +81,16 @@ export default function XmlMappingForm({
       }
     });
 
+    // Video provider'ı manuel olarak ekle
+    finalMapping.video_provider = videoProvider;
+
     onSave(finalMapping);
   };
 
   const handleReset = () => {
     setMapping({});
     setCustomValues({});
+    setVideoProvider("mp4");
   };
 
   const renderFieldSelect = (field: { key: string; label: string; required?: boolean }) => (
@@ -141,6 +151,74 @@ export default function XmlMappingForm({
             <h4 className="text-md font-medium mb-4 text-muted-foreground">İsteğe Bağlı Alanlar</h4>
             <div className="space-y-4">
               {optionalFields.map(renderFieldSelect)}
+            </div>
+          </div>
+        </div>
+        
+        {/* Video Section */}
+        <div className="mt-8 p-4 border rounded-lg bg-blue-50/50 dark:bg-blue-900/10">
+          <div className="flex items-center gap-2 mb-4">
+            <Video className="h-5 w-5 text-blue-600" />
+            <h4 className="text-md font-medium text-blue-700 dark:text-blue-400">Video Alanı</h4>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Video Provider Selection */}
+            <div>
+              <Label className="text-sm font-medium">Video Sağlayıcı</Label>
+              <RadioGroup
+                value={videoProvider}
+                onValueChange={setVideoProvider}
+                className="mt-2"
+              >
+                {videoProviders.map((provider) => (
+                  <div key={provider.key} className="flex items-center space-x-2">
+                    <RadioGroupItem value={provider.key} id={provider.key} />
+                    <Label htmlFor={provider.key} className="text-sm cursor-pointer">
+                      {provider.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+              <p className="text-xs text-muted-foreground mt-2">
+                Seçilen sağlayıcı video_provider alanına kaydedilir
+              </p>
+            </div>
+            
+            {/* Video URL Tag Mapping */}
+            <div>
+              <Label>Video URL Etiket Eşleştirme</Label>
+              <Select
+                value={mapping["video_url"] || ""}
+                onValueChange={(value) => handleMappingChange("video_url", value)}
+              >
+                <SelectTrigger data-testid="select-video-url">
+                  <SelectValue placeholder="Video URL XML etiketini seçin (isteğe bağlı)..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">XML etiketini seçin (isteğe bağlı)...</SelectItem>
+                  {xmlTags.map((tag) => (
+                    <SelectItem key={tag} value={tag}>
+                      &lt;{tag}&gt;
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="custom">Manuel giriş</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {mapping["video_url"] === "custom" && (
+                <Input
+                  className="mt-2"
+                  placeholder="Manuel video URL girin..."
+                  value={customValues["video_url"] || ""}
+                  onChange={(e) => handleCustomValueChange("video_url", e.target.value)}
+                  data-testid="input-custom-video-url"
+                />
+              )}
+              
+              <p className="text-xs text-muted-foreground mt-2">
+                Video URL için XML etiketini seçin veya boş bırakın
+              </p>
             </div>
           </div>
         </div>
