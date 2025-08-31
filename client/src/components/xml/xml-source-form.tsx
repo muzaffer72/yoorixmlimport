@@ -185,7 +185,7 @@ export default function XmlSourceForm() {
   const handleFieldMappingChange = (productField: string, xmlTag: string) => {
     setFieldMapping(prev => ({
       ...prev,
-      [productField]: xmlTag
+      [productField]: xmlTag === "__empty__" ? "" : xmlTag
     }));
   };
 
@@ -414,7 +414,7 @@ export default function XmlSourceForm() {
                               <SelectValue placeholder={`${field.label} için XML etiketi seçin...`} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">-- Seçilmedi --</SelectItem>
+                              <SelectItem value="__empty__">-- Seçilmedi --</SelectItem>
                               {xmlTags.map((tag) => (
                                 <SelectItem key={tag} value={tag}>
                                   {tag}
