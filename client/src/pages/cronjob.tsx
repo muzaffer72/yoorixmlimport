@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -18,11 +19,14 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { XmlSource } from "@shared/schema";
+import { XmlSource, Cronjob, type InsertCronjob } from "@shared/schema";
 import { Clock, Play, Pause, Edit, Trash2, Plus, Download } from "lucide-react";
 
-export default function Cronjob() {
+export default function CronjobPage() {
   const [selectedXmlSource, setSelectedXmlSource] = useState<string>("");
+  const [selectedFrequency, setSelectedFrequency] = useState<string>("");
+  const [cronjobName, setCronjobName] = useState<string>("");
+  const [isActive, setIsActive] = useState(true);
   const [importProgress, setImportProgress] = useState(0);
   const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
@@ -30,6 +34,98 @@ export default function Cronjob() {
 
   const { data: xmlSources = [] } = useQuery<XmlSource[]>({
     queryKey: ["/api/xml-sources"],
+  });
+
+  const { data: cronjobs = [] } = useQuery<Cronjob[]>({
+    queryKey: ["/api/cronjobs"],
+  });
+
+  const createCronjobMutation = useMutation({
+    mutationFn: async (data: InsertCronjob) => {
+      const response = await apiRequest("POST", "/api/cronjobs", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Cronjob başarıyla oluşturuldu",
+      });
+      setCronjobName("");
+      setSelectedXmlSource("");
+      setSelectedFrequency("");
+      setIsActive(true);
+      queryClient.invalidateQueries({ queryKey: ["/api/cronjobs"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Cronjob oluşturulamadı",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteCronjobMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("DELETE", `/api/cronjobs/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Cronjob silindi",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/cronjobs"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Cronjob silinemedi",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const runCronjobMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("POST", `/api/cronjobs/${id}/run`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Cronjob manuel olarak çalıştırıldı",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/cronjobs"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Cronjob çalıştırılamadı",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleCronjobMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const response = await apiRequest("PUT", `/api/cronjobs/${id}`, { isActive });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Cronjob durumu güncellendi",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/cronjobs"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Cronjob durumu güncellenemedi",
+        variant: "destructive",
+      });
+    },
   });
 
   const importProductsMutation = useMutation({
@@ -75,6 +171,40 @@ export default function Cronjob() {
     },
   });
 
+  const handleCreateCronjob = () => {
+    if (!cronjobName || !selectedXmlSource || !selectedFrequency) {
+      toast({
+        title: "Hata",
+        description: "Lütfen tüm alanları doldurun",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createCronjobMutation.mutate({
+      name: cronjobName,
+      xmlSourceId: selectedXmlSource,
+      frequency: selectedFrequency,
+      isActive,
+    });
+  };
+
+  const handleDeleteCronjob = (id: string) => {
+    if (confirm("Bu cronjob'u silmek istediğinizden emin misiniz?")) {
+      deleteCronjobMutation.mutate(id);
+    }
+  };
+
+  const handleRunCronjob = (id: string) => {
+    if (confirm("Bu cronjob'u manuel olarak çalıştırmak istediğinizden emin misiniz?")) {
+      runCronjobMutation.mutate(id);
+    }
+  };
+
+  const handleToggleCronjob = (id: string, currentStatus: boolean) => {
+    toggleCronjobMutation.mutate({ id, isActive: !currentStatus });
+  };
+
   const handleImport = () => {
     if (!selectedXmlSource) {
       toast({
@@ -88,6 +218,15 @@ export default function Cronjob() {
     if (confirm("Bu işlem ürünleri XML'den alarak veritabanını güncelleyecek. Devam etmek istediğinizden emin misiniz?")) {
       importProductsMutation.mutate(selectedXmlSource);
     }
+  };
+
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleString("tr-TR");
+  };
+
+  const getWebhookUrl = (cronjobId: string) => {
+    return `${window.location.origin}/api/webhook/cronjob/${cronjobId}`;
   };
 
   return (
@@ -114,50 +253,74 @@ export default function Cronjob() {
               XML kaynaklarından otomatik ürün ithalatı için zamanlama ayarlayın
             </p>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label>XML Kaynağı</Label>
-                <Select>
-                  <SelectTrigger data-testid="select-xml-source-cronjob">
-                    <SelectValue placeholder="XML kaynağını seçin..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="source1">Tedarikçi 1 XML</SelectItem>
-                    <SelectItem value="source2">Tedarikçi 2 XML</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label>Çalışma Sıklığı</Label>
-                <Select>
-                  <SelectTrigger data-testid="select-frequency">
-                    <SelectValue placeholder="Sıklık seçin..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hourly">Saatlik</SelectItem>
-                    <SelectItem value="daily">Günlük</SelectItem>
-                    <SelectItem value="weekly">Haftalık</SelectItem>
-                    <SelectItem value="custom">Özel</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="md:col-span-2">
-                <div className="flex items-center space-x-2">
-                  <Switch id="active" data-testid="switch-cronjob-active" />
-                  <Label htmlFor="active">Cronjob'u aktif et</Label>
-                </div>
-              </div>
+          <CardContent className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="cronjob-name">Cronjob Adı</Label>
+              <Input
+                id="cronjob-name"
+                placeholder="Cronjob adı girin"
+                value={cronjobName}
+                onChange={(e) => setCronjobName(e.target.value)}
+                data-testid="input-cronjob-name"
+              />
             </div>
-            
-            <div className="mt-6">
-              <Button data-testid="button-create-cronjob">
-                <Clock className="mr-2 h-4 w-4" />
-                Cronjob Oluştur
-              </Button>
+
+            <div className="grid gap-2">
+              <Label htmlFor="xml-source">XML Kaynağı</Label>
+              <Select 
+                value={selectedXmlSource} 
+                onValueChange={setSelectedXmlSource}
+              >
+                <SelectTrigger data-testid="select-xml-source">
+                  <SelectValue placeholder="XML kaynağı seçin" />
+                </SelectTrigger>
+                <SelectContent>
+                  {xmlSources.map((source) => (
+                    <SelectItem key={source.id} value={source.id!}>
+                      {source.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="frequency">Sıklık</Label>
+              <Select 
+                value={selectedFrequency}
+                onValueChange={setSelectedFrequency}
+              >
+                <SelectTrigger data-testid="select-frequency">
+                  <SelectValue placeholder="Sıklık seçin" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hourly">Saatlik</SelectItem>
+                  <SelectItem value="daily">Günlük</SelectItem>
+                  <SelectItem value="weekly">Haftalık</SelectItem>
+                  <SelectItem value="monthly">Aylık</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="active" 
+                checked={isActive}
+                onCheckedChange={setIsActive}
+                data-testid="switch-active"
+              />
+              <Label htmlFor="active">Aktif</Label>
+            </div>
+
+            <Button 
+              onClick={handleCreateCronjob} 
+              className="w-full"
+              disabled={createCronjobMutation.isPending}
+              data-testid="button-create-cronjob"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {createCronjobMutation.isPending ? "Oluşturuluyor..." : "Cronjob Oluştur"}
+            </Button>
           </CardContent>
         </Card>
 
@@ -182,107 +345,98 @@ export default function Cronjob() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow data-testid="cronjob-example-1">
-                  <TableCell>
-                    <div className="font-medium">Tedarikçi 1 XML</div>
-                    <div className="text-sm text-muted-foreground">supplier1.example.com</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">Günlük</Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    29.08.2025 14:00
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    30.08.2025 14:00
-                  </TableCell>
-                  <TableCell>
-                    <Badge className="bg-green-600 text-white">Aktif</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-blue-600 hover:text-blue-800"
-                        data-testid="button-edit-cronjob-1"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-orange-600 hover:text-orange-800"
-                        data-testid="button-pause-cronjob-1"
-                      >
-                        <Pause className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-green-600 hover:text-green-800"
-                        data-testid="button-run-cronjob-1"
-                      >
-                        <Play className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-red-600 hover:text-red-800"
-                        data-testid="button-delete-cronjob-1"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-                
-                <TableRow data-testid="cronjob-example-2">
-                  <TableCell>
-                    <div className="font-medium">Tedarikçi 2 XML</div>
-                    <div className="text-sm text-muted-foreground">supplier2.example.com</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">Haftalık</Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    28.08.2025 10:00
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    04.09.2025 10:00
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">Pasif</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-blue-600 hover:text-blue-800"
-                        data-testid="button-edit-cronjob-2"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-green-600 hover:text-green-800"
-                        data-testid="button-start-cronjob-2"
-                      >
-                        <Play className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-red-600 hover:text-red-800"
-                        data-testid="button-delete-cronjob-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                {cronjobs.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      Henüz cronjob oluşturulmamış
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  cronjobs.map((cronjob) => {
+                    const xmlSource = xmlSources.find(source => source.id === cronjob.xmlSourceId);
+                    return (
+                      <TableRow key={cronjob.id} data-testid={`cronjob-${cronjob.id}`}>
+                        <TableCell>
+                          <div className="font-medium">{cronjob.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {xmlSource?.name || 'Bilinmeyen XML'}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Webhook URL: 
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-auto p-0 ml-1 text-xs"
+                              onClick={() => {
+                                navigator.clipboard.writeText(getWebhookUrl(cronjob.id!));
+                                toast({
+                                  title: "Kopyalandı",
+                                  description: "Webhook URL panoya kopyalandı",
+                                });
+                              }}
+                              data-testid={`button-copy-webhook-${cronjob.id}`}
+                            >
+                              <Download className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {cronjob.frequency === 'hourly' && 'Saatlik'}
+                            {cronjob.frequency === 'daily' && 'Günlük'}
+                            {cronjob.frequency === 'weekly' && 'Haftalık'}
+                            {cronjob.frequency === 'monthly' && 'Aylık'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {formatDate(cronjob.lastRun)}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {formatDate(cronjob.nextRun)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={cronjob.isActive ? "bg-green-600 text-white" : "bg-gray-500 text-white"}>
+                            {cronjob.isActive ? 'Aktif' : 'Pasif'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className={cronjob.isActive ? "text-orange-600 hover:text-orange-800" : "text-green-600 hover:text-green-800"}
+                              onClick={() => handleToggleCronjob(cronjob.id!, cronjob.isActive)}
+                              disabled={toggleCronjobMutation.isPending}
+                              data-testid={`button-toggle-cronjob-${cronjob.id}`}
+                            >
+                              {cronjob.isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-green-600 hover:text-green-800"
+                              onClick={() => handleRunCronjob(cronjob.id!)}
+                              disabled={runCronjobMutation.isPending}
+                              data-testid={`button-run-cronjob-${cronjob.id}`}
+                            >
+                              <Play className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-600 hover:text-red-800"
+                              onClick={() => handleDeleteCronjob(cronjob.id!)}
+                              disabled={deleteCronjobMutation.isPending}
+                              data-testid={`button-delete-cronjob-${cronjob.id}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </TableBody>
             </Table>
           </CardContent>

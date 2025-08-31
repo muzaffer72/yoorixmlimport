@@ -924,6 +924,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Cronjob endpoints
+  app.get("/api/cronjobs", async (req, res) => {
+    try {
+      const cronjobs = await storage.getCronjobs();
+      res.json(cronjobs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch cronjobs" });
+    }
+  });
+
+  app.post("/api/cronjobs", async (req, res) => {
+    try {
+      const cronjob = await storage.createCronjob(req.body);
+      res.status(201).json(cronjob);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create cronjob" });
+    }
+  });
+
+  app.put("/api/cronjobs/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const cronjob = await storage.updateCronjob(id, req.body);
+      res.json(cronjob);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update cronjob" });
+    }
+  });
+
+  app.delete("/api/cronjobs/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteCronjob(id);
+      if (success) {
+        res.json({ message: "Cronjob deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Cronjob not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete cronjob" });
+    }
+  });
+
+  // Manual cronjob execution (URL endpoint for triggering)
+  app.post("/api/cronjobs/:id/run", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.runCronjob(id);
+      
+      if (success) {
+        res.json({ 
+          message: "Cronjob executed successfully",
+          status: "completed"
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Cronjob execution failed",
+          status: "failed"
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: error.message || "Failed to run cronjob",
+        status: "error"
+      });
+    }
+  });
+
+  // Public webhook endpoint for external cron services (URL for triggering cronjobs)
+  app.post("/api/webhook/cronjob/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.runCronjob(id);
+      
+      if (success) {
+        res.json({ 
+          message: "Cronjob triggered successfully",
+          status: "completed",
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Cronjob execution failed",
+          status: "failed",
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: error.message || "Failed to trigger cronjob",
+        status: "error",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

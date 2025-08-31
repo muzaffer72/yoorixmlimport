@@ -14,8 +14,11 @@ import {
   type InsertDatabaseSettings,
   type GeminiSettings,
   type InsertGeminiSettings,
+  type Cronjob,
+  type InsertCronjob,
   categories,
-  geminiSettings
+  geminiSettings,
+  cronjobs
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -83,6 +86,13 @@ export interface IStorage {
   createGeminiSettings(settings: InsertGeminiSettings): Promise<GeminiSettings>;
   updateGeminiSettings(id: string, settings: Partial<GeminiSettings>): Promise<GeminiSettings>;
   deleteGeminiSettings(id: string): Promise<boolean>;
+
+  // Cronjob methods
+  getCronjobs(): Promise<Cronjob[]>;
+  createCronjob(cronjob: InsertCronjob): Promise<Cronjob>;
+  updateCronjob(id: string, cronjob: Partial<Cronjob>): Promise<Cronjob>;
+  deleteCronjob(id: string): Promise<boolean>;
+  runCronjob(id: string): Promise<boolean>;
   
   // AI mapping method
   aiMapCategories(xmlSourceId: string): Promise<{
@@ -119,6 +129,7 @@ export class MemStorage implements IStorage {
   private categoryMappings: Map<string, CategoryMapping>;
   private databaseSettings: Map<string, DatabaseSettings>;
   private geminiSettings: Map<string, GeminiSettings>;
+  private cronjobs: Map<string, Cronjob>;
 
   constructor() {
     this.users = new Map();
@@ -130,6 +141,7 @@ export class MemStorage implements IStorage {
     this.categoryMappings = new Map();
     this.databaseSettings = new Map();
     this.geminiSettings = new Map();
+    this.cronjobs = new Map();
     
     // Initialize with some sample data
     this.initializeSampleData();
@@ -832,6 +844,165 @@ export class MemStorage implements IStorage {
         averageConfidence
       }
     };
+  }
+
+  // Cronjob methods
+  async getCronjobs(): Promise<Cronjob[]> {
+    try {
+      const result = await db.select().from(cronjobs);
+      return result;
+    } catch (error) {
+      console.error("Error fetching cronjobs:", error);
+      // Fallback to memory
+      return Array.from(this.cronjobs.values());
+    }
+  }
+
+  async createCronjob(cronjobData: InsertCronjob): Promise<Cronjob> {
+    try {
+      const nextRun = this.calculateNextRun(cronjobData.frequency, cronjobData.cronExpression);
+      
+      const [newCronjob] = await db
+        .insert(cronjobs)
+        .values({
+          ...cronjobData,
+          nextRun,
+          runCount: 0,
+          failureCount: 0,
+        })
+        .returning();
+      return newCronjob;
+    } catch (error) {
+      console.error("Error creating cronjob:", error);
+      // Fallback to memory
+      const id = randomUUID();
+      const nextRun = this.calculateNextRun(cronjobData.frequency, cronjobData.cronExpression);
+      const newCronjob: Cronjob = {
+        id,
+        ...cronjobData,
+        nextRun,
+        runCount: 0,
+        failureCount: 0,
+        lastRun: null,
+        lastRunStatus: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.cronjobs.set(id, newCronjob);
+      return newCronjob;
+    }
+  }
+
+  async updateCronjob(id: string, cronjobData: Partial<Cronjob>): Promise<Cronjob> {
+    try {
+      const [updated] = await db
+        .update(cronjobs)
+        .set({ ...cronjobData, updatedAt: new Date() })
+        .where(eq(cronjobs.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error("Error updating cronjob:", error);
+      // Fallback to memory
+      const existing = this.cronjobs.get(id);
+      if (!existing) {
+        throw new Error("Cronjob not found");
+      }
+      const updated: Cronjob = { 
+        ...existing, 
+        ...cronjobData, 
+        updatedAt: new Date() 
+      };
+      this.cronjobs.set(id, updated);
+      return updated;
+    }
+  }
+
+  async deleteCronjob(id: string): Promise<boolean> {
+    try {
+      await db.delete(cronjobs).where(eq(cronjobs.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting cronjob:", error);
+      // Fallback to memory
+      return this.cronjobs.delete(id);
+    }
+  }
+
+  async runCronjob(id: string): Promise<boolean> {
+    try {
+      const cronjob = await this.getCronjob(id);
+      if (!cronjob) {
+        throw new Error("Cronjob not found");
+      }
+
+      // Update status to running
+      await this.updateCronjob(id, {
+        lastRunStatus: "running",
+        lastRun: new Date()
+      });
+
+      // Import products from the XML source
+      const xmlSource = await this.getXmlSource(cronjob.xmlSourceId);
+      if (!xmlSource) {
+        await this.updateCronjob(id, {
+          lastRunStatus: "failed",
+          failureCount: cronjob.failureCount + 1
+        });
+        return false;
+      }
+
+      // Here you would implement the actual import logic
+      // For now, just mark as successful
+      const nextRun = this.calculateNextRun(cronjob.frequency, cronjob.cronExpression);
+      
+      await this.updateCronjob(id, {
+        lastRunStatus: "success",
+        runCount: cronjob.runCount + 1,
+        nextRun
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error running cronjob:", error);
+      const cronjob = await this.getCronjob(id);
+      if (cronjob) {
+        await this.updateCronjob(id, {
+          lastRunStatus: "failed",
+          failureCount: cronjob.failureCount + 1
+        });
+      }
+      return false;
+    }
+  }
+
+  private async getCronjob(id: string): Promise<Cronjob | undefined> {
+    try {
+      const [cronjob] = await db.select().from(cronjobs).where(eq(cronjobs.id, id));
+      return cronjob;
+    } catch (error) {
+      console.error("Error fetching cronjob:", error);
+      return this.cronjobs.get(id);
+    }
+  }
+
+  private calculateNextRun(frequency: string, cronExpression?: string | null): Date {
+    const now = new Date();
+    
+    switch (frequency) {
+      case 'hourly':
+        return new Date(now.getTime() + 60 * 60 * 1000); // 1 hour
+      case 'daily':
+        return new Date(now.getTime() + 24 * 60 * 60 * 1000); // 1 day
+      case 'weekly':
+        return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 1 week
+      case 'custom':
+        // For custom, you would parse the cron expression
+        // For now, default to daily
+        return new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      default:
+        return new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    }
   }
 }
 

@@ -31,6 +31,22 @@ export const activityLogs = pgTable("activity_logs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const cronjobs = pgTable("cronjobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  xmlSourceId: varchar("xml_source_id").notNull(),
+  frequency: varchar("frequency").notNull(), // hourly, daily, weekly, custom
+  cronExpression: text("cron_expression"), // For custom frequencies
+  isActive: boolean("is_active").default(true),
+  lastRun: timestamp("last_run"),
+  nextRun: timestamp("next_run"),
+  lastRunStatus: varchar("last_run_status"), // success, failed, running
+  runCount: integer("run_count").default(0),
+  failureCount: integer("failure_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const products = pgTable("products", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -161,6 +177,20 @@ export type InsertDatabaseSettings = z.infer<typeof insertDatabaseSettingsSchema
 
 export type GeminiSettings = typeof geminiSettings.$inferSelect;
 export type InsertGeminiSettings = z.infer<typeof insertGeminiSettingsSchema>;
+
+export const insertCronjobSchema = createInsertSchema(cronjobs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  runCount: true,
+  failureCount: true,
+  lastRun: true,
+  nextRun: true,
+  lastRunStatus: true,
+});
+
+export type Cronjob = typeof cronjobs.$inferSelect;
+export type InsertCronjob = z.infer<typeof insertCronjobSchema>;
 
 // Keep original user schema for compatibility
 export const users = pgTable("users", {
