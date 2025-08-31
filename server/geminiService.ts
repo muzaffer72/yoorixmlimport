@@ -21,44 +21,82 @@ export class GeminiService {
     try {
       const testClient = new GoogleGenAI({ apiKey });
       
-      // Test için basit bir model listesi döndürüyoruz
-      // Gerçek API'den model listesi almak için daha karmaşık bir yapı gerekiyor
-      const availableModels: GeminiModel[] = [
-        {
-          name: "gemini-2.0-flash-exp",
-          displayName: "Gemini 2.0 Flash (Experimental)",
-          description: "En yeni ve hızlı model",
-          supportedGenerationMethods: ["generateContent"]
-        },
-        {
-          name: "gemini-1.5-pro",
-          displayName: "Gemini 1.5 Pro",
-          description: "Gelişmiş analiz için optimize edilmiş",
-          supportedGenerationMethods: ["generateContent"]
-        },
-        {
-          name: "gemini-1.5-flash",
-          displayName: "Gemini 1.5 Flash",
-          description: "Hızlı ve verimli model",
-          supportedGenerationMethods: ["generateContent"]
-        },
-        {
-          name: "gemini-1.0-pro",
-          displayName: "Gemini 1.0 Pro",
-          description: "Stabil ve güvenilir model",
-          supportedGenerationMethods: ["generateContent"]
+      // Gerçek API'den model listesini al
+      let availableModels: GeminiModel[] = [];
+      
+      try {
+        // API'den model listesini getir
+        const modelList = await testClient.models.list();
+        
+        if (modelList && Array.isArray(modelList)) {
+          availableModels = modelList.map((model: any) => ({
+            name: model.name || model,
+            displayName: model.displayName || model.name || model,
+            description: model.description || "",
+            supportedGenerationMethods: model.supportedGenerationMethods || ["generateContent"]
+          }));
         }
-      ];
+      } catch (listError: any) {
+        console.log("Model listesi alınamadı, varsayılan modeller kullanılıyor:", listError.message);
+      }
+
+      // Eğer API'den model listesi alınamadıysa, varsayılan modelleri kullan
+      if (availableModels.length === 0) {
+        availableModels = [
+          {
+            name: "gemini-2.0-flash-exp",
+            displayName: "Gemini 2.0 Flash (Experimental)",
+            description: "En yeni ve hızlı model",
+            supportedGenerationMethods: ["generateContent"]
+          },
+          {
+            name: "gemini-1.5-pro",
+            displayName: "Gemini 1.5 Pro", 
+            description: "Gelişmiş analiz için optimize edilmiş",
+            supportedGenerationMethods: ["generateContent"]
+          },
+          {
+            name: "gemini-1.5-flash",
+            displayName: "Gemini 1.5 Flash",
+            description: "Hızlı ve verimli model",
+            supportedGenerationMethods: ["generateContent"]
+          },
+          {
+            name: "gemini-1.5-flash-8b",
+            displayName: "Gemini 1.5 Flash 8B",
+            description: "Küçük ve hızlı model",
+            supportedGenerationMethods: ["generateContent"]
+          },
+          {
+            name: "gemini-1.0-pro",
+            displayName: "Gemini 1.0 Pro",
+            description: "Stabil ve güvenilir model",
+            supportedGenerationMethods: ["generateContent"]
+          },
+          {
+            name: "gemini-pro",
+            displayName: "Gemini Pro",
+            description: "Genel amaçlı model",
+            supportedGenerationMethods: ["generateContent"]
+          },
+          {
+            name: "gemini-pro-vision",
+            displayName: "Gemini Pro Vision",
+            description: "Görsel analiz destekli model",
+            supportedGenerationMethods: ["generateContent"]
+          }
+        ];
+      }
 
       // API anahtarını test etmek için basit bir çağrı yapalım
       try {
         await testClient.models.generateContent({
-          model: "gemini-1.5-flash",
+          model: availableModels[0]?.name || "gemini-1.5-flash",
           contents: "Test"
         });
       } catch (error: any) {
         // API anahtarı geçersizse hata fırlat
-        if (error.message?.includes("API_KEY_INVALID") || error.message?.includes("401")) {
+        if (error.message?.includes("API_KEY_INVALID") || error.message?.includes("401") || error.message?.includes("403")) {
           throw new Error("Geçersiz API anahtarı");
         }
         // Diğer hatalar için (rate limit vs.) modelleri yine de döndür
