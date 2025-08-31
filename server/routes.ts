@@ -745,6 +745,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         
         console.log(`🔍 XML traverse başlatılıyor...`);
+        console.log(`🔍 Field mapping ayarları:`, fieldMapping);
+        console.log(`🔍 Category tag:`, xmlSource.categoryTag);
+        console.log(`🔍 XML data keys:`, Object.keys(data));
+        
+        // Özel olarak Urunler kontrol et
+        if (data.Urunler) {
+          console.log(`🔍 Urunler bulundu, tipi:`, typeof data.Urunler, Array.isArray(data.Urunler) ? `Array(${data.Urunler.length})` : 'Object');
+          if (Array.isArray(data.Urunler) && data.Urunler.length > 0) {
+            console.log(`🔍 İlk Urun örneği:`, JSON.stringify(data.Urunler[0], null, 2).substring(0, 500));
+          }
+        }
+        
         traverse(data);
         console.log(`🔍 XML traverse tamamlandı. Toplam ürün: ${products.length}`);
         return products;
