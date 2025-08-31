@@ -118,6 +118,34 @@ export async function getLocalCategories(): Promise<Array<{id: number, categoryI
   }
 }
 
+// MySQL'deki products tablosunun yapısını kontrol et
+export async function checkProductTableStructure() {
+  if (!importConnection) {
+    throw new Error('Import database not connected');
+  }
+
+  try {
+    console.log('🔍 Checking products table structure...');
+    
+    // Products tablosunu kontrol et
+    const [tables] = await importConnection.execute('SHOW TABLES LIKE "products"');
+    console.log('Products table exists:', tables);
+    
+    if (tables && (tables as any[]).length > 0) {
+      // Tablo yapısını kontrol et
+      const [columns] = await importConnection.execute('DESCRIBE products');
+      console.log('Products table structure:', columns);
+      return columns;
+    } else {
+      console.log('⚠️ Products table does not exist');
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ Error checking products table:', error);
+    throw error;
+  }
+}
+
 // Ürünleri mevcut MySQL veritabanınıza import et
 export async function importProductToMySQL(product: {
   name: string;
@@ -126,6 +154,10 @@ export async function importProductToMySQL(product: {
   description?: string;
   sku?: string;
   stock: number;
+  barcode?: string;
+  unit?: string;
+  thumbnail?: string;
+  images?: string[];
   // Diğer gerekli alanlar
 }) {
   if (!importConnection) {
@@ -133,17 +165,29 @@ export async function importProductToMySQL(product: {
   }
 
   try {
+    console.log('📦 Importing product to MySQL:', product.name);
+    
+    // Önce products tablosunun yapısını kontrol edelim
     // Burada sizin mevcut ürün tablonuzun yapısına göre insert yapacağız
-    // Örnek (tablo yapınızı gönderin, ona göre düzenlerim):
+    // PHP örneğindeki gibi category_id kullanacağız
     const [result] = await importConnection.execute(
-      `INSERT INTO products (name, category_id, price, description, sku, stock, created_at) 
-       VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-      [product.name, product.categoryId, product.price, product.description, product.sku, product.stock]
+      `INSERT INTO products (name, category_id, price, description, sku, current_stock, barcode, created_at) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [
+        product.name, 
+        product.categoryId, 
+        product.price, 
+        product.description || '', 
+        product.sku || '', 
+        product.stock || 0, 
+        product.barcode || ''
+      ]
     );
     
+    console.log('✅ Product imported successfully, ID:', (result as any).insertId);
     return result;
   } catch (error) {
-    console.error('Error importing product to MySQL:', error);
+    console.error('❌ Error importing product to MySQL:', error);
     throw error;
   }
 }

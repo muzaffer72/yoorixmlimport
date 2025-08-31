@@ -6,7 +6,7 @@ import { z } from "zod";
 import * as xml2js from "xml2js";
 import { ObjectStorageService } from "./objectStorage";
 import { GeminiService } from "./geminiService";
-import { getLocalCategories, connectToImportDatabase, importProductToMySQL } from "./mysql-import";
+import { getLocalCategories, connectToImportDatabase, importProductToMySQL, checkProductTableStructure } from "./mysql-import";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -751,14 +751,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const extractedProducts = extractProducts(result);
       let processedCount = 0;
       
-      // Create products in storage
+      // Real MySQL product import
+      console.log(`📊 Found ${extractedProducts.length} products in XML, starting import...`);
+      
+      // Import için database bağlantısını kontrol et
+      const dbSettings = await pageStorage.getDatabaseSettings();
+      if (!dbSettings || !dbSettings.host) {
+        return res.status(400).json({ 
+          message: "MySQL database ayarları yapılandırılmamış. Lütfen settings sayfasından veritabanı ayarlarını yapın.",
+          error: "DATABASE_NOT_CONFIGURED"
+        });
+      }
+
+      await connectToImportDatabase({
+        host: dbSettings.host,
+        port: dbSettings.port,
+        database: dbSettings.database,
+        username: dbSettings.username,
+        password: dbSettings.password
+      });
+
+      // Products tablosunun yapısını kontrol et
+      const tableStructure = await checkProductTableStructure();
+      if (!tableStructure) {
+        return res.status(400).json({ 
+          message: "Products tablosu bulunamadı. Lütfen veritabanı yapısını kontrol edin.",
+          error: "PRODUCTS_TABLE_NOT_FOUND"
+        });
+      }
+
+      // Her ürünü MySQL'e kaydet
       for (const productData of extractedProducts) {
         try {
-          // Mock product creation
-          // await pageStorage.createProduct(productData);
+          await importProductToMySQL({
+            name: productData.name,
+            categoryId: productData.categoryId,
+            price: productData.price,
+            description: productData.description,
+            sku: productData.sku,
+            stock: productData.currentStock,
+            barcode: productData.barcode,
+            unit: productData.unit,
+            thumbnail: productData.thumbnail,
+            images: productData.images
+          });
           processedCount++;
         } catch (error) {
-          console.error("Failed to create product:", error);
+          console.error("Failed to import product to MySQL:", error);
+          // Hatalı ürünü atla, devam et
         }
       }
       
