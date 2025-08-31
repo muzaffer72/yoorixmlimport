@@ -99,14 +99,14 @@ export default function XmlMappingForm({
         {field.label} {field.required && "*"}
       </Label>
       <Select
-        value={mapping[field.key] || ""}
-        onValueChange={(value) => handleMappingChange(field.key, value)}
+        value={mapping[field.key] || "none"}
+        onValueChange={(value) => handleMappingChange(field.key, value === "none" ? "" : value)}
       >
         <SelectTrigger data-testid={`select-${field.key}`}>
           <SelectValue placeholder="XML etiketini seçin..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">XML etiketini seçin...</SelectItem>
+          <SelectItem value="none">XML etiketini seçin...</SelectItem>
           {xmlTags.map((tag) => (
             <SelectItem key={tag} value={tag}>
               &lt;{tag}&gt;
@@ -189,14 +189,14 @@ export default function XmlMappingForm({
             <div>
               <Label>Video URL Etiket Eşleştirme</Label>
               <Select
-                value={mapping["video_url"] || ""}
-                onValueChange={(value) => handleMappingChange("video_url", value)}
+                value={mapping["video_url"] || "none"}
+                onValueChange={(value) => handleMappingChange("video_url", value === "none" ? "" : value)}
               >
                 <SelectTrigger data-testid="select-video-url">
                   <SelectValue placeholder="Video URL XML etiketini seçin (isteğe bağlı)..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">XML etiketini seçin (isteğe bağlı)...</SelectItem>
+                  <SelectItem value="none">XML etiketini seçin (isteğe bağlı)...</SelectItem>
                   {xmlTags.map((tag) => (
                     <SelectItem key={tag} value={tag}>
                       &lt;{tag}&gt;
