@@ -14,12 +14,34 @@ export async function connectToImportDatabase(settings: {
 }) {
 
   try {
-    const connectionString = `mysql://${settings.username}:${settings.password}@${settings.host}:${settings.port}/${settings.database}`;
+    console.log(`=== MySQL Bağlantı Denemesi ===`);
+    console.log(`Host: ${settings.host}`);
+    console.log(`Port: ${settings.port}`);
+    console.log(`Database: ${settings.database}`);
+    console.log(`Username: ${settings.username}`);
+    console.log(`Password length: ${settings.password?.length || 0}`);
     
-    console.log(`Attempting MySQL connection to: ${settings.host}:${settings.port}/${settings.database} with user: ${settings.username}`);
+    // Önce basit bir bağlantı deneyimi yapalım
+    console.log('Attempting direct MySQL connection...');
     
-    // MySQL bağlantı ayarları
-    const connectionConfig = {
+    const simpleConnection = await mysql.createConnection({
+      host: settings.host,
+      port: settings.port,
+      user: settings.username,
+      password: settings.password,
+      database: settings.database,
+      connectTimeout: 10000,
+      ssl: false
+    });
+    
+    console.log('Direct connection successful, testing query...');
+    const [rows] = await simpleConnection.execute('SELECT 1 as test');
+    console.log('Query test successful:', rows);
+    await simpleConnection.end();
+    
+    // Şimdi pool oluşturalım
+    console.log('Creating connection pool...');
+    importConnection = mysql.createPool({
       host: settings.host,
       port: settings.port,
       user: settings.username,
@@ -30,29 +52,29 @@ export async function connectToImportDatabase(settings: {
       queueLimit: 0,
       acquireTimeout: 15000,
       timeout: 15000,
-      reconnect: false,
       ssl: false,
       connectTimeout: 10000
-    };
-
-    console.log('MySQL connection config:', {
-      ...connectionConfig,
-      password: '***'
     });
 
-    importConnection = mysql.createPool(connectionConfig);
-
-    // Test connection
+    // Pool test
     const testConnection = await importConnection.getConnection();
+    console.log('Pool connection obtained');
     await testConnection.ping();
+    console.log('Pool ping successful');
     testConnection.release();
 
     importDb = drizzle(importConnection);
     
-    console.log('MySQL import database connected successfully');
+    console.log('✅ MySQL import database connected successfully');
     return true;
   } catch (error) {
-    console.error('MySQL import database connection failed:', error);
+    console.error('❌ MySQL connection failed with detailed error:');
+    console.error('Error name:', error.name);
+    console.error('Error code:', error.code);
+    console.error('Error errno:', error.errno);
+    console.error('Error sqlState:', error.sqlState);
+    console.error('Error sqlMessage:', error.sqlMessage);
+    console.error('Full error:', error);
     throw error;
   }
 }
@@ -60,16 +82,38 @@ export async function connectToImportDatabase(settings: {
 // Mevcut categories_languages tablosundan kategorileri çek
 export async function getLocalCategories(): Promise<Array<{id: number, title: string}>> {
   if (!importConnection) {
+    console.error('❌ Import database connection is null');
     throw new Error('Import database not connected');
   }
 
   try {
+    console.log('🔍 Fetching categories from categories_languages table...');
+    
+    // Önce tabloyu kontrol edelim
+    const [tables] = await importConnection.execute('SHOW TABLES LIKE "categories_languages"');
+    console.log('Tables check result:', tables);
+    
+    if (!tables || (tables as any[]).length === 0) {
+      console.log('⚠️ categories_languages table does not exist');
+      throw new Error('categories_languages tablosu bulunamadı');
+    }
+    
+    // Tablo yapısını kontrol edelim
+    const [columns] = await importConnection.execute('DESCRIBE categories_languages');
+    console.log('Table structure:', columns);
+    
+    // Kategorileri çekelim
     const [rows] = await importConnection.execute(
-      'SELECT id, title FROM categories_languages WHERE title IS NOT NULL'
+      'SELECT id, title FROM categories_languages WHERE title IS NOT NULL AND title != ""'
     );
+    
+    console.log(`✅ Found ${(rows as any[]).length} categories in categories_languages table`);
+    console.log('Sample categories:', (rows as any[]).slice(0, 3));
+    
     return rows as Array<{id: number, title: string}>;
   } catch (error) {
-    console.error('Error fetching local categories:', error);
+    console.error('❌ Error fetching local categories:');
+    console.error('Error details:', error);
     throw error;
   }
 }
