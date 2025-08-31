@@ -589,16 +589,16 @@ export class PageStorage {
       console.error("Error fetching categories from database:", error);
       console.log("Replit environment detected, returning demo categories");
       
-      // Demo kategoriler
+      // Demo kategoriler - gerçek MySQL ID'leri ile
       return [
-        { id: "1", name: "Elektronik", title: "Elektronik Ürünler", parentId: null, createdAt: new Date() },
-        { id: "2", name: "Telefon", title: "Akıllı Telefonlar", parentId: "1", createdAt: new Date() },
-        { id: "3", name: "Bilgisayar", title: "Bilgisayar ve Laptop", parentId: "1", createdAt: new Date() },
-        { id: "4", name: "Giyim", title: "Giyim ve Aksesuar", parentId: null, createdAt: new Date() },
-        { id: "5", name: "Ev", title: "Ev ve Yaşam", parentId: null, createdAt: new Date() },
-        { id: "6", name: "Spor", title: "Spor ve Outdoor", parentId: null, createdAt: new Date() },
-        { id: "7", name: "Kitap", title: "Kitap ve Dergi", parentId: null, createdAt: new Date() },
-        { id: "8", name: "Kozmetik", title: "Kozmetik ve Bakım", parentId: null, createdAt: new Date() }
+        { id: "368", name: "Aksesuar", title: "Aksesuar", parentId: null, createdAt: new Date() },
+        { id: "369", name: "Diğer Aksesuarlar", title: "Diğer Aksesuarlar", parentId: "368", createdAt: new Date() },
+        { id: "371", name: "Kol Düğmesi", title: "Kol Düğmesi", parentId: "368", createdAt: new Date() },
+        { id: "400", name: "Elektronik", title: "Elektronik Ürünler", parentId: null, createdAt: new Date() },
+        { id: "401", name: "Telefon", title: "Akıllı Telefonlar", parentId: "400", createdAt: new Date() },
+        { id: "402", name: "Bilgisayar", title: "Bilgisayar ve Laptop", parentId: "400", createdAt: new Date() },
+        { id: "450", name: "Giyim", title: "Giyim ve Aksesuar", parentId: null, createdAt: new Date() },
+        { id: "500", name: "Ev", title: "Ev ve Yaşam", parentId: null, createdAt: new Date() }
       ];
     }
   }

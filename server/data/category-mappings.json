@@ -19,6 +19,136 @@
       "updatedAt": "2025-08-31T16:51:52.858Z",
       "confidence": "0.00",
       "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Aksesuar ve Kozmetik",
+      "localCategoryId": 8,
+      "id": "a9600fe2-faf9-41af-95cf-8c47711d4b17",
+      "createdAt": "2025-08-31T19:38:08.985Z",
+      "updatedAt": "2025-08-31T19:38:08.985Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Araç İçi Telefon Tutucular",
+      "localCategoryId": 2,
+      "id": "a99034ff-eab6-412d-a23f-0d721aa6533d",
+      "createdAt": "2025-08-31T19:38:09.175Z",
+      "updatedAt": "2025-08-31T19:38:09.175Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Elektrikli Ev Aletleri",
+      "localCategoryId": 5,
+      "id": "a622a9cb-d382-460c-92d5-101cf3e3bd5a",
+      "createdAt": "2025-08-31T19:38:09.366Z",
+      "updatedAt": "2025-08-31T19:38:09.366Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Ev Gereçleri",
+      "localCategoryId": 5,
+      "id": "769bf6e5-4079-40ca-bdaf-674fa31f4234",
+      "createdAt": "2025-08-31T19:38:09.545Z",
+      "updatedAt": "2025-08-31T19:38:09.545Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Evcil Hayvan Ürünleri",
+      "localCategoryId": 5,
+      "id": "98507457-ccfd-413e-a64f-b66019d2378c",
+      "createdAt": "2025-08-31T19:38:09.729Z",
+      "updatedAt": "2025-08-31T19:38:09.729Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Giyim",
+      "localCategoryId": 4,
+      "id": "77df7bdf-2d3a-462b-8e16-773c744432d5",
+      "createdAt": "2025-08-31T19:38:10.050Z",
+      "updatedAt": "2025-08-31T19:38:10.050Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Kevgir ve Süzgeç",
+      "localCategoryId": 5,
+      "id": "2e5b6e2a-4c8b-416f-b5ad-da46b1ff7f64",
+      "createdAt": "2025-08-31T19:38:10.242Z",
+      "updatedAt": "2025-08-31T19:38:10.242Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Plastik ev gereçleri",
+      "localCategoryId": 5,
+      "id": "9c79ef14-9746-4d7c-b201-ee423193f1e3",
+      "createdAt": "2025-08-31T19:38:10.430Z",
+      "updatedAt": "2025-08-31T19:38:10.430Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Pratik Ev Eşyaları",
+      "localCategoryId": 5,
+      "id": "93e8de3c-109f-428f-a2de-0da0e11a4ca0",
+      "createdAt": "2025-08-31T19:38:10.696Z",
+      "updatedAt": "2025-08-31T19:38:10.696Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Spor Malzemeleri",
+      "localCategoryId": 6,
+      "id": "545e517b-f88f-4510-9a40-e98bff2c8f80",
+      "createdAt": "2025-08-31T19:38:10.878Z",
+      "updatedAt": "2025-08-31T19:38:10.878Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "telefon",
+      "localCategoryId": 2,
+      "id": "9d500d92-9da8-4938-9bf6-3d760e0f3cff",
+      "createdAt": "2025-08-31T19:38:11.133Z",
+      "updatedAt": "2025-08-31T19:38:11.133Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Çerçeveler",
+      "localCategoryId": 5,
+      "id": "98de1b40-b786-4405-bd85-287fdcb39eec",
+      "createdAt": "2025-08-31T19:38:11.316Z",
+      "updatedAt": "2025-08-31T19:38:11.316Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Çift Kişilik Nevresim",
+      "localCategoryId": 5,
+      "id": "d447dca6-9e4e-4348-ab35-ae4f26efb583",
+      "createdAt": "2025-08-31T19:38:11.581Z",
+      "updatedAt": "2025-08-31T19:38:11.581Z",
+      "confidence": "0.00",
+      "isManual": false
     }
   ]
 }
