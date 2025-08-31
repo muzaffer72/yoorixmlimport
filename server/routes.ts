@@ -751,7 +751,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       console.log(`🔍 BAŞLANGIC DEBUG: XML parse sonucu:`, typeof result, Object.keys(result || {}));
-      console.log(`🔍 FIELD MAPPING DEBUG:`, fieldMapping);
+      console.log(`🔍 FIELD MAPPING DEBUG:`, xmlSource.fieldMapping);
       console.log(`🔍 XML SOURCE DEBUG:`, xmlSource);
       
       const extractedProducts = extractProducts(result);
