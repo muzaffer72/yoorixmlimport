@@ -319,19 +319,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Check if this object has the category field
           let value = current;
           let foundPath = true;
+          let pathTrace = [];
           
           for (const field of fields) {
             if (value && typeof value === 'object' && field in value) {
               value = value[field];
+              pathTrace.push(field);
             } else {
               foundPath = false;
               break;
             }
           }
           
+          // Debug: Show what we found at each step
+          if (processedItems <= 5) {
+            console.log(`Item ${processedItems}: Looking for path [${fields.join('.')}], found path [${pathTrace.join('.')}], foundPath: ${foundPath}, value type: ${typeof value}, value:`, typeof value === 'string' ? value.substring(0, 50) : value);
+          }
+          
           if (foundPath && value && typeof value === 'string' && value.trim()) {
             categories.add(value.trim());
-            console.log("Found category:", value.trim());
+            console.log("✓ Found category:", value.trim());
           }
           
           // Add children to queue
