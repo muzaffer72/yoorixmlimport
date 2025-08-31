@@ -361,13 +361,24 @@ export class PageStorage {
   }
 
   async deleteAllCategoryMappingsForSource(xmlSourceId: string): Promise<number> {
+    console.log('🗑️  PageStorage: deleteAllCategoryMappingsForSource called with xmlSourceId:', xmlSourceId);
     const data = this.loadJsonFile('category-mappings.json', { mappings: [] });
     const initialCount = data.mappings.length;
+    
+    console.log('📊 Initial mappings count:', initialCount);
+    console.log('🔍 Looking for mappings with xmlSourceId:', xmlSourceId);
+    
+    // Bu XML source'a ait mapping'leri bul
+    const matchingMappings = data.mappings.filter((map: any) => map.xmlSourceId === xmlSourceId);
+    console.log('🎯 Found matching mappings:', matchingMappings.length);
     
     // Bu XML source'a ait tüm mapping'leri filtrele
     data.mappings = data.mappings.filter((map: any) => map.xmlSourceId !== xmlSourceId);
     
     const deletedCount = initialCount - data.mappings.length;
+    console.log('✅ Deleted count:', deletedCount);
+    console.log('📝 Remaining mappings count:', data.mappings.length);
+    
     this.saveJsonFile('category-mappings.json', data);
     
     return deletedCount;
