@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +26,8 @@ export default function CategoryMapping() {
   const [localCategoryId, setLocalCategoryId] = useState("");
   const [xmlCategories, setXmlCategories] = useState<string[]>([]);
   const [extractingCategories, setExtractingCategories] = useState(false);
+  const [xmlCategorySearch, setXmlCategorySearch] = useState("");
+  const [localCategorySearch, setLocalCategorySearch] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -41,6 +43,22 @@ export default function CategoryMapping() {
     queryKey: ["/api/category-mappings", selectedXmlSource],
     enabled: !!selectedXmlSource,
   });
+
+  // Filtered XML categories based on search
+  const filteredXmlCategories = useMemo(() => {
+    if (!xmlCategorySearch.trim()) return xmlCategories;
+    return xmlCategories.filter(category => 
+      category.toLowerCase().includes(xmlCategorySearch.toLowerCase())
+    );
+  }, [xmlCategories, xmlCategorySearch]);
+
+  // Filtered local categories based on search
+  const filteredLocalCategories = useMemo(() => {
+    if (!localCategorySearch.trim()) return categories;
+    return categories.filter(category => 
+      category.name.toLowerCase().includes(localCategorySearch.toLowerCase())
+    );
+  }, [categories, localCategorySearch]);
 
   const createMappingMutation = useMutation({
     mutationFn: async (data: { xmlSourceId: string; xmlCategoryName: string; localCategoryId: string }) => {
@@ -150,6 +168,8 @@ export default function CategoryMapping() {
     setXmlCategories([]);
     setXmlCategoryName("");
     setLocalCategoryId("");
+    setXmlCategorySearch("");
+    setLocalCategorySearch("");
     
     // Auto-load stored categories when XML source is selected
     if (value) {
@@ -233,16 +253,64 @@ export default function CategoryMapping() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label>XML Kategori Adı</Label>
-                    <Input
-                      placeholder="XML'deki kategori adı"
-                      value={xmlCategoryName}
-                      onChange={(e) => setXmlCategoryName(e.target.value)}
-                      data-testid="input-xml-category"
-                    />
+                    {xmlCategories.length > 0 && (
+                      <Input
+                        placeholder="XML kategorilerinde ara..."
+                        value={xmlCategorySearch}
+                        onChange={(e) => setXmlCategorySearch(e.target.value)}
+                        className="mb-2"
+                        data-testid="input-search-xml-category"
+                      />
+                    )}
+                    <Select 
+                      value={xmlCategoryName} 
+                      onValueChange={setXmlCategoryName}
+                      disabled={xmlCategories.length === 0}
+                    >
+                      <SelectTrigger data-testid="select-xml-category">
+                        <SelectValue 
+                          placeholder={
+                            xmlCategories.length === 0 
+                              ? "Önce kategorileri yükleyin..." 
+                              : "XML kategorisini seçin..."
+                          } 
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredXmlCategories.length === 0 && xmlCategorySearch ? (
+                          <div className="px-2 py-1 text-sm text-muted-foreground">
+                            Arama sonucu bulunamadı
+                          </div>
+                        ) : (
+                          filteredXmlCategories.map((category, index) => (
+                            <SelectItem key={index} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {xmlCategories.length === 0 && selectedXmlSource && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Yukarıdaki "Kategorileri Yükle" butonunu kullanarak XML kategorilerini yükleyin
+                      </p>
+                    )}
+                    {xmlCategories.length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {filteredXmlCategories.length} / {xmlCategories.length} kategori gösteriliyor
+                      </p>
+                    )}
                   </div>
                   
                   <div>
                     <Label>Yerel Kategori</Label>
+                    <Input
+                      placeholder="Yerel kategorilerde ara..."
+                      value={localCategorySearch}
+                      onChange={(e) => setLocalCategorySearch(e.target.value)}
+                      className="mb-2"
+                      data-testid="input-search-local-category"
+                    />
                     <Select 
                       value={localCategoryId} 
                       onValueChange={setLocalCategoryId}
@@ -251,18 +319,22 @@ export default function CategoryMapping() {
                         <SelectValue placeholder="Yerel kategoriyi seçin..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories
-                          .filter(category => 
-                            !mappings.some(mapping => mapping.localCategoryId === category.id)
-                          )
-                          .map((category) => (
+                        {filteredLocalCategories.length === 0 && localCategorySearch ? (
+                          <div className="px-2 py-1 text-sm text-muted-foreground">
+                            Arama sonucu bulunamadı
+                          </div>
+                        ) : (
+                          filteredLocalCategories.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
                               {category.name}
                             </SelectItem>
                           ))
-                        }
+                        )}
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {filteredLocalCategories.length} / {categories.length} kategori gösteriliyor
+                    </p>
                   </div>
               </div>
               
