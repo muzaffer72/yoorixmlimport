@@ -53,6 +53,8 @@ export const products = pgTable("products", {
   cashOnDelivery: boolean("cash_on_delivery").default(true),
   shortDescription: text("short_description"),
   description: text("description"),
+  thumbnail: jsonb("thumbnail"), // Ana ürün resmi için
+  images: jsonb("images"), // Ek resimler için (array)
   xmlSourceId: varchar("xml_source_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

@@ -89,6 +89,22 @@ export class MemStorage implements IStorage {
     this.initializeSampleData();
   }
 
+  // Helper method to process image URLs into the required format
+  processImageUrl(imageUrl: string): any {
+    if (!imageUrl) return null;
+    
+    const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '');
+    const mediaId = Math.floor(Math.random() * 1000);
+    
+    return {
+      image_40x40: `images/${timestamp}40x40_media_${mediaId}.png`,
+      image_72x72: `images/${timestamp}72x72_media_${mediaId}.png`,
+      image_190x230: `images/${timestamp}190x230_media_${mediaId}.png`,
+      storage: "local",
+      original_image: `images/${timestamp}_original__media_${mediaId}.png`,
+    };
+  }
+
   private initializeSampleData() {
     // Sample categories
     const electronics = { id: randomUUID(), name: "Elektronik", parentId: null, createdAt: new Date() };
@@ -322,6 +338,25 @@ export class MemStorage implements IStorage {
   async createProduct(product: Partial<Product>): Promise<Product> {
     const id = randomUUID();
     const now = new Date();
+    
+    // Process thumbnail and images if they exist
+    let thumbnail = null;
+    let images = null;
+    
+    if (product.thumbnail && typeof product.thumbnail === 'string') {
+      thumbnail = this.processImageUrl(product.thumbnail);
+    } else if (product.thumbnail) {
+      thumbnail = product.thumbnail;
+    }
+    
+    if (product.images) {
+      if (Array.isArray(product.images)) {
+        images = product.images.map(img => 
+          typeof img === 'string' ? this.processImageUrl(img) : img
+        ).filter(Boolean);
+      }
+    }
+    
     const newProduct: Product = { 
       ...product,
       id,
@@ -330,6 +365,8 @@ export class MemStorage implements IStorage {
       unit: product.unit || "Adet",
       currentStock: product.currentStock || 0,
       minimumOrderQuantity: product.minimumOrderQuantity || 1,
+      thumbnail,
+      images,
       createdAt: now,
       updatedAt: now,
     } as Product;
@@ -354,9 +391,27 @@ export class MemStorage implements IStorage {
       throw new Error("Product not found");
     }
     
+    // Process thumbnail and images if they exist
+    let thumbnail = product.thumbnail;
+    let images = product.images;
+    
+    if (product.thumbnail && typeof product.thumbnail === 'string') {
+      thumbnail = this.processImageUrl(product.thumbnail);
+    }
+    
+    if (product.images) {
+      if (Array.isArray(product.images)) {
+        images = product.images.map(img => 
+          typeof img === 'string' ? this.processImageUrl(img) : img
+        ).filter(Boolean);
+      }
+    }
+    
     const updated: Product = { 
       ...existing, 
-      ...product, 
+      ...product,
+      thumbnail,
+      images, 
       updatedAt: new Date() 
     };
     this.products.set(id, updated);

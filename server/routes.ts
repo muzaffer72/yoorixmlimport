@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertXmlSourceSchema, insertCategoryMappingSchema, insertDatabaseSettingsSchema } from "@shared/schema";
 import { z } from "zod";
 import * as xml2js from "xml2js";
+import { ObjectStorageService } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -609,6 +610,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   return value;
                 };
                 
+                // Extract image URLs
+                const thumbnailUrl = extractValue(fieldMapping?.thumbnail);
+                const imageUrls = [];
+                
+                // Extract up to 10 images
+                for (let i = 1; i <= 10; i++) {
+                  const imageUrl = extractValue(fieldMapping?.[`image${i}`]);
+                  if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim()) {
+                    imageUrls.push(imageUrl.trim());
+                  }
+                }
+
                 const productData = {
                   name: extractValue(fieldMapping?.name) || "Unnamed Product",
                   price: parseFloat(extractValue(fieldMapping?.price) as string) || 0,
@@ -620,6 +633,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   categoryId: targetCategoryId,
                   xmlSourceId: xmlSourceId,
                   minimumOrderQuantity: 1,
+                  thumbnail: thumbnailUrl && typeof thumbnailUrl === 'string' && thumbnailUrl.trim() ? thumbnailUrl.trim() : null,
+                  images: imageUrls.length > 0 ? imageUrls : null,
                 };
                 
                 // Only add if required fields are present
@@ -756,6 +771,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Veritabanı bağlantısı test edilirken hata oluştu" });
+    }
+  });
+
+  // Image upload endpoints
+  app.post("/api/images/upload", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getImageUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting image upload URL:", error);
+      res.status(500).json({ message: "Failed to get upload URL" });
+    }
+  });
+
+  app.post("/api/images/process", async (req, res) => {
+    try {
+      const { imageUrl } = req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const processedImages = await objectStorageService.generateImageSizes(imageUrl);
+      res.json(processedImages);
+    } catch (error) {
+      console.error("Error processing image:", error);
+      res.status(500).json({ message: "Failed to process image" });
+    }
+  });
+
+  // Serve public images
+  app.get("/public-objects/:filePath(*)", async (req, res) => {
+    const filePath = req.params.filePath;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error searching for public object:", error);
+      return res.status(500).json({ error: "Internal server error" });
     }
   });
 

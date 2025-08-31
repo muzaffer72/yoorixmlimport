@@ -181,6 +181,17 @@ export default function XmlSourceForm() {
     { key: "brand", label: "Marka", required: false },
     { key: "currentStock", label: "Stok Miktarı", required: true },
     { key: "unit", label: "Birim", required: false },
+    { key: "thumbnail", label: "Ana Resim (Thumbnail)", required: false },
+    { key: "image1", label: "Resim 1", required: false },
+    { key: "image2", label: "Resim 2", required: false },
+    { key: "image3", label: "Resim 3", required: false },
+    { key: "image4", label: "Resim 4", required: false },
+    { key: "image5", label: "Resim 5", required: false },
+    { key: "image6", label: "Resim 6", required: false },
+    { key: "image7", label: "Resim 7", required: false },
+    { key: "image8", label: "Resim 8", required: false },
+    { key: "image9", label: "Resim 9", required: false },
+    { key: "image10", label: "Resim 10", required: false },
   ];
   
   const handleFieldMappingChange = (productField: string, xmlTag: string) => {
