@@ -14,10 +14,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { XmlSource, Category, CategoryMapping as CategoryMappingType } from "@shared/schema";
-import { Trash2, Save, Download, RefreshCw } from "lucide-react";
+import { Trash2, Save, Download, RefreshCw, Wand2, CheckCircle, AlertCircle, XCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function CategoryMapping() {
@@ -28,6 +37,9 @@ export default function CategoryMapping() {
   const [extractingCategories, setExtractingCategories] = useState(false);
   const [xmlCategorySearch, setXmlCategorySearch] = useState("");
   const [localCategorySearch, setLocalCategorySearch] = useState("");
+  const [showAutoMapModal, setShowAutoMapModal] = useState(false);
+  const [autoMapResults, setAutoMapResults] = useState<any>(null);
+  const [isAutoMapping, setIsAutoMapping] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -177,6 +189,78 @@ export default function CategoryMapping() {
     }
   };
 
+  // Auto-mapping mutation
+  const autoMapMutation = useMutation({
+    mutationFn: async (xmlSourceId: string) => {
+      return await apiRequest("/api/category-mappings/auto-map", {
+        method: "POST",
+        body: JSON.stringify({ xmlSourceId }),
+        headers: { "Content-Type": "application/json" },
+      });
+    },
+    onSuccess: (data) => {
+      setAutoMapResults(data);
+      setShowAutoMapModal(true);
+      toast({
+        title: "Otomatik Eşleştirme Tamamlandı",
+        description: `${data.summary.total} kategori analiz edildi`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Otomatik eşleştirme sırasında hata oluştu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAutoMap = () => {
+    if (!selectedXmlSource) {
+      toast({
+        title: "Hata",
+        description: "Önce XML kaynağı seçin",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsAutoMapping(true);
+    autoMapMutation.mutate(selectedXmlSource);
+  };
+
+  const handleApplyAutoMappings = async (mappingsToApply: any[]) => {
+    try {
+      for (const mapping of mappingsToApply) {
+        if (mapping.suggestedCategory) {
+          await apiRequest("/api/category-mappings", {
+            method: "POST",
+            body: JSON.stringify({
+              xmlSourceId: selectedXmlSource,
+              xmlCategoryName: mapping.xmlCategory,
+              localCategoryId: mapping.suggestedCategory.id,
+            }),
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["/api/category-mappings", selectedXmlSource] });
+      setShowAutoMapModal(false);
+      
+      toast({
+        title: "Başarılı",
+        description: `${mappingsToApply.length} kategori eşleştirmesi uygulandı`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Hata",
+        description: error.message || "Eşleştirmeler uygulanırken hata oluştu",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div>
       <Header 
@@ -215,7 +299,7 @@ export default function CategoryMapping() {
                   </Select>
                 </div>
                 
-                <div className="flex items-end">
+                <div className="flex items-end gap-2">
                   <Button 
                     onClick={loadStoredCategories}
                     disabled={!selectedXmlSource}
@@ -224,6 +308,15 @@ export default function CategoryMapping() {
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Kategorileri Yükle
+                  </Button>
+                  <Button 
+                    onClick={handleAutoMap}
+                    disabled={!selectedXmlSource || xmlCategories.length === 0 || autoMapMutation.isPending}
+                    data-testid="button-auto-map"
+                    variant="default"
+                  >
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    {autoMapMutation.isPending ? "Eşleştiriliyor..." : "Otomatik Eşleştir"}
                   </Button>
                 </div>
               </div>
@@ -415,6 +508,147 @@ export default function CategoryMapping() {
           </Card>
         )}
       </div>
+
+      {/* Auto-mapping preview modal */}
+      <Dialog open={showAutoMapModal} onOpenChange={setShowAutoMapModal}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Otomatik Kategori Eşleştirme Sonuçları</DialogTitle>
+            <DialogDescription>
+              Önerilen eşleştirmeleri gözden geçirin ve uygulamak istediğinizi seçin.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {autoMapResults && (
+            <div className="space-y-6">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-medium">Yüksek Güven</span>
+                  </div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {autoMapResults.summary.high}
+                  </div>
+                </div>
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                    <span className="text-sm font-medium">Orta Güven</span>
+                  </div>
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {autoMapResults.summary.medium}
+                  </div>
+                </div>
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-orange-600" />
+                    <span className="text-sm font-medium">Düşük Güven</span>
+                  </div>
+                  <div className="text-2xl font-bold text-orange-600">
+                    {autoMapResults.summary.low}
+                  </div>
+                </div>
+                <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <XCircle className="h-4 w-4 text-red-600" />
+                    <span className="text-sm font-medium">Eşleşmedi</span>
+                  </div>
+                  <div className="text-2xl font-bold text-red-600">
+                    {autoMapResults.summary.noMatch}
+                  </div>
+                </div>
+              </div>
+
+              {/* Mappings List */}
+              <div className="space-y-4">
+                <h4 className="font-medium">Önerilen Eşleştirmeler</h4>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>XML Kategori</TableHead>
+                      <TableHead>Önerilen Kategori</TableHead>
+                      <TableHead>Güven Skoru</TableHead>
+                      <TableHead>Durum</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {autoMapResults.mappings.map((mapping: any, index: number) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">
+                          {mapping.xmlCategory}
+                        </TableCell>
+                        <TableCell>
+                          {mapping.suggestedCategory ? mapping.suggestedCategory.name : "Eşleşme bulunamadı"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm">
+                              {Math.round(mapping.confidence * 100)}%
+                            </div>
+                            <Badge 
+                              variant={
+                                mapping.confidence > 0.8 ? "default" :
+                                mapping.confidence > 0.5 ? "secondary" :
+                                mapping.confidence > 0.3 ? "outline" : "destructive"
+                              }
+                            >
+                              {mapping.confidence > 0.8 ? "Yüksek" :
+                               mapping.confidence > 0.5 ? "Orta" :
+                               mapping.confidence > 0.3 ? "Düşük" : "Eşleşmedi"}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {mapping.suggestedCategory && (
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="text-sm text-green-600">Uygulanabilir</span>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowAutoMapModal(false)}
+                >
+                  İptal
+                </Button>
+                <Button 
+                  onClick={() => {
+                    const highConfidenceMappings = autoMapResults.mappings.filter(
+                      (m: any) => m.confidence > 0.8 && m.suggestedCategory
+                    );
+                    handleApplyAutoMappings(highConfidenceMappings);
+                  }}
+                  disabled={autoMapResults.summary.high === 0}
+                >
+                  Yüksek Güven Eşleştirmeleri Uygula ({autoMapResults.summary.high})
+                </Button>
+                <Button 
+                  onClick={() => {
+                    const applicableMappings = autoMapResults.mappings.filter(
+                      (m: any) => m.confidence > 0.5 && m.suggestedCategory
+                    );
+                    handleApplyAutoMappings(applicableMappings);
+                  }}
+                  disabled={autoMapResults.summary.high + autoMapResults.summary.medium === 0}
+                >
+                  Tüm Uygun Eşleştirmeleri Uygula ({autoMapResults.summary.high + autoMapResults.summary.medium})
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

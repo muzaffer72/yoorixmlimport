@@ -17,6 +17,7 @@ import {
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
+import { CategoryMatcher } from "./categoryMatcher";
 
 export interface IStorage {
   // User methods
@@ -45,6 +46,21 @@ export interface IStorage {
   // Category and Brand methods
   getCategories(): Promise<Category[]>;
   getBrands(): Promise<Brand[]>;
+  autoMapCategories(xmlSourceId: string): Promise<{
+    mappings: Array<{
+      xmlCategory: string;
+      suggestedCategory: Category | null;
+      confidence: number;
+      alternatives: Array<{ category: Category; confidence: number }>;
+    }>;
+    summary: {
+      total: number;
+      high: number;
+      medium: number;
+      low: number;
+      noMatch: number;
+    };
+  }>;
   
   // Category Mapping methods
   getCategoryMappings(xmlSourceId: string): Promise<CategoryMapping[]>;
@@ -461,6 +477,49 @@ export class MemStorage implements IStorage {
       // Fallback olarak memory'den çek
       return Array.from(this.categories.values());
     }
+  }
+
+  // Auto-mapping için kategori eşleştirme
+  async autoMapCategories(xmlSourceId: string): Promise<{
+    mappings: Array<{
+      xmlCategory: string;
+      suggestedCategory: Category | null;
+      confidence: number;
+      alternatives: Array<{ category: Category; confidence: number }>;
+    }>;
+    summary: {
+      total: number;
+      high: number;
+      medium: number;
+      low: number;
+      noMatch: number;
+    };
+  }> {
+    const xmlSource = await this.getXmlSource(xmlSourceId);
+    if (!xmlSource || !xmlSource.extractedCategories) {
+      throw new Error("XML source not found or no categories extracted");
+    }
+
+    const xmlCategories = Array.isArray(xmlSource.extractedCategories) 
+      ? xmlSource.extractedCategories as string[]
+      : [];
+      
+    const localCategories = await this.getCategories();
+    
+    const matcher = new CategoryMatcher();
+    const mappings = matcher.autoMapCategories(xmlCategories, localCategories);
+    
+    // Özet istatistik hesapla
+    const categorized = matcher.categorizeByConfidence(mappings);
+    const summary = {
+      total: mappings.length,
+      high: categorized.high.length,
+      medium: categorized.medium.length,
+      low: categorized.low.length,
+      noMatch: categorized.noMatch.length
+    };
+
+    return { mappings, summary };
   }
 
   async getBrands(): Promise<Brand[]> {

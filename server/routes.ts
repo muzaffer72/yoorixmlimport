@@ -497,6 +497,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Auto-mapping endpoint
+  app.post("/api/category-mappings/auto-map", async (req, res) => {
+    try {
+      const { xmlSourceId } = req.body;
+      
+      if (!xmlSourceId) {
+        return res.status(400).json({ message: "XML source ID is required" });
+      }
+
+      const result = await storage.autoMapCategories(xmlSourceId);
+      res.json(result);
+    } catch (error) {
+      console.error("Auto-mapping error:", error);
+      res.status(500).json({ message: "Failed to auto-map categories" });
+    }
+  });
+
   // Product import from XML
   app.post("/api/products/import-from-xml", async (req, res) => {
     try {
