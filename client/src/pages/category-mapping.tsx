@@ -192,11 +192,8 @@ export default function CategoryMapping() {
   // Auto-mapping mutation
   const autoMapMutation = useMutation({
     mutationFn: async (xmlSourceId: string) => {
-      return await apiRequest("/api/category-mappings/auto-map", {
-        method: "POST",
-        body: JSON.stringify({ xmlSourceId }),
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await apiRequest("POST", "/api/category-mappings/ai-map", { xmlSourceId });
+      return response.json();
     },
     onSuccess: (data) => {
       setAutoMapResults(data);
