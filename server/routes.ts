@@ -854,7 +854,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         console.log(`   └─ Traverse başlatılıyor...`);
         traverse(data);
-        console.log(`   └─ Traverse tamamlandı`);
+        console.log(`   └─ Traverse tamamlandı: ${products.length} ürün bulundu`);
+        
+        if (products.length > 0) {
+          console.log(`   └─ İlk ürün örneği: ${products[0].name} - ${products[0].price} TL`);
+        } else {
+          console.log(`   └─ ❌ HİÇ ÜRÜN BULUNAMADI! XML yapısını kontrol edin`);
+        }
+        
         console.log(`✅ ADIM 5 TAMAMLANDI: ${products.length} ürün çıkarıldı\n`);
         return products;
       };
@@ -865,32 +872,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`   └─ Çıkarılan ürün sayısı: ${extractedProducts.length}`);
       
       if (extractedProducts.length > 0) {
-        console.log(`📋 İlk ürün örneği:`, JSON.stringify(extractedProducts[0], null, 2));
-        console.log(`📋 İlk ürünün kategori bilgisi:`, extractedProducts[0].category, extractedProducts[0].categoryId);
+        console.log(`   └─ İlk ürün: ${extractedProducts[0].name} - ${extractedProducts[0].price} TL`);
+        console.log(`   └─ Kategori ID: ${extractedProducts[0].categoryId}`);
+        console.log(`✅ ADIM 6 TAMAMLANDI: Ürünler işlendi\n`);
       } else {
-        console.log(`⚠️ XML'den hiç ürün çıkarılamadı!`);
-        console.log(`🔍 XML root keys:`, Object.keys(result));
-        if (result.products) {
-          console.log(`🔍 Products found:`, Array.isArray(result.products) ? result.products.length : 'Not array');
-        }
-        if (result.product) {
-          console.log(`🔍 Product found:`, Array.isArray(result.product) ? result.product.length : 'Not array');
-        }
+        console.log(`   └─ ❌ Hiç ürün çıkarılamadı!`);
+        console.log(`   └─ XML root keys: [${Object.keys(result).join(', ')}]`);
+        console.log(`❌ ADIM 6 BAŞARISIZ: Hiç ürün bulunamadı\n`);
       }
       
       let processedCount = 0;
       
-      // Real MySQL product import
-      console.log(`📊 Found ${extractedProducts.length} products in XML, starting import...`);
+      console.log(`📋 ADIM 7/8: MySQL veritabanı bağlantısı kontrol ediliyor...`);
       
       // Import için database bağlantısını kontrol et
       const dbSettings = await pageStorage.getDatabaseSettings();
       if (!dbSettings || !dbSettings.host) {
+        console.log(`❌ HATA: MySQL database ayarları yapılandırılmamış`);
         return res.status(400).json({ 
           message: "MySQL database ayarları yapılandırılmamış. Lütfen settings sayfasından veritabanı ayarlarını yapın.",
           error: "DATABASE_NOT_CONFIGURED"
         });
       }
+      
+      console.log(`   └─ MySQL Host: ${dbSettings.host}:${dbSettings.port}`);
+      console.log(`   └─ Database: ${dbSettings.database}`);
+      console.log(`✅ ADIM 7 TAMAMLANDI: Database bağlantısı hazır\n`);
+      
+      console.log(`📋 ADIM 8/8: ${extractedProducts.length} ürün MySQL'e aktarılıyor...`);
 
       await connectToImportDatabase({
         host: dbSettings.host,
@@ -909,11 +918,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Kategori eşleştirme bilgilerini kontrol et
-      console.log(`📋 Toplam kategori eşleştirmesi: ${categoryMappings.length}`);
+      console.log(`   └─ Toplam kategori eşleştirmesi: ${categoryMappings.length}`);
       
       if (categoryMappings.length > 0) {
-        console.log(`📋 İlk eşleştirme örneği:`, categoryMappings[0]);
+        console.log(`   └─ Örnek eşleştirme: "${categoryMappings[0].xmlCategoryName}" → kategori ${categoryMappings[0].localCategoryId}`);
       }
       
       // Sadece eşleştirilen kategorilere sahip ürünleri import et
