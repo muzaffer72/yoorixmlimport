@@ -78,9 +78,12 @@ export default function SettingsPage() {
     },
   });
 
-  const { data: databaseSettings = [] } = useQuery<DatabaseSettings[]>({
+  const { data: databaseSettingsData } = useQuery({
     queryKey: ["/api/database-settings"],
   });
+
+  // API'den gelen tek objeyi dizi formatına çevir
+  const databaseSettings = databaseSettingsData ? [databaseSettingsData] : [];
 
   const { data: geminiSettingsData } = useQuery({
     queryKey: ["/api/gemini-settings"],

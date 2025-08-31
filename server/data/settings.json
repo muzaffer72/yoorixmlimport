@@ -1,6 +1,7 @@
 {
   "gemini": {
-    "apiKey": "AIzaSyAaf8xe5cttgemweIQX6FgaHnXN_KFDLuA",
+    "apiKey": "",
+    "selectedModel": "gemini-2.5-flash",
     "isActive": true,
     "isConfigured": true
   },

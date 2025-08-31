@@ -968,8 +968,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/gemini-settings/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      // JSON storage'da Gemini ayarları sıfırla
-      const settings = await pageStorage.updateGeminiSettings('', 'gemini-2.5-flash');
+      // Mevcut ayarları al ve sadece API key'i temizle, model seçimini koru
+      const currentSettings = await pageStorage.getGeminiSettings();
+      const settings = await pageStorage.updateGeminiSettings('', currentSettings.selected_model);
       const success = true;
       if (success) {
         res.json({ message: "Gemini ayarı başarıyla silindi" });

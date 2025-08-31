@@ -381,12 +381,22 @@ export class PageStorage {
       database: { host: "", port: 3306, database: "", username: "", password: "", isActive: false }
     });
     
-    data.gemini = {
-      apiKey: apiKey,
-      selectedModel: selectedModel,
-      isActive: true,
-      isConfigured: true
-    };
+    // API key boşsa ayarları sıfırla ama model seçimini koru
+    if (!apiKey || apiKey.trim() === '') {
+      data.gemini = {
+        apiKey: "",
+        selectedModel: selectedModel, // Model seçimini koru
+        isActive: false,
+        isConfigured: false
+      };
+    } else {
+      data.gemini = {
+        apiKey: apiKey,
+        selectedModel: selectedModel,
+        isActive: true,
+        isConfigured: true
+      };
+    }
     
     this.saveJsonFile('settings.json', data);
     
@@ -399,10 +409,10 @@ export class PageStorage {
     });
     
     return {
-      api_key: '***API_KEY_SET***',
+      api_key: data.gemini.isConfigured ? '***API_KEY_SET***' : '',
       selected_model: selectedModel,
-      is_active: true,
-      is_configured: true
+      is_active: data.gemini.isActive,
+      is_configured: data.gemini.isConfigured
     };
   }
 
