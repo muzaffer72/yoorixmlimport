@@ -179,7 +179,7 @@ export default function XmlSourceForm() {
     { key: "barcode", label: "Barkod", required: false },
     { key: "brand", label: "Marka", required: false },
     { key: "currentStock", label: "Stok Miktarı", required: true },
-    { key: "unit", label: "Birim", required: true },
+    { key: "unit", label: "Birim", required: false },
   ];
   
   const handleFieldMappingChange = (productField: string, xmlTag: string) => {
