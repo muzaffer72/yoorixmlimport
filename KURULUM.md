@@ -3,7 +3,7 @@
 ## Sistem Gereksinimleri
 
 - **Node.js**: v18 veya üzeri
-- **PostgreSQL**: v13 veya üzeri
+- **MySQL**: v8.0 veya üzeri
 - **RAM**: En az 2GB
 - **Disk**: En az 1GB boş alan
 
@@ -20,30 +20,33 @@ curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
 sudo yum install -y nodejs
 ```
 
-### PostgreSQL Kurulumu
+### MySQL Kurulumu
 ```bash
 # Ubuntu/Debian için
 sudo apt update
-sudo apt install postgresql postgresql-contrib
+sudo apt install mysql-server
 
 # CentOS/RHEL için
-sudo yum install postgresql-server postgresql-contrib
-sudo postgresql-setup initdb
-sudo systemctl enable postgresql
-sudo systemctl start postgresql
+sudo yum install mysql-server
+sudo systemctl enable mysqld
+sudo systemctl start mysqld
+
+# MySQL güvenlik kurulumu
+sudo mysql_secure_installation
 ```
 
 ## 2. Veritabanı Kurulumu
 
 ```bash
-# PostgreSQL kullanıcısına geçiş
-sudo -u postgres psql
+# MySQL'e root olarak giriş
+sudo mysql -u root -p
 
 # Veritabanı ve kullanıcı oluşturma
 CREATE DATABASE xml_product_manager;
-CREATE USER xml_user WITH ENCRYPTED PASSWORD 'güçlü_şifre_buraya';
-GRANT ALL PRIVILEGES ON DATABASE xml_product_manager TO xml_user;
-\q
+CREATE USER 'xml_user'@'localhost' IDENTIFIED BY 'güçlü_şifre_buraya';
+GRANT ALL PRIVILEGES ON xml_product_manager.* TO 'xml_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
 ```
 
 ## 3. Projeyi İndirme ve Kurma
@@ -64,15 +67,8 @@ npm install
 `.env` dosyası oluşturun:
 
 ```bash
-# Veritabanı bağlantısı
-DATABASE_URL="postgresql://xml_user:güçlü_şifre_buraya@localhost:5432/xml_product_manager"
-
-# PostgreSQL bağlantı detayları
-PGHOST=localhost
-PGPORT=5432
-PGUSER=xml_user
-PGPASSWORD=güçlü_şifre_buraya
-PGDATABASE=xml_product_manager
+# MySQL Veritabanı bağlantısı
+DATABASE_URL="mysql://xml_user:güçlü_şifre_buraya@localhost:3306/xml_product_manager"
 
 # Gemini AI API Anahtarı (opsiyonel - kategori eşleştirme için)
 GEMINI_API_KEY=your_gemini_api_key_here
@@ -99,34 +95,46 @@ npm run dev
 ```
 
 ### Üretim Ortamı için:
+
+#### Basit Çalıştırma (Önerilen - PM2 olmadan)
 ```bash
 # Uygulamayı build et
 npm run build
 
-# PM2 ile başlat (önerilen)
-npm install -g pm2
-pm2 start ecosystem.config.js
-pm2 save
-pm2 startup
+# Üretim modunda başlat (basit)
+NODE_ENV=production npm run dev
 ```
 
-### PM2 Konfigürasyon Dosyası (ecosystem.config.js)
-```javascript
-module.exports = {
-  apps: [{
-    name: 'xml-product-manager',
-    script: 'npm',
-    args: 'run dev',
-    instances: 1,
-    autorestart: true,
-    watch: false,
-    max_memory_restart: '1G',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 5000
-    }
-  }]
-}
+#### PM2 ile Çalıştırma (Gelişmiş)
+PM2 kullanmak istiyorsanız:
+```bash
+# PM2'yi global olarak yükle
+npm install -g pm2
+
+# PM2 ile başlat
+pm2 start npm --name "xml-manager" -- run dev
+pm2 save
+pm2 startup
+
+# PM2 durumunu kontrol et
+pm2 status
+pm2 logs xml-manager
+```
+
+## 7. MySQL Veritabanı Desteği
+
+Eğer PostgreSQL yerine MySQL kullanmak istiyorsanız, detaylı adaptasyon talimatları için `MYSQL_ADAPTATION.md` dosyasına bakın.
+
+**Hızlı MySQL Geçiş:**
+1. MySQL server kurulumu
+2. Veritabanı ve kullanıcı oluşturma  
+3. Schema dosyalarını MySQL formatına çevirme
+4. Connection string güncelleme
+
+```bash
+# MySQL için CONNECTION_URL
+DATABASE_URL="mysql://xml_user:şifre@localhost:3306/xml_product_manager"
+```
 ```
 
 ## 7. Nginx Reverse Proxy Kurulumu (Opsiyonel)

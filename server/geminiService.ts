@@ -208,19 +208,44 @@ Lütfen şu JSON formatında yanıt ver:
         }
       });
 
-      const result = JSON.parse(response.text || "{}");
+      let responseText = response.text || "{}";
+      
+      // JSON temizleme - bazen Gemini ekstra karakterler ekliyor
+      responseText = responseText.trim();
+      if (responseText.startsWith('```json')) {
+        responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      }
+      if (responseText.startsWith('```')) {
+        responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      // Bozuk string'leri düzelt
+      responseText = responseText.replace(/\\n/g, '\\\\n');
+      responseText = responseText.replace(/\n/g, '\\n');
+      responseText = responseText.replace(/\r/g, '\\r');
+      responseText = responseText.replace(/\t/g, '\\t');
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("JSON parse error, attempting to fix:", parseError);
+        // Son çare: JSON'u manuel olarak düzelt
+        responseText = responseText.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+        result = JSON.parse(responseText);
+      }
       
       // Sonuçları dönüştür
-      const mappings = result.mappings.map((mapping: any) => {
+      const mappings = (result.mappings || []).slice(0, 50).map((mapping: any) => {
         const suggestedCategory = mapping.suggestedCategoryId 
           ? localCategories.find(cat => cat.id === mapping.suggestedCategoryId) || null
           : null;
 
         return {
-          xmlCategory: mapping.xmlCategory,
+          xmlCategory: mapping.xmlCategory || "",
           suggestedCategory,
           confidence: Math.min(Math.max(mapping.confidence || 0, 0), 1), // 0-1 arası sınırla
-          reasoning: mapping.reasoning || "Açıklama yok"
+          reasoning: (mapping.reasoning || "Açıklama yok").substring(0, 200) // Uzun açıklamaları kısalt
         };
       });
 
