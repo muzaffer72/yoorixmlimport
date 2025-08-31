@@ -49,7 +49,7 @@ const geminiFormSchema = insertGeminiSettingsSchema.extend({
 export default function SettingsPage() {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [isTestingApiKey, setIsTestingApiKey] = useState(false);
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [availableModels, setAvailableModels] = useState<{name: string, displayName: string}[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -176,7 +176,12 @@ export default function SettingsPage() {
     },
     onSuccess: (data) => {
       if (data.success) {
-        setAvailableModels(data.models);
+        // Model objelerinden name ve displayName'leri al
+        const models = data.models.map((model: any) => ({
+          name: model.name,
+          displayName: model.displayName
+        }));
+        setAvailableModels(models);
         toast({
           title: "API Anahtarı Geçerli",
           description: `${data.models.length} model bulundu`,
@@ -501,8 +506,8 @@ export default function SettingsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {availableModels.map((model) => (
-                        <SelectItem key={model} value={model}>
-                          {model}
+                        <SelectItem key={model.name} value={model.name}>
+                          {model.displayName}
                         </SelectItem>
                       ))}
                     </SelectContent>
