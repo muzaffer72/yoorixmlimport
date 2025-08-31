@@ -1,0 +1,15 @@
+XML Sample Data: {
+  "Urunler": {
+    "Urun": [
+      {
+        "urun_id": "13694",
+        "adi": "Yeni Nesil Yıkanabilir Pratik Tüy ve Toz Toplama  Rulosu Aparatı",
+        "kod": "ty-AC55YT0056",
+        "barkod": "ty-AC55YT0056",
+        "marka": "Engithalat",
+        "kategori_son": "köpek Fırça Tarak",
+        "kategoriler": "Petshop >köpek Fırça Tarak",
+        "kategori_tumu": "Petshop |Petshop >köpek Fırça Tarak",
+        "adet": "1872",
+        "fiyat": "44.80",
+        "aciklama": "<p><strong><span style=\"font-size:24px;\"><span style=\"font-family:Trebuchet MS,Helvetica,sans-serif;\">Yeni Nesil Yıkanabilir Pratik Tüy ve Toz Toplama  Rulosu</span></span></strong></p>\n\n<h1> </h1>\n\n<p><span style=\"font-size:24px;\"><span style=\"font-family:Trebuchet MS,Helvetica,sans-serif;\">Kıyafetlerimizde tüylenmeler olması can sıkıcı olabiliyor ve kıyafeti gitmekten vazgeçebiliyoruz</span></span></p>\n\n<p> </p>\n\n<p><span style=\"font-size:24px;\"><span style=\"font-family:Trebuchet MS,Helvetica,sans-serif;\"><strong>Yeni Nesil Yıkanabilir Pratik Tüy ve Toz Toplama  Rulosu </strong>ile bu sorun ortadan kalkıyor </span></span></p>\n\n<p> </p>\n\n<p><span style=\"font-size:24px;\"><span style=\"font-family:Trebuchet MS,Helvetica,sans-serif;\"><strong>Pantalon tüy toplama rulosu</strong> ile pratik bir şekilde tüyleri toplayabilirsiniz </span></span><span style=\"font-size:24px;\"><span style=\"font-family:Trebuchet MS,Helvetica,sans-serif;\">Tüylenen kıyafetiniz yı<strong>kanabilir tüy toplayıcısı</strong> ile kısa sürede pırıl pırıl olacak </span></span></p>\n\n<p> </p>\n\n<p><span style=\"font-size:24px;\"><span style=\"font-family:Trebuchet MS,Helvetica,sans-serif;\"><strong>Tüy alma rulosu</strong> sadece kıyafetlerde değil masa, koltuk gibi yerlerde de kullanabilirsiniz Özellikle evcil hayvan sahipleri <strong>tüy temizleme</strong> konusunda oldukça şikayetçi Bu sorunu da <strong>yıkanabilir tüy toplama rulo fırçası </strong>ile çözebilirsiniz</span></span></p>\n\n<p> </p>...

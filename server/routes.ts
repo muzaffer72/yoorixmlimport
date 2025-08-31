@@ -317,25 +317,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Check if this object has the category field
+          // Handle both direct paths and array paths
           let value = current;
           let foundPath = true;
           let pathTrace = [];
           
-          for (const field of fields) {
+          for (let i = 0; i < fields.length; i++) {
+            const field = fields[i];
+            
             if (value && typeof value === 'object' && field in value) {
               value = value[field];
               pathTrace.push(field);
+              
+              // If this value is an array and we have more fields to process,
+              // we need to check each array item for the remaining path
+              if (Array.isArray(value) && i < fields.length - 1) {
+                const remainingFields = fields.slice(i + 1);
+                
+                // Process each array item for the remaining path
+                for (const arrayItem of value) {
+                  if (typeof arrayItem === 'object' && arrayItem !== null) {
+                    let subValue = arrayItem;
+                    let subFoundPath = true;
+                    
+                    for (const subField of remainingFields) {
+                      if (subValue && typeof subValue === 'object' && subField in subValue) {
+                        subValue = subValue[subField];
+                      } else {
+                        subFoundPath = false;
+                        break;
+                      }
+                    }
+                    
+                    if (subFoundPath && subValue && typeof subValue === 'string' && subValue.trim()) {
+                      categories.add(subValue.trim());
+                      console.log("✓ Found category from array:", subValue.trim());
+                    }
+                  }
+                }
+                foundPath = false; // Skip the normal path checking since we handled arrays
+                break;
+              }
             } else {
               foundPath = false;
               break;
             }
           }
           
-          // Debug: Show what we found at each step
-          if (processedItems <= 5) {
-            console.log(`Item ${processedItems}: Looking for path [${fields.join('.')}], found path [${pathTrace.join('.')}], foundPath: ${foundPath}, value type: ${typeof value}, value:`, typeof value === 'string' ? value.substring(0, 50) : value);
+          // Debug: Show what we found at each step (only for first few items)
+          if (processedItems <= 3) {
+            console.log(`Item ${processedItems}: Looking for path [${fields.join('.')}], found path [${pathTrace.join('.')}], foundPath: ${foundPath}, value type: ${typeof value}, value:`, typeof value === 'string' ? value.substring(0, 50) : Array.isArray(value) ? `Array[${value.length}]` : value);
           }
           
+          // Handle direct path (non-array case)
           if (foundPath && value && typeof value === 'string' && value.trim()) {
             categories.add(value.trim());
             console.log("✓ Found category:", value.trim());
