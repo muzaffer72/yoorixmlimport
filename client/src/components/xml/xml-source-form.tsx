@@ -35,9 +35,6 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
   const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
   const [xmlCategories, setXmlCategories] = useState<string[]>([]);
   const [videoProvider, setVideoProvider] = useState<string>("none");
-  const [profitMarginType, setProfitMarginType] = useState<string>("none");
-  const [profitMarginPercent, setProfitMarginPercent] = useState<string>("");
-  const [profitMarginFixed, setProfitMarginFixed] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -435,7 +432,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
               )}
               
               {showAdvanced && (
-                <div>
+                <>
                   <Separator className="mb-6" />
                   
                   {/* Field Mapping */}
@@ -518,10 +515,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
                     </div>
                   </div>
                   
-                    </div>
-                  </div>
-                  
-                  {/* Available XML Tags */
+                  {/* Available XML Tags */}
                   <div>
                     <Label>Bulunan XML Etiketleri ({xmlTags.length})</Label>
                     <div className="mt-2 p-4 bg-muted rounded-lg max-h-40 overflow-y-auto">
@@ -534,7 +528,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
                       </div>
                     </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
           )}
