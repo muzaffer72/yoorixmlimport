@@ -149,6 +149,406 @@
       "updatedAt": "2025-08-31T19:38:11.581Z",
       "confidence": "0.00",
       "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Aksesuar ve Kozmetik",
+      "localCategoryId": 368,
+      "id": "03150eff-179d-4f02-9c12-264a1ef92b9e",
+      "createdAt": "2025-08-31T19:42:31.816Z",
+      "updatedAt": "2025-08-31T19:42:31.816Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Aksesuarlar",
+      "localCategoryId": 368,
+      "id": "1ffbff43-eefc-487a-b9fc-e278f0433ece",
+      "createdAt": "2025-08-31T19:42:32.004Z",
+      "updatedAt": "2025-08-31T19:42:32.004Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Araç İçi Aksesuar",
+      "localCategoryId": 368,
+      "id": "6c11528c-9566-4d47-a8a9-ff91e3821008",
+      "createdAt": "2025-08-31T19:42:32.195Z",
+      "updatedAt": "2025-08-31T19:42:32.195Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Araç İçi Telefon Tutucular",
+      "localCategoryId": 401,
+      "id": "a5c28cf8-326c-4aad-9c19-c16afee47643",
+      "createdAt": "2025-08-31T19:42:32.410Z",
+      "updatedAt": "2025-08-31T19:42:32.410Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Banyo Aksesuarları",
+      "localCategoryId": 368,
+      "id": "acc40ae1-c6cf-41c9-92df-9613bd7a02d9",
+      "createdAt": "2025-08-31T19:42:32.594Z",
+      "updatedAt": "2025-08-31T19:42:32.594Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Dikiş Makinesi Aksesuarı",
+      "localCategoryId": 368,
+      "id": "b7f468b2-2274-4941-a91d-67bdab33dd72",
+      "createdAt": "2025-08-31T19:42:32.778Z",
+      "updatedAt": "2025-08-31T19:42:32.778Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Diğer Oda Aksesuarları",
+      "localCategoryId": 368,
+      "id": "d2e620a2-a9b4-446a-9972-7cad9652041d",
+      "createdAt": "2025-08-31T19:42:33.010Z",
+      "updatedAt": "2025-08-31T19:42:33.010Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Düğme",
+      "localCategoryId": 371,
+      "id": "fb83786b-500f-4276-98b9-bff6e7ce6c1d",
+      "createdAt": "2025-08-31T19:42:33.194Z",
+      "updatedAt": "2025-08-31T19:42:33.194Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Elektrikli Ev Aletleri",
+      "localCategoryId": 500,
+      "id": "5acdf2a4-1732-465b-ad4f-fca2b1069353",
+      "createdAt": "2025-08-31T19:42:33.434Z",
+      "updatedAt": "2025-08-31T19:42:33.434Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Ev Gereçleri",
+      "localCategoryId": 500,
+      "id": "f1448cdd-cb67-4371-8ff0-145bde3f033a",
+      "createdAt": "2025-08-31T19:42:33.824Z",
+      "updatedAt": "2025-08-31T19:42:33.824Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Evcil Hayvan Ürünleri",
+      "localCategoryId": 500,
+      "id": "4017031a-1a20-4edd-946c-b808ac83ef9b",
+      "createdAt": "2025-08-31T19:42:34.006Z",
+      "updatedAt": "2025-08-31T19:42:34.006Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Giyim",
+      "localCategoryId": 450,
+      "id": "476a9197-1757-445c-93f8-04b36525dfea",
+      "createdAt": "2025-08-31T19:42:34.186Z",
+      "updatedAt": "2025-08-31T19:42:34.186Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Kevgir ve Süzgeç",
+      "localCategoryId": 500,
+      "id": "f022795e-4db9-40fc-bb53-3f71dd922844",
+      "createdAt": "2025-08-31T19:42:34.377Z",
+      "updatedAt": "2025-08-31T19:42:34.377Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Mangal Aksesuarları",
+      "localCategoryId": 368,
+      "id": "c1c6f136-ac77-4e30-85ea-a58559f92c4e",
+      "createdAt": "2025-08-31T19:42:34.562Z",
+      "updatedAt": "2025-08-31T19:42:34.562Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Oto Aksesuar",
+      "localCategoryId": 368,
+      "id": "a55881d3-5605-4987-8155-9da7762cfbfe",
+      "createdAt": "2025-08-31T19:42:34.750Z",
+      "updatedAt": "2025-08-31T19:42:34.750Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Plastik ev gereçleri",
+      "localCategoryId": 500,
+      "id": "00d480d5-14a8-4015-8b0a-df15e4892db5",
+      "createdAt": "2025-08-31T19:42:34.932Z",
+      "updatedAt": "2025-08-31T19:42:34.932Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Pratik Ev Eşyaları",
+      "localCategoryId": 500,
+      "id": "699c2d64-619e-4b04-b379-ef0af5ae917e",
+      "createdAt": "2025-08-31T19:42:35.114Z",
+      "updatedAt": "2025-08-31T19:42:35.114Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "telefon",
+      "localCategoryId": 401,
+      "id": "2753daaa-958f-4d6d-a89c-02bcea47a38b",
+      "createdAt": "2025-08-31T19:42:35.469Z",
+      "updatedAt": "2025-08-31T19:42:35.469Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Çerçeveler",
+      "localCategoryId": 500,
+      "id": "4f60d98c-1329-49c0-94fe-72127218f2c9",
+      "createdAt": "2025-08-31T19:42:35.652Z",
+      "updatedAt": "2025-08-31T19:42:35.652Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Çift Kişilik Nevresim",
+      "localCategoryId": 500,
+      "id": "144d2e9d-338a-4b07-bab1-bdd5944fa762",
+      "createdAt": "2025-08-31T19:42:35.835Z",
+      "updatedAt": "2025-08-31T19:42:35.835Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Aksesuar ve Kozmetik",
+      "localCategoryId": 368,
+      "id": "a4472a8f-52eb-4328-a28e-e46705bfa5e4",
+      "createdAt": "2025-08-31T19:49:44.853Z",
+      "updatedAt": "2025-08-31T19:49:44.853Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Aksesuarlar",
+      "localCategoryId": 368,
+      "id": "eda1297f-ba52-4978-9da0-d7b50b18bb89",
+      "createdAt": "2025-08-31T19:49:45.050Z",
+      "updatedAt": "2025-08-31T19:49:45.050Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Araç İçi Aksesuar",
+      "localCategoryId": 368,
+      "id": "db5e4e94-f075-456e-ad7d-01a4a249b633",
+      "createdAt": "2025-08-31T19:49:45.244Z",
+      "updatedAt": "2025-08-31T19:49:45.244Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Araç İçi Telefon Tutucular",
+      "localCategoryId": 401,
+      "id": "98c596b3-3091-4b85-bbce-75de05ae923a",
+      "createdAt": "2025-08-31T19:49:45.435Z",
+      "updatedAt": "2025-08-31T19:49:45.435Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Banyo Aksesuarları",
+      "localCategoryId": 368,
+      "id": "575b4794-1f0f-4f9f-9c28-4ec4573aec4b",
+      "createdAt": "2025-08-31T19:49:45.664Z",
+      "updatedAt": "2025-08-31T19:49:45.664Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Dikiş Makinesi Aksesuarı",
+      "localCategoryId": 368,
+      "id": "0b9ad1dd-4ce5-491e-aa55-8c7574074cb7",
+      "createdAt": "2025-08-31T19:49:45.972Z",
+      "updatedAt": "2025-08-31T19:49:45.972Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Diğer Oda Aksesuarları",
+      "localCategoryId": 368,
+      "id": "82df7849-3567-42aa-9098-7079e1745061",
+      "createdAt": "2025-08-31T19:49:46.172Z",
+      "updatedAt": "2025-08-31T19:49:46.172Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Düğme",
+      "localCategoryId": 371,
+      "id": "ce23c232-1ef5-4953-9342-3abadb5c7516",
+      "createdAt": "2025-08-31T19:49:46.357Z",
+      "updatedAt": "2025-08-31T19:49:46.357Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Elektrikli Ev Aletleri",
+      "localCategoryId": 500,
+      "id": "d8b00acf-8e77-417d-a618-f561e8703d12",
+      "createdAt": "2025-08-31T19:49:46.590Z",
+      "updatedAt": "2025-08-31T19:49:46.590Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Ev Gereçleri",
+      "localCategoryId": 500,
+      "id": "e782811e-cada-41ba-8456-d7364334f28e",
+      "createdAt": "2025-08-31T19:49:46.856Z",
+      "updatedAt": "2025-08-31T19:49:46.856Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Evcil Hayvan Ürünleri",
+      "localCategoryId": 500,
+      "id": "12dec248-c189-494c-b3a3-0d3850aef697",
+      "createdAt": "2025-08-31T19:49:47.039Z",
+      "updatedAt": "2025-08-31T19:49:47.039Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Giyim",
+      "localCategoryId": 450,
+      "id": "cc00bdbc-2c7b-45a4-8cbe-5e8cb8054b8e",
+      "createdAt": "2025-08-31T19:49:47.345Z",
+      "updatedAt": "2025-08-31T19:49:47.345Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Kevgir ve Süzgeç",
+      "localCategoryId": 500,
+      "id": "12e9f9b9-b3b6-459c-9482-9c306d89e902",
+      "createdAt": "2025-08-31T19:49:47.536Z",
+      "updatedAt": "2025-08-31T19:49:47.536Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Mangal Aksesuarları",
+      "localCategoryId": 368,
+      "id": "ee1c08c3-9de9-41ff-8048-a01de0883c38",
+      "createdAt": "2025-08-31T19:49:47.722Z",
+      "updatedAt": "2025-08-31T19:49:47.722Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Oto Aksesuar",
+      "localCategoryId": 368,
+      "id": "f83caaa4-e931-4cf6-8ba6-35d0a01f8eb0",
+      "createdAt": "2025-08-31T19:49:47.920Z",
+      "updatedAt": "2025-08-31T19:49:47.920Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Plastik ev gereçleri",
+      "localCategoryId": 500,
+      "id": "d99830a4-af7f-4da6-bdba-305765133320",
+      "createdAt": "2025-08-31T19:49:48.112Z",
+      "updatedAt": "2025-08-31T19:49:48.112Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Pratik Ev Eşyaları",
+      "localCategoryId": 500,
+      "id": "92abe9e3-1a2e-4a63-a63c-cde74e18e613",
+      "createdAt": "2025-08-31T19:49:48.299Z",
+      "updatedAt": "2025-08-31T19:49:48.299Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "telefon",
+      "localCategoryId": 401,
+      "id": "67996995-ced7-496f-b684-572a1539f845",
+      "createdAt": "2025-08-31T19:49:48.483Z",
+      "updatedAt": "2025-08-31T19:49:48.483Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Çerçeveler",
+      "localCategoryId": 500,
+      "id": "c3e73181-d240-4dde-b627-8896bc214d4f",
+      "createdAt": "2025-08-31T19:49:48.670Z",
+      "updatedAt": "2025-08-31T19:49:48.670Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "xmlCategoryName": "Çift Kişilik Nevresim",
+      "localCategoryId": 500,
+      "id": "abc83012-8538-493a-a28c-4f18d3e72561",
+      "createdAt": "2025-08-31T19:49:48.857Z",
+      "updatedAt": "2025-08-31T19:49:48.857Z",
+      "confidence": "0.00",
+      "isManual": false
     }
   ]
 }
