@@ -775,6 +775,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       console.log(`🔍 BAŞLANGIC DEBUG: XML parse sonucu:`, typeof result, Object.keys(result || {}));
+      console.log(`🔍 XML FULL RESULT:`, JSON.stringify(result, null, 2).substring(0, 1000));
       
       const extractedProducts = extractProducts(result);
       console.log(`🔍 DEBUG: XML'den çıkarılan ürün sayısı: ${extractedProducts.length}`);
