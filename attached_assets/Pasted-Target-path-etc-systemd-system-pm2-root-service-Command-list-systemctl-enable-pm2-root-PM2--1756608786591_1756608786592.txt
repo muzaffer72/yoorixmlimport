@@ -1,0 +1,114 @@
+Target path
+/etc/systemd/system/pm2-root.service
+Command list
+[ 'systemctl enable pm2-root' ]
+[PM2] Writing init configuration in /etc/systemd/system/pm2-root.service
+[PM2] Making script booting at startup...
+[PM2] [-] Executing: systemctl enable pm2-root...
+[PM2] [v] Command successfully executed.
++---------------------------------------+
+[PM2] Freeze a process list on reboot via:
+$ pm2 save
+
+[PM2] Remove init script via:
+$ pm2 unstartup systemd
+root@muzaffersanli:/home/hercuma.com/xml.hercuma.com# pm2 status
+pm2 logs xml-manager
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ domainhub          │ fork     │ 357… │ online    │ 0%       │ 157.4mb  │
+│ 1  │ domainhub          │ fork     │ 357… │ online    │ 0%       │ 190.5mb  │
+│ 2  │ domainhub          │ fork     │ 357… │ online    │ 0%       │ 234.5mb  │
+│ 3  │ xml-manager        │ fork     │ 5    │ online    │ 0%       │ 124.6mb  │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[TAILING] Tailing last 15 lines for [xml-manager] process (change the value with --lines option)
+/root/.pm2/logs/xml-manager-error.log last 15 lines:
+3|xml-mana |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:109:5)
+3|xml-mana |
+3|xml-mana | Node.js v22.2.0
+3|xml-mana | /home/hercuma.com/xml.hercuma.com/server/db.ts:9
+3|xml-mana |   throw new Error(
+3|xml-mana |         ^
+3|xml-mana |
+3|xml-mana |
+3|xml-mana | Error: DATABASE_URL must be set. Did you forget to provision a database?
+3|xml-mana |     at <anonymous> (/home/hercuma.com/xml.hercuma.com/server/db.ts:9:9)
+3|xml-mana |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+3|xml-mana |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+3|xml-mana |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:109:5)
+3|xml-mana |
+3|xml-mana | Node.js v22.2.0
+
+/root/.pm2/logs/xml-manager-out.log last 15 lines:
+3|xml-mana | > rest-express@1.0.0 dev
+3|xml-mana | > NODE_ENV=development tsx server/index.ts
+3|xml-mana |
+3|xml-mana |
+3|xml-mana | > rest-express@1.0.0 dev
+3|xml-mana | > NODE_ENV=development tsx server/index.ts
+3|xml-mana |
+3|xml-mana |
+3|xml-mana | > rest-express@1.0.0 dev
+3|xml-mana | > NODE_ENV=development tsx server/index.ts
+3|xml-mana |
+3|xml-mana |
+3|xml-mana | > rest-express@1.0.0 dev
+3|xml-mana | > NODE_ENV=development tsx server/index.ts
+3|xml-mana |
+
+3|xml-manager  | /home/hercuma.com/xml.hercuma.com/server/db.ts:9
+3|xml-manager  |   throw new Error(
+3|xml-manager  |         ^
+3|xml-manager  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+3|xml-manager  |     at <anonymous> (/home/hercuma.com/xml.hercuma.com/server/db.ts:9:9)
+3|xml-manager  |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+3|xml-manager  |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+3|xml-manager  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:109:5)
+3|xml-manager  | Node.js v22.2.0
+3|xml-manager  | > rest-express@1.0.0 dev
+3|xml-manager  | > NODE_ENV=development tsx server/index.ts
+3|xml-manager  | /home/hercuma.com/xml.hercuma.com/server/db.ts:9
+3|xml-manager  |   throw new Error(
+3|xml-manager  |         ^
+3|xml-manager  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+3|xml-manager  |     at <anonymous> (/home/hercuma.com/xml.hercuma.com/server/db.ts:9:9)
+3|xml-manager  |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+3|xml-manager  |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+3|xml-manager  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:109:5)
+3|xml-manager  | Node.js v22.2.0
+3|xml-manager  | > rest-express@1.0.0 dev
+3|xml-manager  | > NODE_ENV=development tsx server/index.ts
+3|xml-manager  | /home/hercuma.com/xml.hercuma.com/server/db.ts:9
+3|xml-manager  |   throw new Error(
+3|xml-manager  |         ^
+3|xml-manager  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+3|xml-manager  |     at <anonymous> (/home/hercuma.com/xml.hercuma.com/server/db.ts:9:9)
+3|xml-manager  |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+3|xml-manager  |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+3|xml-manager  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:109:5)
+3|xml-manager  | Node.js v22.2.0
+3|xml-manager  | > rest-express@1.0.0 dev
+3|xml-manager  | > NODE_ENV=development tsx server/index.ts
+3|xml-manager  | /home/hercuma.com/xml.hercuma.com/server/db.ts:9
+3|xml-manager  |   throw new Error(
+3|xml-manager  |         ^
+3|xml-manager  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+3|xml-manager  |     at <anonymous> (/home/hercuma.com/xml.hercuma.com/server/db.ts:9:9)
+3|xml-manager  |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+3|xml-manager  |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+3|xml-manager  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:109:5)
+3|xml-manager  | Node.js v22.2.0
+3|xml-manager  | > rest-express@1.0.0 dev
+3|xml-manager  | > NODE_ENV=development tsx server/index.ts
+3|xml-manager  | /home/hercuma.com/xml.hercuma.com/server/db.ts:9
+3|xml-manager  |   throw new Error(
+3|xml-manager  |         ^
+3|xml-manager  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+3|xml-manager  |     at <anonymous> (/home/hercuma.com/xml.hercuma.com/server/db.ts:9:9)
+3|xml-manager  |     at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+3|xml-manager  |     at async ModuleLoader.import (node:internal/modules/esm/loader:475:24)
+3|xml-manager  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:109:5)
+3|xml-manager  | Node.js v22.2.0
+^C
+root@muzaffersanli:/home/hercuma.com/xml.hercuma.com#
