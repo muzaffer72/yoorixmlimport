@@ -6,6 +6,7 @@ import { z } from "zod";
 import * as xml2js from "xml2js";
 import { ObjectStorageService } from "./objectStorage";
 import { GeminiService } from "./geminiService";
+import { getLocalCategories, connectToImportDatabase, importProductToMySQL } from "./mysql-import";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -428,13 +429,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Category endpoints
+  // Category endpoints (MySQL'den çek)
   app.get("/api/categories", async (req, res) => {
     try {
-      const categories = await storage.getCategories();
-      res.json(categories);
+      // Önce database ayarlarını kontrol et
+      const dbSettings = await storage.getDatabaseSettings();
+      if (!dbSettings) {
+        return res.status(400).json({ message: "MySQL database settings not configured" });
+      }
+
+      // MySQL'e bağlan ve kategorileri çek
+      await connectToImportDatabase({
+        host: dbSettings.host,
+        port: dbSettings.port,
+        database: dbSettings.database,
+        username: dbSettings.username,
+        password: dbSettings.password
+      });
+
+      const categories = await getLocalCategories();
+      res.json(categories.map(cat => ({
+        id: cat.id,
+        name: cat.title,
+        title: cat.title
+      })));
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch categories" });
+      console.error("MySQL categories fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch categories from MySQL" });
     }
   });
 
@@ -1016,6 +1037,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: error.message || "Failed to trigger cronjob",
         status: "error",
         timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // MySQL Import endpoint - XML'den ürünleri MySQL'e aktar
+  app.post("/api/xml-sources/:id/import-to-mysql", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const xmlSource = await storage.getXmlSource(id);
+      
+      if (!xmlSource) {
+        return res.status(404).json({ message: "XML source not found" });
+      }
+
+      // Database ayarlarını kontrol et
+      const dbSettings = await storage.getDatabaseSettings();
+      if (!dbSettings) {
+        return res.status(400).json({ message: "MySQL database settings not configured" });
+      }
+
+      // MySQL'e bağlan
+      await connectToImportDatabase({
+        host: dbSettings.host,
+        port: dbSettings.port,
+        database: dbSettings.database,
+        username: dbSettings.username,
+        password: dbSettings.password
+      });
+
+      // XML'i fetch et ve parse et
+      const response = await fetch(xmlSource.url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch XML: ${response.status}`);
+      }
+
+      const xmlData = await response.text();
+      const parser = new xml2js.Parser();
+      const result = await parser.parseStringPromise(xmlData);
+
+      // Ürünleri çıkar ve MySQL'e import et
+      let importedCount = 0;
+      const products = []; // XML'den çıkarılan ürünler
+
+      // XML'i parse et (bu kısım XML yapınıza göre özelleştirilmeli)
+      if (result.root && result.root.product) {
+        for (const product of result.root.product) {
+          try {
+            const productData = {
+              name: product.name?.[0] || 'Unknown Product',
+              price: parseFloat(product.price?.[0] || '0'),
+              description: product.description?.[0] || '',
+              sku: product.sku?.[0] || '',
+              stock: parseInt(product.stock?.[0] || '0'),
+              categoryId: null // Kategori eşleştirmesi yapılacak
+            };
+
+            // MySQL'e import et
+            await importProductToMySQL(productData);
+            importedCount++;
+
+          } catch (error) {
+            console.error('Product import error:', error);
+          }
+        }
+      }
+
+      // Activity log ekle
+      await storage.createActivityLog({
+        type: "mysql_import",
+        title: `MySQL'e ${importedCount} ürün aktarıldı`,
+        description: `${xmlSource.name} kaynağından MySQL veritabanına ürün aktarımı`,
+        entityId: id,
+        entityType: "xml_source"
+      });
+
+      res.json({
+        message: `${importedCount} ürün başarıyla MySQL'e aktarıldı`,
+        importedCount,
+        xmlSource: xmlSource.name
+      });
+
+    } catch (error: any) {
+      console.error("MySQL import error:", error);
+      res.status(500).json({ 
+        message: error.message || "MySQL import failed" 
       });
     }
   });

@@ -75,7 +75,7 @@ export interface IStorage {
   deleteCategoryMapping(id: string): Promise<boolean>;
   
   // Database Settings methods
-  getDatabaseSettings(): Promise<DatabaseSettings[]>;
+  getDatabaseSettings(): Promise<DatabaseSettings | null>;
   createDatabaseSettings(settings: InsertDatabaseSettings): Promise<DatabaseSettings>;
   updateDatabaseSettings(id: string, settings: Partial<DatabaseSettings>): Promise<DatabaseSettings>;
   deleteDatabaseSettings(id: string): Promise<boolean>;
@@ -594,10 +594,9 @@ export class MemStorage implements IStorage {
   }
 
   // Database Settings methods
-  async getDatabaseSettings(): Promise<DatabaseSettings[]> {
-    return Array.from(this.databaseSettings.values()).sort((a, b) => 
-      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-    );
+  async getDatabaseSettings(): Promise<DatabaseSettings | null> {
+    const activeSettings = Array.from(this.databaseSettings.values()).find(s => s.isActive);
+    return activeSettings || null;
   }
 
   async createDatabaseSettings(settings: InsertDatabaseSettings): Promise<DatabaseSettings> {
