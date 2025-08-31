@@ -12,9 +12,9 @@ export async function connectToImportDatabase(settings: {
   username: string;
   password: string;
 }) {
-  // Development mode kontrolü
+  // Development mode kontrolü - sadece localhost için geçerli
   if (process.env.NODE_ENV === 'development' && settings.host === 'localhost') {
-    console.log('Development mode: Skipping MySQL connection');
+    console.log('Development mode: Skipping MySQL connection for localhost');
     throw new Error('MySQL connection refused in development mode');
   }
 

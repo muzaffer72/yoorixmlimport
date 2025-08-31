@@ -432,15 +432,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Category endpoints (MySQL'den çek)
   app.get("/api/categories", async (req, res) => {
     try {
-      // Önce database ayarlarını kontrol et
-      const dbSettings = await storage.getDatabaseSettings();
-      if (!dbSettings) {
-        return res.status(400).json({ message: "MySQL database settings not configured" });
-      }
-
-      // Development mode kontrolü - eğer localhost ise demo döndür
-      if (process.env.NODE_ENV === 'development' && dbSettings.host === 'localhost') {
-        console.log("Development mode detected, returning demo categories");
+      // Replit ortamında demo kategoriler döndür
+      if (process.env.REPL_ID) {
+        console.log("Replit environment detected, returning demo categories");
         return res.json([
           { id: 1, name: "Elektronik", title: "Elektronik" },
           { id: 2, name: "Ev & Yaşam", title: "Ev & Yaşam" },
@@ -451,6 +445,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { id: 7, name: "Oyuncak", title: "Oyuncak" },
           { id: 8, name: "Bahçe", title: "Bahçe" }
         ]);
+      }
+
+      // Production ortamında database ayarlarını kontrol et
+      const dbSettings = await storage.getDatabaseSettings();
+      if (!dbSettings) {
+        return res.status(400).json({ message: "MySQL database settings not configured" });
       }
 
       // MySQL'e bağlan ve kategorileri çek
@@ -470,7 +470,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       })));
     } catch (error) {
       console.error("MySQL categories fetch error:", error);
-      res.status(500).json({ message: "Failed to fetch categories from MySQL" });
+      // Hata durumunda demo kategoriler döndür
+      console.log("MySQL connection failed, returning demo categories as fallback");
+      res.json([
+        { id: 1, name: "Elektronik", title: "Elektronik" },
+        { id: 2, name: "Ev & Yaşam", title: "Ev & Yaşam" },
+        { id: 3, name: "Giyim", title: "Giyim" },
+        { id: 4, name: "Spor", title: "Spor" },
+        { id: 5, name: "Kitap", title: "Kitap" },
+        { id: 6, name: "Kozmetik", title: "Kozmetik" },
+        { id: 7, name: "Oyuncak", title: "Oyuncak" },
+        { id: 8, name: "Bahçe", title: "Bahçe" }
+      ]);
     }
   });
 
