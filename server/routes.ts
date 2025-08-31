@@ -171,45 +171,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await parser.parseStringPromise(xmlText);
       console.log("XML parsed successfully");
       
-      // Extract structure from XML with depth limit to prevent stack overflow
-      const extractTags = (obj: any, path = "", depth = 0, maxDepth = 8, visited = new WeakSet()): string[] => {
-        // Prevent infinite recursion and stack overflow
-        if (depth > maxDepth) return [];
+      // Extract structure from XML using iterative approach to prevent stack overflow
+      const extractTagsIterative = (rootObj: any): string[] => {
+        const tags = new Set<string>();
+        const queue: { obj: any, path: string, depth: number }[] = [{ obj: rootObj, path: "", depth: 0 }];
+        const maxDepth = 6;
+        const maxTags = 500; // Limit total tags for performance
         
-        // Check for circular references
-        if (typeof obj === "object" && obj !== null) {
-          if (visited.has(obj)) return [];
-          visited.add(obj);
-        }
-        
-        const tags: string[] = [];
-        
-        if (typeof obj === "object" && obj !== null) {
+        while (queue.length > 0 && tags.size < maxTags) {
+          const { obj, path, depth } = queue.shift()!;
+          
+          if (depth > maxDepth || typeof obj !== "object" || obj === null) {
+            continue;
+          }
+          
           if (Array.isArray(obj)) {
-            // For arrays, just analyze the first item if it exists
+            // For arrays, only process first item to get structure
             if (obj.length > 0) {
-              const newVisited = new WeakSet(visited);
-              tags.push(...extractTags(obj[0], path, depth + 1, maxDepth, newVisited));
+              queue.push({ obj: obj[0], path, depth: depth + 1 });
             }
           } else {
+            // Process object properties
+            let processedKeys = 0;
+            const maxKeysPerLevel = 50; // Limit keys per level
+            
             for (const key in obj) {
-              const fullPath = path ? `${path}.${key}` : key;
-              tags.push(fullPath);
+              if (processedKeys >= maxKeysPerLevel) break;
               
-              // Only recurse if we haven't hit depth limit
+              const fullPath = path ? `${path}.${key}` : key;
+              tags.add(fullPath);
+              
+              // Add to queue for further processing
               if (depth < maxDepth && typeof obj[key] === "object" && obj[key] !== null) {
-                const newVisited = new WeakSet(visited);
-                tags.push(...extractTags(obj[key], fullPath, depth + 1, maxDepth, newVisited));
+                queue.push({ obj: obj[key], path: fullPath, depth: depth + 1 });
               }
+              
+              processedKeys++;
             }
           }
         }
         
-        return tags;
+        return Array.from(tags);
       };
 
       console.log("Extracting tags from XML structure...");
-      const tags = Array.from(new Set(extractTags(result)));
+      const tags = extractTagsIterative(result);
       console.log("Found", tags.length, "tags");
       
       res.json({ 
