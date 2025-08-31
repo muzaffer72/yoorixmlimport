@@ -203,6 +203,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
   const productFields = [
     { key: "name", label: "Ürün Adı", required: true },
     { key: "price", label: "Fiyat", required: true },
+    { key: "short_description", label: "Kısa Açıklama", required: false },
     { key: "description", label: "Açıklama", required: false },
     { key: "sku", label: "SKU/Stok Kodu", required: false },
     { key: "barcode", label: "Barkod", required: false },

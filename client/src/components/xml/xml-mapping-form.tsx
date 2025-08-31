@@ -18,7 +18,6 @@ const requiredFields = [
   { key: "name", label: "Ürün Adı (name)", required: true },
   { key: "category_id", label: "Kategori ID (category_id)", required: true },
   { key: "price", label: "Fiyat (price)", required: true },
-  { key: "short_description", label: "Kısa Açıklama (short_description)", required: false },
   { key: "unit", label: "Birim (unit)", required: true },
   { key: "current_stock", label: "Mevcut Stok (current_stock)", required: true },
   { key: "minimum_order_quantity", label: "Minimum Sipariş Miktarı (minimum_order_quantity)", required: true },
