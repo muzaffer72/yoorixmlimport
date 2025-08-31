@@ -406,6 +406,28 @@
       "createdAt": "2025-08-31T16:59:32.944Z",
       "oldValue": null,
       "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
+      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "entityType": "xml_source",
+      "id": "4180f504-a590-4688-a8d2-9c7960cb7716",
+      "createdAt": "2025-08-31T17:02:57.174Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
+      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "entityType": "xml_source",
+      "id": "dcf9b48a-2ac3-4820-8bc8-d95f5875c716",
+      "createdAt": "2025-08-31T17:04:37.742Z",
+      "oldValue": null,
+      "newValue": null
     }
   ]
 }

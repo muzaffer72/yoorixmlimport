@@ -593,32 +593,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Product import from XML
   app.post("/api/products/import-from-xml", async (req, res) => {
     try {
-      console.log(`🚀 XML IMPORT BAŞLADI`);
+      console.log(`\n${'='.repeat(60)}`);
+      console.log(`🚀 XML ÜRÜN İMPORT SÜRECİ BAŞLADI`);
+      console.log(`${'='.repeat(60)}\n`);
+      
       const { xmlSourceId } = req.body;
-      console.log(`🔍 XML Source ID: ${xmlSourceId}`);
+      console.log(`📋 ADIM 1/8: XML Source bilgileri kontrol ediliyor...`);
+      console.log(`   └─ XML Source ID: ${xmlSourceId}`);
       
       const xmlSource = await pageStorage.getXmlSource(xmlSourceId);
       if (!xmlSource) {
+        console.log(`❌ HATA: XML source bulunamadı!`);
         return res.status(404).json({ message: "XML source not found" });
       }
 
       if (!xmlSource.url) {
+        console.log(`❌ HATA: XML source URL yapılandırılmamış!`);
         return res.status(400).json({ message: "XML source URL not configured" });
       }
       
-      console.log(`🔍 XML Source URL: ${xmlSource.url}`);
+      console.log(`   └─ XML Source URL: ${xmlSource.url}`);
+      console.log(`   └─ XML Source Name: ${xmlSource.name}`);
+      console.log(`✅ ADIM 1 TAMAMLANDI: XML source bilgileri hazır\n`);
 
-      // Get category mappings for this XML source
+      console.log(`📋 ADIM 2/8: Kategori eşleştirmeleri yükleniyor...`);
       const categoryMappings = await pageStorage.getCategoryMappings(xmlSourceId);
       const categoryMappingMap = new Map(
         categoryMappings.map(mapping => [mapping.xmlCategoryName, mapping.localCategoryId])
       );
+      console.log(`   └─ Toplam kategori eşleştirmesi: ${categoryMappings.length}`);
+      if (categoryMappings.length > 0) {
+        console.log(`   └─ Örnek eşleştirme: "${categoryMappings[0].xmlCategoryName}" → kategori ${categoryMappings[0].localCategoryId}`);
+      }
+      console.log(`✅ ADIM 2 TAMAMLANDI: Kategori mappingler hazır\n`);
 
-      // Fetch and parse XML with timeout
+      console.log(`📋 ADIM 3/8: XML dosyası indiriliyor...`);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes for import
       
-      console.log(`🔍 XML FETCH BAŞLADI: ${xmlSource.url}`);
+      console.log(`   └─ URL: ${xmlSource.url}`);
+      console.log(`   └─ Timeout: 2 dakika`);
       
       const response = await fetch(xmlSource.url, { 
         signal: controller.signal,
@@ -628,7 +642,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       clearTimeout(timeoutId);
-      console.log(`🔍 XML FETCH RESPONSE: ${response.status} ${response.statusText}`);
+      console.log(`   └─ HTTP Response: ${response.status} ${response.statusText}`);
+      console.log(`   └─ Content-Type: ${response.headers.get('content-type') || 'bilinmiyor'}`);
       
       if (!response.ok) {
         return res.status(400).json({ 
@@ -637,29 +652,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const xmlText = await response.text();
+      console.log(`   └─ XML boyutu: ${(xmlText.length / 1024).toFixed(2)} KB`);
       
       // Limit XML size to prevent memory issues (100MB max for import)
       if (xmlText.length > 100 * 1024 * 1024) {
+        console.log(`❌ HATA: XML dosyası çok büyük (${(xmlText.length / 1024 / 1024).toFixed(2)} MB > 100 MB)`);
         return res.status(400).json({ 
           message: "XML dosyası çok büyük (maksimum 100MB)" 
         });
       }
+      console.log(`✅ ADIM 3 TAMAMLANDI: XML başarıyla indirildi\n`);
       
+      console.log(`📋 ADIM 4/8: XML dosyası parse ediliyor...`);
       const parser = new xml2js.Parser({ 
         explicitArray: false,
         ignoreAttrs: false,
         mergeAttrs: true
       });
-      console.log(`🔍 XML TEXT LENGTH: ${xmlText.length} characters`);
-      console.log(`🔍 XML TEXT PREVIEW: ${xmlText.substring(0, 500)}`);
+      console.log(`   └─ XML boyutu: ${xmlText.length} karakter`);
+      console.log(`   └─ XML önizleme: ${xmlText.substring(0, 200)}...`);
       
       let result;
       try {
         result = await parser.parseStringPromise(xmlText);
-        console.log(`🔍 XML PARSE SUCCESS - Result type: ${typeof result}`);
-        console.log(`🔍 XML KEYS: ${Object.keys(result || {})}`);
+        console.log(`   └─ Parse başarılı: ${typeof result} tipi`);
+        console.log(`   └─ Ana anahtarlar: [${Object.keys(result || {}).join(', ')}]`);
+        console.log(`✅ ADIM 4 TAMAMLANDI: XML parse edildi\n`);
       } catch (parseError) {
-        console.error(`🚨 XML PARSE ERROR:`, parseError);
+        console.log(`❌ HATA: XML parse başarısız!`);
+        console.error(`   └─ Parse hatası:`, parseError.message);
         throw new Error(`XML parse failed: ${parseError.message}`);
       }
       
@@ -802,42 +823,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         };
         
-        console.log(`🔍 XML traverse başlatılıyor...`);
-        console.log(`🔍 FIELD MAPPING DEBUG:`, xmlSource.fieldMapping);
-        console.log(`🔍 XML SOURCE DEBUG:`, xmlSource);
-        console.log(`🔍 Field mapping ayarları:`, fieldMapping);
-        console.log(`🔍 Category tag:`, xmlSource.categoryTag);
-        console.log(`🔍 XML data keys:`, Object.keys(data));
+        console.log(`📋 ADIM 5/8: Ürünler XML'den çıkarılıyor...`);
+        console.log(`   └─ Field mapping ayarları:`, Object.keys(fieldMapping));
+        console.log(`   └─ Category tag: ${xmlSource.categoryTag}`);
+        console.log(`   └─ XML ana anahtarlar: [${Object.keys(data).join(', ')}]`);
         
         // Özel olarak Urunler kontrol et
         if (data.Urunler) {
-          console.log(`🔍 Urunler bulundu, tipi:`, typeof data.Urunler, Array.isArray(data.Urunler) ? `Array(${data.Urunler.length})` : 'Object');
+          console.log(`   └─ Urunler bulundu:`, typeof data.Urunler, Array.isArray(data.Urunler) ? `Array(${data.Urunler.length})` : 'Object');
           
           // XML yapısını detayına kadar incele
           if (Array.isArray(data.Urunler)) {
-            console.log(`🔍 Urunler Array - İlk eleman:`, JSON.stringify(data.Urunler[0], null, 2).substring(0, 800));
+            console.log(`   └─ Urunler Array formatında`);
+            if (data.Urunler.length > 0) {
+              console.log(`   └─ İlk eleman keys: [${Object.keys(data.Urunler[0] || {}).join(', ')}]`);
+            }
           } else {
-            console.log(`🔍 Urunler Object - Keys:`, Object.keys(data.Urunler));
+            console.log(`   └─ Urunler Object formatında: [${Object.keys(data.Urunler).join(', ')}]`);
             if (data.Urunler.Urun) {
-              console.log(`🔍 Urunler.Urun bulundu, tipi:`, typeof data.Urunler.Urun, Array.isArray(data.Urunler.Urun) ? `Array(${data.Urunler.Urun.length})` : 'Object');
+              const urunType = Array.isArray(data.Urunler.Urun) ? `Array(${data.Urunler.Urun.length})` : 'Object';
+              console.log(`   └─ Urunler.Urun bulundu: ${urunType}`);
               if (Array.isArray(data.Urunler.Urun) && data.Urunler.Urun.length > 0) {
-                console.log(`🔍 İlk Urun örneği:`, JSON.stringify(data.Urunler.Urun[0], null, 2).substring(0, 800));
+                console.log(`   └─ İlk Urun keys: [${Object.keys(data.Urunler.Urun[0] || {}).join(', ')}]`);
               }
             }
           }
+        } else {
+          console.log(`   └─ ⚠️  Urunler anahtarı bulunamadı!`);
         }
         
+        console.log(`   └─ Traverse başlatılıyor...`);
         traverse(data);
-        console.log(`🔍 XML traverse tamamlandı. Toplam ürün: ${products.length}`);
+        console.log(`   └─ Traverse tamamlandı`);
+        console.log(`✅ ADIM 5 TAMAMLANDI: ${products.length} ürün çıkarıldı\n`);
         return products;
       };
 
-      console.log(`🔍 BAŞLANGIC DEBUG: XML parse sonucu:`, typeof result, Object.keys(result || {}));
-      console.log(`🔍 XML FULL RESULT:`, JSON.stringify(result, null, 2).substring(0, 1000));
+      console.log(`📋 ADIM 6/8: Ürün verileri işleniyor...`);
       
       const extractedProducts = extractProducts(result);
-      console.log(`🔍 DEBUG: XML'den çıkarılan ürün sayısı: ${extractedProducts.length}`);
-      console.log(`🔍 DEBUG: XML yapısı kontrol:`, Object.keys(result).slice(0, 5));
+      console.log(`   └─ Çıkarılan ürün sayısı: ${extractedProducts.length}`);
       
       if (extractedProducts.length > 0) {
         console.log(`📋 İlk ürün örneği:`, JSON.stringify(extractedProducts[0], null, 2));
