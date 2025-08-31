@@ -643,7 +643,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ignoreAttrs: false,
         mergeAttrs: true
       });
+      console.log(`🔍 XML TEXT LENGTH: ${xmlText.length} characters`);
+      console.log(`🔍 XML TEXT PREVIEW: ${xmlText.substring(0, 500)}`);
+      
       const result = await parser.parseStringPromise(xmlText);
+      console.log(`🔍 XML PARSE SUCCESS - Result type: ${typeof result}`);
       
       // Extract products from XML
       const extractProducts = (data: any): any[] => {
@@ -715,24 +719,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 }
 
+                // Extract values with detailed debugging
+                const nameValue = extractValue(fieldMapping?.name);
+                const priceValue = extractValue(fieldMapping?.price);
+                const descValue = extractValue(fieldMapping?.description);
+                const skuValue = extractValue(fieldMapping?.sku);
+                const barcodeValue = extractValue(fieldMapping?.barcode);
+                const stockValue = extractValue(fieldMapping?.currentStock);
+                const unitValue = extractValue(fieldMapping?.unit);
+                
+                console.log(`🔍 EXTRACT VALUES DEBUG:`, {
+                  name: nameValue,
+                  price: priceValue,
+                  desc: descValue,
+                  sku: skuValue,
+                  stock: stockValue,
+                  unit: unitValue,
+                  category: categoryName,
+                  targetCategoryId
+                });
+                
+                // Excel örneğindeki gibi varsayılan değerler + gerekli alanlar
                 const productData = {
-                  name: extractValue(fieldMapping?.name) || "Unnamed Product",
-                  price: parseFloat(extractValue(fieldMapping?.price) as string) || 0,
-                  description: extractValue(fieldMapping?.description) || "",
-                  sku: extractValue(fieldMapping?.sku) || "",
-                  barcode: extractValue(fieldMapping?.barcode) || "",
-                  currentStock: parseInt(extractValue(fieldMapping?.currentStock) as string) || 0,
-                  unit: extractValue(fieldMapping?.unit) || "adet",
+                  name: nameValue || "Ürün Adı Belirtilmemiş",
+                  price: parseFloat(priceValue as string) || 1.00, // Min 1 TL
+                  description: descValue || nameValue || "Ürün açıklaması mevcut değil",
+                  sku: skuValue || `AUTO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  barcode: barcodeValue || "",
+                  currentStock: parseInt(stockValue as string) || 1, // Min 1 adet
+                  unit: unitValue || "Adet",
                   categoryId: targetCategoryId,
                   xmlSourceId: xmlSourceId,
                   minimumOrderQuantity: 1,
                   thumbnail: thumbnailUrl && typeof thumbnailUrl === 'string' && thumbnailUrl.trim() ? thumbnailUrl.trim() : null,
                   images: imageUrls.length > 0 ? imageUrls : null,
+                  // Excel örneğindeki zorunlu alanlar
+                  brandId: null,
+                  slug: null,
+                  tags: null,
+                  isApproved: true,
+                  isCatalog: false,
+                  externalLink: null,
+                  isRefundable: true,
+                  cashOnDelivery: true,
+                  shortDescription: descValue || nameValue || ""
                 };
                 
-                // Only add if required fields are present
-                if (productData.name && productData.price > 0) {
+                console.log(`🔍 ÜRÜN VERİSİ HAZIRLANDI:`, productData);
+                
+                // Artık sadece temel kontrol (isim var mı?)
+                if (productData.name && productData.name !== "Ürün Adı Belirtilmemiş") {
                   products.push(productData);
+                  console.log(`✅ ÜRÜN EKLENDİ: ${productData.name} - ${productData.price} TL`);
+                } else {
+                  console.log(`❌ ÜRÜN REDDEDİLDİ: İsim eksik veya varsayılan`);
                 }
               }
               
@@ -1384,9 +1424,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
     } catch (error: any) {
-      console.error("MySQL import error:", error);
+      console.error("🚨 XML IMPORT FULL ERROR:", error);
+      console.error("🚨 Error name:", error.name);
+      console.error("🚨 Error message:", error.message);
+      console.error("🚨 Error stack:", error.stack);
       res.status(500).json({ 
-        message: error.message || "MySQL import failed" 
+        message: error.message || "XML import sırasında hata oluştu",
+        error: error.name,
+        details: error.stack?.substring(0, 200)
       });
     }
   });
