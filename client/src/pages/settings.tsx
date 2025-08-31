@@ -723,7 +723,7 @@ export default function SettingsPage() {
             </p>
           </CardHeader>
           <CardContent>
-            {databaseSettings.length === 0 ? (
+            {!databaseSettings || databaseSettings.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
                 Henüz veritabanı bağlantısı eklenmemiş
               </p>
@@ -739,7 +739,7 @@ export default function SettingsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {databaseSettings.map((setting) => (
+                  {databaseSettings && databaseSettings.map((setting) => (
                     <TableRow key={setting.id} data-testid={`db-setting-${setting.id}`}>
                       <TableCell>
                         <div className="font-medium">{setting.name}</div>
