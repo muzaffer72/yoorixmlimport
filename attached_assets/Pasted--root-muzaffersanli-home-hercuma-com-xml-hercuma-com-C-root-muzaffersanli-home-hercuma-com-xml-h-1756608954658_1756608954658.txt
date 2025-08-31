@@ -1,0 +1,49 @@
+
+root@muzaffersanli:/home/hercuma.com/xml.hercuma.com# ^C
+root@muzaffersanli:/home/hercuma.com/xml.hercuma.com# pm2 delete xml-manager
+DATABASE_URL="mysql://herc_xmlaktar:herc_xmlaktar@localhost:3306/herc_xmlaktar" pm2 start npm --name "xml-manager" -- run dev
+pm2 save
+(node:181068) [DEP0044] DeprecationWarning: The `util.isArray` API is deprecated. Please use `Array.isArray()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[PM2] Applying action deleteProcessId on app [xml-manager](ids: [ 3 ])
+[PM2] [xml-manager](3) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ domainhub          │ fork     │ 357… │ online    │ 91.4%    │ 114.5mb  │
+│ 1  │ domainhub          │ fork     │ 357… │ online    │ 51.4%    │ 185.3mb  │
+│ 2  │ domainhub          │ fork     │ 357… │ online    │ 65.7%    │ 146.6mb  │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2][WARN] Current process list is not synchronized with saved list. App xml-manager differs. Type 'pm2 save' to synchronize.
+(node:181079) [DEP0044] DeprecationWarning: The `util.isArray` API is deprecated. Please use `Array.isArray()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[PM2] Starting /usr/local/bin/npm in fork_mode (1 instance)
+[PM2] Done.
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ domainhub          │ fork     │ 357… │ online    │ 50%      │ 145.2mb  │
+│ 1  │ domainhub          │ fork     │ 357… │ online    │ 50%      │ 207.7mb  │
+│ 2  │ domainhub          │ fork     │ 357… │ online    │ 50%      │ 173.9mb  │
+│ 4  │ xml-manager        │ fork     │ 0    │ online    │ 0%       │ 4.0kb    │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2] Saving current process list...
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+root@muzaffersanli:/home/hercuma.com/xml.hercuma.com# cd /home/hercuma.com/xml.hercuma.com
+npm run db:push
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/home/hercuma.com/xml.hercuma.com/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] Pulling schema from database...
+error: received invalid response: 66
+    at /home/hercuma.com/xml.hercuma.com/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.query (/home/hercuma.com/xml.hercuma.com/node_modules/drizzle-kit/bin.cjs:78355:26)
+    at async fromDatabase2 (/home/hercuma.com/xml.hercuma.com/node_modules/drizzle-kit/bin.cjs:19095:25) {
+  length: 10
+}
+root@muzaffersanli:/home/hercuma.com/xml.hercuma.com#
