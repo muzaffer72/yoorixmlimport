@@ -730,16 +730,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 // Extract field values based on field mapping
                 const extractValue = (mapping: string | undefined) => {
                   if (!mapping) return null;
-                  const fields = mapping.split('.');
-                  let value = obj;
-                  for (const field of fields) {
-                    if (value && typeof value === 'object' && field in value) {
-                      value = value[field];
-                    } else {
-                      return null;
-                    }
+                  
+                  // Artık basit field mapping: "adi", "fiyat" vs.
+                  if (obj && typeof obj === 'object' && mapping in obj) {
+                    return obj[mapping];
                   }
-                  return value;
+                  return null;
                 };
                 
                 // Extract image URLs
@@ -774,15 +770,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   targetCategoryId
                 });
                 
-                // Excel örneğinizdeki TAM veri yapısı
+                // Excel örneğinizdeki TAM veri yapısı  
                 const productData = {
-                  name: nameValue || "Demo Product",
+                  name: nameValue || `Ürün-${Date.now()}`, // XML'den gelen ad
                   categoryId: targetCategoryId, // XML'den gelen kategori
                   brandId: 1, // Excel örneğindeki varsayılan brand_id
-                  price: parseFloat(priceValue as string) || 55.00,
-                  unit: unitValue || "pc",
-                  barcode: barcodeValue || `YR-${Date.now()}`,
-                  sku: skuValue || `DEM-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+                  price: parseFloat(priceValue as string) || 0,
+                  unit: unitValue || "adet",
+                  barcode: barcodeValue || "",
+                  sku: skuValue || `XML-${Date.now()}`,
                   tags: "xml,import,auto", // Excel örneğindeki format
                   slug: (nameValue || "demo-product").toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
                   currentStock: parseInt(stockValue as string) || 100,
