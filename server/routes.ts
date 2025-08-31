@@ -780,21 +780,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Her ürünü MySQL'e kaydet
+      // Her ürünü 3-tablo sistemine kaydet (products, product_languages, product_stocks)
       for (const productData of extractedProducts) {
         try {
-          await importProductToMySQL({
+          const importResult = await importProductToMySQL({
             name: productData.name,
             categoryId: productData.categoryId,
+            brandId: productData.brandId,
             price: productData.price,
             description: productData.description,
+            shortDescription: productData.shortDescription,
             sku: productData.sku,
             stock: productData.currentStock,
             barcode: productData.barcode,
             unit: productData.unit,
             thumbnail: productData.thumbnail,
-            images: productData.images
+            images: productData.images,
+            tags: productData.tags,
+            metaTitle: productData.metaTitle,
+            metaDescription: productData.metaDescription,
+            videoProvider: productData.videoProvider,
+            videoUrl: productData.videoUrl,
+            minimumOrderQuantity: productData.minimumOrderQuantity,
+            isCatalog: productData.isCatalog,
+            externalLink: productData.externalLink,
+            isRefundable: productData.isRefundable,
+            cashOnDelivery: productData.cashOnDelivery
           });
+          
+          console.log(`✅ Product imported: ${productData.name} (ID: ${importResult.productId})`);
+          if (importResult.downloadedImages.length > 0) {
+            console.log(`📸 Downloaded ${importResult.downloadedImages.length} images`);
+          }
           processedCount++;
         } catch (error) {
           console.error("Failed to import product to MySQL:", error);

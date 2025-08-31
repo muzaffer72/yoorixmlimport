@@ -1,0 +1,48 @@
+foreach ($rows as $row):
+            $product = Product::create([
+                            'user_id'               => $user_id,
+                            'brand_id'              => $row['brand_id'] ? : null,
+                            'category_id'           => $row['category_id'] ? : null,
+                            'created_by'            => authId(),
+                            'slug'                  => $this->getSlug($row['name'],$row['slug']),
+                            'price'                 => $row['price'],
+                            'purchase_cost'         => '',
+                            'barcode'               => $row['barcode'] ? : '',
+                            'video_provider'        => $row['video_provider'] ? : '',
+                            'video_url'             => $row['video_url'] ? : '',
+                            'current_stock'         => $row['current_stock'],
+                            'minimum_order_quantity'=> $row['minimum_order_quantity'],
+                            'is_approved'           => $user_id == 1 ? 1 : 0,
+                            'is_catalog'            => $row['is_catalog'] ? : 0,
+                            'external_link'         => $row['external_link'],
+                            'is_refundable'         => $row['is_refundable'] ? : 0,
+                            'cash_on_delivery'      => $row['cash_on_delivery'] ? : 0,
+                            'attribute_sets'        => [],
+                            'thumbnail'             => [],
+                            'images'                => [],
+                            'meta_image'            => [],
+                            'colors'                => [],
+                            'selected_variants'     => [],
+                            'selected_variants_ids' => [],
+                            'contact_info'          => [],
+                        ]);
+
+            ProductLanguage::create([
+                'product_id'            => $product->id,
+                'name'                  => $row['name'],
+                'short_description'     => $row['short_description'],
+                'description'           => $row['description'],
+                'tags'                  => $row['tags'],
+                'meta_title'            => $row['meta_title'],
+                'meta_description'      => $row['meta_description'],
+                'unit'                  => $row['unit'],
+            ]);
+
+            ProductStock::create([
+                'product_id'            => $product->id,
+                'name'                  => '',
+                'sku'                   => $row['sku'],
+                'price'                 => $row['price'],
+                'current_stock'         => $row['current_stock'],
+                'image'                 => [],
+            ]);

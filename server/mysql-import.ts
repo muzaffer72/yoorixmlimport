@@ -146,48 +146,202 @@ export async function checkProductTableStructure() {
   }
 }
 
-// Ürünleri mevcut MySQL veritabanınıza import et
+// Resim URL'sini indirip sunucuya kaydet
+export async function downloadImage(imageUrl: string, productId: number, imageIndex: number): Promise<string | null> {
+  try {
+    if (!imageUrl || imageUrl.trim() === '') {
+      return null;
+    }
+
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      console.error(`❌ Failed to download image: ${imageUrl}`);
+      return null;
+    }
+
+    const buffer = await response.arrayBuffer();
+    const extension = imageUrl.split('.').pop()?.toLowerCase() || 'jpg';
+    const fileName = `product_${productId}_${imageIndex}.${extension}`;
+    const filePath = `/home/hercuma.com/public_html/public/images/${fileName}`;
+
+    // Node.js fs ile dosya kaydet
+    const fs = await import('fs/promises');
+    await fs.writeFile(filePath, Buffer.from(buffer));
+    
+    console.log(`📸 Image downloaded: ${fileName}`);
+    return fileName;
+  } catch (error) {
+    console.error(`❌ Error downloading image ${imageUrl}:`, error);
+    return null;
+  }
+}
+
+// 3 tablolu ürün import sistemi (Laravel PHP örneğine uygun)
 export async function importProductToMySQL(product: {
   name: string;
   categoryId?: number;
+  brandId?: number;
   price: number;
   description?: string;
+  shortDescription?: string;
   sku?: string;
   stock: number;
   barcode?: string;
   unit?: string;
   thumbnail?: string;
   images?: string[];
-  // Diğer gerekli alanlar
+  tags?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  videoProvider?: string;
+  videoUrl?: string;
+  minimumOrderQuantity?: number;
+  isCatalog?: boolean;
+  externalLink?: string;
+  isRefundable?: boolean;
+  cashOnDelivery?: boolean;
 }) {
   if (!importConnection) {
     throw new Error('Import database not connected');
   }
 
   try {
-    console.log('📦 Importing product to MySQL:', product.name);
+    console.log('📦 Starting 3-table import for:', product.name);
     
-    // Önce products tablosunun yapısını kontrol edelim
-    // Burada sizin mevcut ürün tablonuzun yapısına göre insert yapacağız
-    // PHP örneğindeki gibi category_id kullanacağız
-    const [result] = await importConnection.execute(
-      `INSERT INTO products (name, category_id, price, description, sku, current_stock, barcode, created_at) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+    // 1. PRODUCTS tablosuna ana ürün bilgilerini ekle
+    const [productResult] = await importConnection.execute(
+      `INSERT INTO products (
+        user_id, brand_id, category_id, created_by, slug, price, purchase_cost, 
+        barcode, video_provider, video_url, current_stock, minimum_order_quantity,
+        is_approved, is_catalog, external_link, is_refundable, cash_on_delivery,
+        attribute_sets, thumbnail, images, meta_image, colors, selected_variants,
+        selected_variants_ids, contact_info, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
-        product.name, 
-        product.categoryId, 
-        product.price, 
-        product.description || '', 
-        product.sku || '', 
-        product.stock || 0, 
-        product.barcode || ''
+        1, // user_id (varsayılan admin)
+        product.brandId || null,
+        product.categoryId || null,
+        1, // created_by (varsayılan admin)
+        product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), // slug
+        product.price,
+        '', // purchase_cost
+        product.barcode || '',
+        product.videoProvider || '',
+        product.videoUrl || '',
+        product.stock || 0,
+        product.minimumOrderQuantity || 1,
+        1, // is_approved
+        product.isCatalog ? 1 : 0,
+        product.externalLink || '',
+        product.isRefundable ? 1 : 0,
+        product.cashOnDelivery ? 1 : 0,
+        JSON.stringify([]), // attribute_sets
+        JSON.stringify([]), // thumbnail (şimdilik boş, resimleri sonra ekleyeceğiz)
+        JSON.stringify([]), // images (şimdilik boş, resimleri sonra ekleyeceğiz)
+        JSON.stringify([]), // meta_image
+        JSON.stringify([]), // colors
+        JSON.stringify([]), // selected_variants
+        JSON.stringify([]), // selected_variants_ids
+        JSON.stringify([])  // contact_info
       ]
     );
     
-    console.log('✅ Product imported successfully, ID:', (result as any).insertId);
-    return result;
+    const productId = (productResult as any).insertId;
+    console.log(`✅ Product created with ID: ${productId}`);
+
+    // 2. PRODUCT_LANGUAGES tablosuna dil bilgilerini ekle
+    await importConnection.execute(
+      `INSERT INTO product_languages (
+        product_id, name, short_description, description, tags, 
+        meta_title, meta_description, unit
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        productId,
+        product.name,
+        product.shortDescription || '',
+        product.description || '',
+        product.tags || '',
+        product.metaTitle || product.name,
+        product.metaDescription || '',
+        product.unit || 'adet'
+      ]
+    );
+    console.log(`✅ Product language data created`);
+
+    // 3. PRODUCT_STOCKS tablosuna stok bilgilerini ekle
+    await importConnection.execute(
+      `INSERT INTO product_stocks (
+        product_id, name, sku, price, current_stock, image
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        productId,
+        '', // name (boş)
+        product.sku || '',
+        product.price,
+        product.stock || 0,
+        JSON.stringify([]) // image (şimdilik boş)
+      ]
+    );
+    console.log(`✅ Product stock data created`);
+
+    // 4. RESİMLERİ İNDİR VE KAYDET
+    const downloadedImages: string[] = [];
+    let thumbnailImage = '';
+
+    // Thumbnail resmi indir
+    if (product.thumbnail && product.thumbnail.trim() !== '') {
+      const downloadedThumbnail = await downloadImage(product.thumbnail, productId, 0);
+      if (downloadedThumbnail) {
+        thumbnailImage = downloadedThumbnail;
+      }
+    }
+
+    // Diğer resimleri indir
+    if (product.images && product.images.length > 0) {
+      for (let i = 0; i < product.images.length; i++) {
+        const imageUrl = product.images[i];
+        if (imageUrl && imageUrl.trim() !== '') {
+          const downloadedImage = await downloadImage(imageUrl, productId, i + 1);
+          if (downloadedImage) {
+            downloadedImages.push(downloadedImage);
+          }
+        }
+      }
+    }
+
+    // 5. İNDİRİLEN RESİMLERİ VERİTABANINDA GÜNCELLE
+    if (thumbnailImage || downloadedImages.length > 0) {
+      await importConnection.execute(
+        `UPDATE products SET thumbnail = ?, images = ? WHERE id = ?`,
+        [
+          JSON.stringify(thumbnailImage ? [thumbnailImage] : []),
+          JSON.stringify(downloadedImages),
+          productId
+        ]
+      );
+      console.log(`📸 Updated product images: thumbnail=${thumbnailImage}, images=${downloadedImages.length}`);
+    }
+
+    // 6. IMAGES TABLOSUNA RESİM KAYITLARINI EKLE
+    if (thumbnailImage) {
+      await importConnection.execute(
+        `INSERT INTO images (imageable_type, imageable_id, file_name, file_path, alt_text) VALUES (?, ?, ?, ?, ?)`,
+        ['App\\Models\\Product', productId, thumbnailImage, `/public/images/${thumbnailImage}`, product.name]
+      );
+    }
+
+    for (const imageName of downloadedImages) {
+      await importConnection.execute(
+        `INSERT INTO images (imageable_type, imageable_id, file_name, file_path, alt_text) VALUES (?, ?, ?, ?, ?)`,
+        ['App\\Models\\Product', productId, imageName, `/public/images/${imageName}`, product.name]
+      );
+    }
+
+    console.log(`🎉 Complete product import finished for: ${product.name} (ID: ${productId})`);
+    return { productId, thumbnailImage, downloadedImages };
+    
   } catch (error) {
-    console.error('❌ Error importing product to MySQL:', error);
+    console.error('❌ Error in 3-table product import:', error);
     throw error;
   }
 }
