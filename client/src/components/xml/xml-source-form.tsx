@@ -106,8 +106,8 @@ export default function XmlSourceForm() {
     },
     onError: (error: any) => {
       toast({
-        title: "Hata",
-        description: error.message,
+        title: "XML Yükleme Hatası",
+        description: error.message || "XML dosyası çok büyük veya timeout oluştu. Lütfen daha küçük bir dosya deneyin.",
         variant: "destructive",
       });
     },
@@ -263,7 +263,7 @@ export default function XmlSourceForm() {
               data-testid="button-fetch-structure"
             >
               <Download className="mr-2 h-4 w-4" />
-              {fetchStructureMutation.isPending ? "Çekiliyor..." : "XML Yapısını Çek"}
+              {fetchStructureMutation.isPending ? "Yükleniyor... (Büyük dosyalar için 1-2 dakika sürebilir)" : "XML Yapısını Çek"}
             </Button>
           </div>
 

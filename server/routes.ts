@@ -127,7 +127,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "URL is required" });
       }
 
-      const response = await fetch(url);
+      // Set a longer timeout for large XML files (60 seconds)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      
+      const response = await fetch(url, { 
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; XML-Parser/1.0)'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
         return res.status(400).json({ 
           message: `XML kaynağına ulaşılamıyor: ${response.status} ${response.statusText}` 
@@ -135,7 +147,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const xmlText = await response.text();
-      const parser = new xml2js.Parser({ explicitArray: false });
+      
+      // Limit XML size to prevent memory issues (50MB max)
+      if (xmlText.length > 50 * 1024 * 1024) {
+        return res.status(400).json({ 
+          message: "XML dosyası çok büyük (maksimum 50MB)" 
+        });
+      }
+      
+      const parser = new xml2js.Parser({ 
+        explicitArray: false,
+        ignoreAttrs: false,
+        mergeAttrs: true
+      });
       const result = await parser.parseStringPromise(xmlText);
       
       // Extract structure from XML
@@ -163,8 +187,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tags: tags.sort(),
         sampleData: JSON.stringify(result, null, 2).substring(0, 1000) + "..."
       });
-    } catch (error) {
-      res.status(500).json({ message: "XML yapısı alınırken hata oluştu" });
+    } catch (error: any) {
+      console.error("XML structure fetch error:", error);
+      
+      let errorMessage = "XML yapısı alınırken hata oluştu";
+      
+      if (error.name === 'AbortError') {
+        errorMessage = "XML dosyası çok büyük veya yükleme zaman aşımına uğradı (60 saniye)";
+      } else if (error.code === 'ENOTFOUND') {
+        errorMessage = "XML URL'sine ulaşılamıyor. Lütfen URL'yi kontrol edin.";
+      } else if (error.message && error.message.includes('timeout')) {
+        errorMessage = "XML yükleme zaman aşımına uğradı. Dosya çok büyük olabilir.";
+      }
+      
+      res.status(500).json({ message: errorMessage });
     }
   });
 
@@ -176,7 +212,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "URL ve kategori alanı gerekli" });
       }
 
-      const response = await fetch(url);
+      // Set a longer timeout for large XML files (60 seconds)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      
+      const response = await fetch(url, { 
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; XML-Parser/1.0)'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
         return res.status(400).json({ 
           message: `XML kaynağına ulaşılamıyor: ${response.status} ${response.statusText}` 
@@ -184,7 +232,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const xmlText = await response.text();
-      const parser = new xml2js.Parser({ explicitArray: false });
+      
+      // Limit XML size to prevent memory issues (50MB max)
+      if (xmlText.length > 50 * 1024 * 1024) {
+        return res.status(400).json({ 
+          message: "XML dosyası çok büyük (maksimum 50MB)" 
+        });
+      }
+      
+      const parser = new xml2js.Parser({ 
+        explicitArray: false,
+        ignoreAttrs: false,
+        mergeAttrs: true
+      });
       const result = await parser.parseStringPromise(xmlText);
       
       // Extract categories from XML based on the specified field
@@ -231,8 +291,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         categories: categories.sort(),
         count: categories.length
       });
-    } catch (error) {
-      res.status(500).json({ message: "Kategoriler çekilirken hata oluştu" });
+    } catch (error: any) {
+      console.error("Category extraction error:", error);
+      
+      let errorMessage = "Kategoriler çekilirken hata oluştu";
+      
+      if (error.name === 'AbortError') {
+        errorMessage = "XML dosyası çok büyük veya yükleme zaman aşımına uğradı (60 saniye)";
+      } else if (error.code === 'ENOTFOUND') {
+        errorMessage = "XML URL'sine ulaşılamıyor. Lütfen URL'yi kontrol edin.";
+      } else if (error.message && error.message.includes('timeout')) {
+        errorMessage = "Kategori çekme işlemi zaman aşımına uğradı. Dosya çok büyük olabilir.";
+      }
+      
+      res.status(500).json({ message: errorMessage });
     }
   });
 
@@ -326,8 +398,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         categoryMappings.map(mapping => [mapping.xmlCategoryName, mapping.localCategoryId])
       );
 
-      // Fetch and parse XML
-      const response = await fetch(xmlSource.url);
+      // Fetch and parse XML with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes for import
+      
+      const response = await fetch(xmlSource.url, { 
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; XML-Parser/1.0)'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
         return res.status(400).json({ 
           message: `XML kaynağına ulaşılamıyor: ${response.status}` 
@@ -335,7 +418,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const xmlText = await response.text();
-      const parser = new xml2js.Parser({ explicitArray: false });
+      
+      // Limit XML size to prevent memory issues (100MB max for import)
+      if (xmlText.length > 100 * 1024 * 1024) {
+        return res.status(400).json({ 
+          message: "XML dosyası çok büyük (maksimum 100MB)" 
+        });
+      }
+      
+      const parser = new xml2js.Parser({ 
+        explicitArray: false,
+        ignoreAttrs: false,
+        mergeAttrs: true
+      });
       const result = await parser.parseStringPromise(xmlText);
       
       // Extract products from XML
@@ -453,9 +548,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         processed: processedCount,
         found: extractedProducts.length
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("XML import error:", error);
-      res.status(500).json({ message: "XML import sırasında hata oluştu" });
+      
+      let errorMessage = "XML import sırasında hata oluştu";
+      
+      if (error.name === 'AbortError') {
+        errorMessage = "XML dosyası çok büyük veya yükleme zaman aşımına uğradı (2 dakika)";
+      } else if (error.code === 'ENOTFOUND') {
+        errorMessage = "XML URL'sine ulaşılamıyor. Lütfen URL'yi kontrol edin.";
+      } else if (error.message && error.message.includes('timeout')) {
+        errorMessage = "XML import işlemi zaman aşımına uğradı. Dosya çok büyük olabilir.";
+      }
+      
+      res.status(500).json({ message: errorMessage });
     }
   });
 
