@@ -9,6 +9,16 @@
       "updatedAt": "2025-08-31T14:57:27.278Z",
       "confidence": "0.00",
       "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Baharat Seti",
+      "localCategoryId": 1383,
+      "id": "e8dfdd7b-5f60-4d5f-8977-f1c8c8048070",
+      "createdAt": "2025-08-31T16:51:52.858Z",
+      "updatedAt": "2025-08-31T16:51:52.858Z",
+      "confidence": "0.00",
+      "isManual": false
     }
   ]
 }

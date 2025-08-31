@@ -646,8 +646,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🔍 XML TEXT LENGTH: ${xmlText.length} characters`);
       console.log(`🔍 XML TEXT PREVIEW: ${xmlText.substring(0, 500)}`);
       
-      const result = await parser.parseStringPromise(xmlText);
-      console.log(`🔍 XML PARSE SUCCESS - Result type: ${typeof result}`);
+      let result;
+      try {
+        result = await parser.parseStringPromise(xmlText);
+        console.log(`🔍 XML PARSE SUCCESS - Result type: ${typeof result}`);
+        console.log(`🔍 XML KEYS: ${Object.keys(result || {})}`);
+      } catch (parseError) {
+        console.error(`🚨 XML PARSE ERROR:`, parseError);
+        throw new Error(`XML parse failed: ${parseError.message}`);
+      }
       
       // Extract products from XML
       const extractProducts = (data: any): any[] => {
