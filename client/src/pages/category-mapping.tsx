@@ -75,7 +75,10 @@ export default function CategoryMapping() {
 
   const createMappingMutation = useMutation({
     mutationFn: async (data: { xmlSourceId: string; xmlCategoryName: string; localCategoryId: string }) => {
-      const response = await apiRequest("POST", "/api/category-mappings", data);
+      const response = await apiRequest("POST", "/api/category-mappings", {
+        ...data,
+        localCategoryId: Number(data.localCategoryId)
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -282,7 +285,7 @@ export default function CategoryMapping() {
           const response = await apiRequest("POST", "/api/category-mappings", {
             xmlSourceId: selectedXmlSource,
             xmlCategoryName: mapping.xmlCategory,
-            localCategoryId: mapping.suggestedCategory.id,
+            localCategoryId: Number(mapping.suggestedCategory.id),
           });
           await response.json();
         }
