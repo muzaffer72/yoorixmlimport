@@ -593,7 +593,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Product import from XML
   app.post("/api/products/import-from-xml", async (req, res) => {
     try {
+      console.log(`🚀 XML IMPORT BAŞLADI`);
       const { xmlSourceId } = req.body;
+      console.log(`🔍 XML Source ID: ${xmlSourceId}`);
       
       const xmlSource = await pageStorage.getXmlSource(xmlSourceId);
       if (!xmlSource) {
@@ -603,6 +605,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!xmlSource.url) {
         return res.status(400).json({ message: "XML source URL not configured" });
       }
+      
+      console.log(`🔍 XML Source URL: ${xmlSource.url}`);
 
       // Get category mappings for this XML source
       const categoryMappings = await pageStorage.getCategoryMappings(xmlSourceId);
@@ -614,6 +618,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes for import
       
+      console.log(`🔍 XML FETCH BAŞLADI: ${xmlSource.url}`);
+      
       const response = await fetch(xmlSource.url, { 
         signal: controller.signal,
         headers: {
@@ -622,6 +628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       clearTimeout(timeoutId);
+      console.log(`🔍 XML FETCH RESPONSE: ${response.status} ${response.statusText}`);
       
       if (!response.ok) {
         return res.status(400).json({ 
