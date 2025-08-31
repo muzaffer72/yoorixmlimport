@@ -1,9 +1,6 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from 'ws';
+import mysql from 'mysql2/promise';
+import { drizzle } from 'drizzle-orm/mysql2';
 import * as schema from "@shared/schema";
-
-neonConfig.webSocketConstructor = ws;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -11,6 +8,6 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// PostgreSQL (Neon) bağlantısı - Replit'te built-in
-export const connection = new Pool({ connectionString: process.env.DATABASE_URL });
+// MySQL bağlantısı
+export const connection = mysql.createPool(process.env.DATABASE_URL);
 export const db = drizzle(connection, { schema });
