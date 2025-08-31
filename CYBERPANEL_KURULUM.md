@@ -15,9 +15,9 @@ sudo apt-get install -y nodejs
 ## 3. Veritabanı Kurulumu
 Cyberpanel'de:
 - Database → Create Database
-- Database Name: `xml_manager`
-- Username: `xml_user` 
-- Password: güçlü şifre
+- Database Name: `herc_xmlaktar`
+- Username: `herc_xmlaktar` 
+- Password: `e7G6ieyahg^uhFuJ`
 - Host: `localhost`
 
 ## 4. Bağımlılıkları Yükleme
@@ -29,7 +29,7 @@ npm install
 ## 5. Ortam Değişkenleri (.env)
 ```bash
 # Ana sistem veritabanı (MySQL)
-DATABASE_URL="mysql://xml_user:şifreniz@localhost:3306/xml_manager"
+DATABASE_URL="mysql://herc_xmlaktar:e7G6ieyahg^uhFuJ@localhost:3306/herc_xmlaktar"
 
 # Gemini AI (opsiyonel)
 GEMINI_API_KEY=your_api_key_here
