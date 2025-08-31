@@ -230,15 +230,12 @@ export default function CategoryMapping() {
     try {
       for (const mapping of mappingsToApply) {
         if (mapping.suggestedCategory) {
-          await apiRequest("/api/category-mappings", {
-            method: "POST",
-            body: JSON.stringify({
-              xmlSourceId: selectedXmlSource,
-              xmlCategoryName: mapping.xmlCategory,
-              localCategoryId: mapping.suggestedCategory.id,
-            }),
-            headers: { "Content-Type": "application/json" },
+          const response = await apiRequest("POST", "/api/category-mappings", {
+            xmlSourceId: selectedXmlSource,
+            xmlCategoryName: mapping.xmlCategory,
+            localCategoryId: mapping.suggestedCategory.id,
           });
+          await response.json();
         }
       }
 
