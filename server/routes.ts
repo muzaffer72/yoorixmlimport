@@ -451,17 +451,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Database ayarlarını kontrol et
       const dbSettings = await pageStorage.getDatabaseSettings();
       if (!dbSettings || !dbSettings.host) {
-        console.log("MySQL database settings not configured, returning demo categories");
-        return res.json([
-          { id: 1, name: "Elektronik", title: "Elektronik" },
-          { id: 2, name: "Ev & Yaşam", title: "Ev & Yaşam" },
-          { id: 3, name: "Giyim", title: "Giyim" },
-          { id: 4, name: "Spor", title: "Spor" },
-          { id: 5, name: "Kitap", title: "Kitap" },
-          { id: 6, name: "Kozmetik", title: "Kozmetik" },
-          { id: 7, name: "Oyuncak", title: "Oyuncak" },
-          { id: 8, name: "Bahçe", title: "Bahçe" }
-        ]);
+        return res.status(400).json({ 
+          message: "MySQL database ayarları yapılandırılmamış. Lütfen settings sayfasından veritabanı ayarlarını yapın.",
+          error: "DATABASE_NOT_CONFIGURED"
+        });
       }
 
       console.log("Connecting to MySQL for categories...");
@@ -477,6 +470,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categories = await getLocalCategories();
       console.log(`Found ${categories.length} categories from MySQL categories_languages table`);
       
+      if (categories.length === 0) {
+        return res.status(404).json({
+          message: "categories_languages tablosunda kategori bulunamadı",
+          error: "NO_CATEGORIES_FOUND"
+        });
+      }
+      
       res.json(categories.map(cat => ({
         id: cat.id,
         name: cat.title,
@@ -484,18 +484,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       })));
     } catch (error) {
       console.error("MySQL categories fetch error:", error);
-      // Hata durumunda demo kategoriler döndür
-      console.log("MySQL connection failed, returning demo categories as fallback");
-      res.json([
-        { id: 1, name: "Elektronik", title: "Elektronik" },
-        { id: 2, name: "Ev & Yaşam", title: "Ev & Yaşam" },
-        { id: 3, name: "Giyim", title: "Giyim" },
-        { id: 4, name: "Spor", title: "Spor" },
-        { id: 5, name: "Kitap", title: "Kitap" },
-        { id: 6, name: "Kozmetik", title: "Kozmetik" },
-        { id: 7, name: "Oyuncak", title: "Oyuncak" },
-        { id: 8, name: "Bahçe", title: "Bahçe" }
-      ]);
+      res.status(500).json({ 
+        message: `MySQL bağlantısı başarısız: ${error.message}`,
+        error: "DATABASE_CONNECTION_FAILED"
+      });
     }
   });
 
@@ -849,16 +841,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { host, port, database, username, password } = req.body;
       
-      // Here you would implement actual MySQL connection test
-      // For now, we'll simulate a successful connection
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+      // Gerçek MySQL bağlantısını test et
+      console.log(`Testing MySQL connection: ${username}@${host}:${port}/${database}`);
+      
+      await connectToImportDatabase({
+        host,
+        port: parseInt(port),
+        database,
+        username,
+        password
+      });
+      
+      // Bağlantı başarılıysa kategorileri test çek
+      const categories = await getLocalCategories();
+      console.log(`Test successful: Found ${categories.length} categories in categories_languages table`);
       
       res.json({ 
-        message: "Veritabanı bağlantısı başarılı",
-        status: "success"
+        message: `Veritabanı bağlantısı başarılı! ${categories.length} kategori bulundu.`,
+        status: "success",
+        categoriesCount: categories.length
       });
     } catch (error) {
-      res.status(500).json({ message: "Veritabanı bağlantısı test edilirken hata oluştu" });
+      console.error("MySQL test connection error:", error);
+      res.status(400).json({ 
+        message: `Veritabanı bağlantısı başarısız: ${error.message}`,
+        status: "error"
+      });
     }
   });
 

@@ -47,8 +47,9 @@ export default function CategoryMapping() {
     queryKey: ["/api/xml-sources"],
   });
 
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categories = [], isError: categoriesError, error: categoriesErrorData } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
+    retry: false
   });
 
   const { data: mappings = [], isLoading: mappingsLoading } = useQuery<CategoryMappingType[]>({
@@ -392,37 +393,55 @@ export default function CategoryMapping() {
                   
                   <div>
                     <Label>Yerel Kategori</Label>
-                    <Input
-                      placeholder="Yerel kategorilerde ara..."
-                      value={localCategorySearch}
-                      onChange={(e) => setLocalCategorySearch(e.target.value)}
-                      className="mb-2"
-                      data-testid="input-search-local-category"
-                    />
-                    <Select 
-                      value={localCategoryId} 
-                      onValueChange={setLocalCategoryId}
-                    >
-                      <SelectTrigger data-testid="select-local-category">
-                        <SelectValue placeholder="Yerel kategoriyi seçin..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filteredLocalCategories.length === 0 && localCategorySearch ? (
-                          <div className="px-2 py-1 text-sm text-muted-foreground">
-                            Arama sonucu bulunamadı
-                          </div>
-                        ) : (
-                          filteredLocalCategories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name || "İsimsiz Kategori"}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {filteredLocalCategories.length} / {categories.length} kategori gösteriliyor
-                    </p>
+                    {categoriesError ? (
+                      <div className="p-3 mb-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                        <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
+                          <XCircle className="h-4 w-4" />
+                          <span className="text-sm font-medium">MySQL Bağlantı Hatası</span>
+                        </div>
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          {(categoriesErrorData as any)?.message || "Veritabanından kategoriler yüklenemedi"}
+                        </p>
+                        <p className="text-xs text-red-600 dark:text-red-400">
+                          Lütfen Settings sayfasından MySQL ayarlarınızı kontrol edin.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <Input
+                          placeholder="Yerel kategorilerde ara..."
+                          value={localCategorySearch}
+                          onChange={(e) => setLocalCategorySearch(e.target.value)}
+                          className="mb-2"
+                          data-testid="input-search-local-category"
+                        />
+                        <Select 
+                          value={localCategoryId} 
+                          onValueChange={setLocalCategoryId}
+                          disabled={categoriesError}
+                        >
+                          <SelectTrigger data-testid="select-local-category">
+                            <SelectValue placeholder="Yerel kategoriyi seçin..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filteredLocalCategories.length === 0 && localCategorySearch ? (
+                              <div className="px-2 py-1 text-sm text-muted-foreground">
+                                Arama sonucu bulunamadı
+                              </div>
+                            ) : (
+                              filteredLocalCategories.map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  {category.name || "İsimsiz Kategori"}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {filteredLocalCategories.length} / {categories.length} kategori gösteriliyor
+                        </p>
+                      </>
+                    )}
                   </div>
               </div>
               
