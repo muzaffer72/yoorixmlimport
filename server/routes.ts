@@ -448,9 +448,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Category endpoints (MySQL'den çek)
   app.get("/api/categories", async (req, res) => {
     try {
-      // Replit ortamında demo kategoriler döndür
-      if (process.env.REPL_ID) {
-        console.log("Replit environment detected, returning demo categories");
+      // Database ayarlarını kontrol et
+      const dbSettings = await pageStorage.getDatabaseSettings();
+      if (!dbSettings || !dbSettings.host) {
+        console.log("MySQL database settings not configured, returning demo categories");
         return res.json([
           { id: 1, name: "Elektronik", title: "Elektronik" },
           { id: 2, name: "Ev & Yaşam", title: "Ev & Yaşam" },
@@ -463,12 +464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ]);
       }
 
-      // Production ortamında database ayarlarını kontrol et
-      const dbSettings = await pageStorage.getDatabaseSettings();
-      if (!dbSettings) {
-        return res.status(400).json({ message: "MySQL database settings not configured" });
-      }
-
+      console.log("Connecting to MySQL for categories...");
       // MySQL'e bağlan ve kategorileri çek
       await connectToImportDatabase({
         host: dbSettings.host,
@@ -479,6 +475,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const categories = await getLocalCategories();
+      console.log(`Found ${categories.length} categories from MySQL categories_languages table`);
+      
       res.json(categories.map(cat => ({
         id: cat.id,
         name: cat.title,

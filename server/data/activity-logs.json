@@ -98,6 +98,17 @@
       "oldValue": null,
       "newValue": null,
       "entityId": null
+    },
+    {
+      "type": "settings_updated",
+      "title": "Gemini ayarları güncellendi",
+      "description": "Gemini AI ayarları başarıyla güncellendi",
+      "entityType": "settings",
+      "id": "2d588500-4e81-404f-90d5-e4275efba693",
+      "createdAt": "2025-08-31T12:46:41.784Z",
+      "oldValue": null,
+      "newValue": null,
+      "entityId": null
     }
   ]
 }

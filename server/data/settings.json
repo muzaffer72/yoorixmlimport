@@ -2,8 +2,8 @@
   "gemini": {
     "apiKey": "",
     "selectedModel": "gemini-2.5-flash",
-    "isActive": true,
-    "isConfigured": true
+    "isActive": false,
+    "isConfigured": false
   },
   "database": {
     "host": "localhost",
