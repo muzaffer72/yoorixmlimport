@@ -120,6 +120,10 @@ export default function CategoryMapping() {
   const deleteAllMappingsMutation = useMutation({
     mutationFn: async (xmlSourceId: string) => {
       const response = await apiRequest("DELETE", `/api/category-mappings/source/${xmlSourceId}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
       return response.json();
     },
     onSuccess: (data) => {
@@ -129,10 +133,11 @@ export default function CategoryMapping() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/category-mappings"] });
     },
-    onError: () => {
+    onError: (error: Error) => {
+      console.error("Delete all mappings error:", error);
       toast({
         title: "Hata",
-        description: "Kategori eşleştirmeleri silinirken hata oluştu",
+        description: error.message || "Kategori eşleştirmeleri silinirken hata oluştu",
         variant: "destructive",
       });
     },

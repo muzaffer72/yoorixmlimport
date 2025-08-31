@@ -556,7 +556,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/category-mappings/source/:xmlSourceId", async (req, res) => {
     try {
       const { xmlSourceId } = req.params;
+      console.log("Deleting all mappings for XML source:", xmlSourceId);
       const deletedCount = await pageStorage.deleteAllCategoryMappingsForSource(xmlSourceId);
+      console.log("Successfully deleted", deletedCount, "mappings");
       res.json({ 
         message: `${deletedCount} kategori eşleştirmesi silindi`,
         deletedCount 
