@@ -13,7 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertXmlSourceSchema, type InsertXmlSource, type Category } from "@shared/schema";
 import { z } from "zod";
-import { FlaskConical, Download, Settings, Tag } from "lucide-react";
+import { FlaskConical, Download, Settings, Tag, Video } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = insertXmlSourceSchema.extend({
   name: z.string().min(1, "XML kaynak adı gerekli"),
@@ -33,6 +34,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
   const [xmlCategories, setXmlCategories] = useState<string[]>([]);
+  const [videoProvider, setVideoProvider] = useState<string>("mp4");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -190,6 +192,12 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
       });
     }
   };
+
+  const videoProviders = [
+    { key: "mp4", label: "MP4 Dosya" },
+    { key: "youtube", label: "YouTube" },
+    { key: "vimeo", label: "Vimeo" },
+  ];
   
   const productFields = [
     { key: "name", label: "Ürün Adı", required: true },
@@ -202,6 +210,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
     { key: "unit", label: "Birim", required: false },
     { key: "thumbnail", label: "Ana Resim (Thumbnail)", required: false },
     { key: "image1", label: "Resim 1", required: false },
+    { key: "video_url", label: "Video URL", required: false },
     { key: "image2", label: "Resim 2", required: false },
     { key: "image3", label: "Resim 3", required: false },
     { key: "image4", label: "Resim 4", required: false },
@@ -455,6 +464,52 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
                           </Select>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                  
+                  {/* Video Configuration */}
+                  <div className="mb-6 p-4 border rounded-lg bg-blue-50/50 dark:bg-blue-900/10">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Video className="h-5 w-5 text-blue-600" />
+                      <Label className="text-base font-medium text-blue-700 dark:text-blue-400">Video Ayarları</Label>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Video Provider Selection */}
+                      <div>
+                        <Label className="text-sm font-medium">Video Sağlayıcı</Label>
+                        <RadioGroup
+                          value={videoProvider}
+                          onValueChange={setVideoProvider}
+                          className="mt-2"
+                        >
+                          {videoProviders.map((provider) => (
+                            <div key={provider.key} className="flex items-center space-x-2">
+                              <RadioGroupItem value={provider.key} id={`provider-${provider.key}`} />
+                              <Label htmlFor={`provider-${provider.key}`} className="text-sm cursor-pointer">
+                                {provider.label}
+                              </Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Bu ayar video_provider alanına kaydedilir
+                        </p>
+                      </div>
+                      
+                      {/* Video URL Field Info */}
+                      <div>
+                        <Label className="text-sm font-medium">Video URL Eşleştirmesi</Label>
+                        <div className="mt-2 p-3 border rounded-md bg-background/50">
+                          <p className="text-sm text-muted-foreground">
+                            Video URL için XML etiket eşleştirmesi yukarıdaki 
+                            <strong> "Video URL"</strong> alanından yapılır.
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            İsteğe bağlı - boş bırakılabilir
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   

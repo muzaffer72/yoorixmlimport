@@ -39,14 +39,6 @@ export default function XmlManagement() {
         {/* XML Source Form */}
         <XmlSourceForm onXmlTagsReceived={setXmlTags} />
 
-        {/* XML Mapping Form */}
-        {xmlTags.length > 0 && (
-          <XmlMappingForm 
-            xmlTags={xmlTags}
-            onSave={handleSaveMapping}
-          />
-        )}
-
         {/* Existing XML Sources */}
         <XmlSourcesTable 
           xmlSources={xmlSources}
