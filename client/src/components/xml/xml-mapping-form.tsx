@@ -18,6 +18,7 @@ const requiredFields = [
   { key: "name", label: "Ürün Adı (name)", required: true },
   { key: "category_id", label: "Kategori ID (category_id)", required: true },
   { key: "price", label: "Fiyat (price)", required: true },
+  { key: "short_description", label: "Kısa Açıklama (short_description)", required: false },
   { key: "unit", label: "Birim (unit)", required: true },
   { key: "current_stock", label: "Mevcut Stok (current_stock)", required: true },
   { key: "minimum_order_quantity", label: "Minimum Sipariş Miktarı (minimum_order_quantity)", required: true },
@@ -29,7 +30,6 @@ const optionalFields = [
   { key: "barcode", label: "Barkod" },
   { key: "sku", label: "SKU" },
   { key: "tags", label: "Etiketler (tags)" },
-  { key: "short_description", label: "Kısa Açıklama (short_description)" },
   { key: "description", label: "Açıklama (description)" },
   { key: "external_link", label: "Harici Link" },
 ];
@@ -51,9 +51,6 @@ export default function XmlMappingForm({
   const [videoProvider, setVideoProvider] = useState<string>(initialMapping.video_provider || "none");
   const { toast } = useToast();
 
-  // Debug logging
-  console.log("XmlMappingForm render - optionalFields:", optionalFields);
-  console.log("XmlMappingForm render - xmlTags:", xmlTags);
 
   const handleMappingChange = (field: string, value: string) => {
     setMapping(prev => ({ ...prev, [field]: value }));
@@ -155,10 +152,7 @@ export default function XmlMappingForm({
           <div>
             <h4 className="text-md font-medium mb-4 text-muted-foreground">İsteğe Bağlı Alanlar ({optionalFields.length})</h4>
             <div className="space-y-4">
-              {optionalFields.map((field, index) => {
-                console.log(`Rendering optional field ${index}:`, field);
-                return renderFieldSelect(field);
-              })}
+              {optionalFields.map(renderFieldSelect)}
             </div>
           </div>
         </div>
