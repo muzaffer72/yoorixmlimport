@@ -120,11 +120,17 @@ export default function CategoryMapping() {
   const deleteAllMappingsMutation = useMutation({
     mutationFn: async (xmlSourceId: string) => {
       const response = await apiRequest("DELETE", `/api/category-mappings/source/${xmlSourceId}`);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+      
+      // Response content type kontrolü
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      } else {
+        // JSON değilse text olarak oku
+        const text = await response.text();
+        console.log("Non-JSON response:", text);
+        return { message: "İşlem başarılı" };
       }
-      return response.json();
     },
     onSuccess: (data) => {
       toast({

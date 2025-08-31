@@ -559,10 +559,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Deleting all mappings for XML source:", xmlSourceId);
       const deletedCount = await pageStorage.deleteAllCategoryMappingsForSource(xmlSourceId);
       console.log("Successfully deleted", deletedCount, "mappings");
-      res.json({ 
+      
+      const responseData = { 
         message: `${deletedCount} kategori eşleştirmesi silindi`,
         deletedCount 
-      });
+      };
+      
+      console.log("Sending response:", JSON.stringify(responseData));
+      res.json(responseData);
     } catch (error) {
       console.error("Failed to delete all category mappings:", error);
       res.status(500).json({ message: "Kategori eşleştirmeleri silinirken hata oluştu" });
