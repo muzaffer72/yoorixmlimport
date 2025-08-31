@@ -51,6 +51,10 @@ export default function XmlMappingForm({
   const [videoProvider, setVideoProvider] = useState<string>(initialMapping.video_provider || "none");
   const { toast } = useToast();
 
+  // Debug logging
+  console.log("XmlMappingForm render - optionalFields:", optionalFields);
+  console.log("XmlMappingForm render - xmlTags:", xmlTags);
+
   const handleMappingChange = (field: string, value: string) => {
     setMapping(prev => ({ ...prev, [field]: value }));
   };
@@ -95,7 +99,7 @@ export default function XmlMappingForm({
   };
 
   const renderFieldSelect = (field: { key: string; label: string; required?: boolean }) => (
-    <div key={field.key}>
+    <div key={field.key} className="field-container">
       <Label className={field.required ? "text-destructive" : ""}>
         {field.label} {field.required && "*"}
       </Label>
@@ -149,9 +153,12 @@ export default function XmlMappingForm({
           
           {/* Optional Fields */}
           <div>
-            <h4 className="text-md font-medium mb-4 text-muted-foreground">İsteğe Bağlı Alanlar</h4>
+            <h4 className="text-md font-medium mb-4 text-muted-foreground">İsteğe Bağlı Alanlar ({optionalFields.length})</h4>
             <div className="space-y-4">
-              {optionalFields.map(renderFieldSelect)}
+              {optionalFields.map((field, index) => {
+                console.log(`Rendering optional field ${index}:`, field);
+                return renderFieldSelect(field);
+              })}
             </div>
           </div>
         </div>
