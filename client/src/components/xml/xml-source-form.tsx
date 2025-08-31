@@ -24,7 +24,11 @@ const formSchema = insertXmlSourceSchema.extend({
   fieldMapping: z.record(z.string()).optional(),
 });
 
-export default function XmlSourceForm() {
+interface XmlSourceFormProps {
+  onXmlTagsReceived?: (tags: string[]) => void;
+}
+
+export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps = {}) {
   const [xmlTags, setXmlTags] = useState<string[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
@@ -113,6 +117,7 @@ export default function XmlSourceForm() {
     },
     onSuccess: (data) => {
       setXmlTags(data.tags);
+      onXmlTagsReceived?.(data.tags); // Parent component'e gönder
       toast({
         title: "XML Yapısı Alındı",
         description: `${data.tags.length} etiket bulundu`,

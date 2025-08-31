@@ -37,7 +37,7 @@ export default function XmlManagement() {
       
       <div className="p-8 space-y-8">
         {/* XML Source Form */}
-        <XmlSourceForm />
+        <XmlSourceForm onXmlTagsReceived={setXmlTags} />
 
         {/* XML Mapping Form */}
         {xmlTags.length > 0 && (
