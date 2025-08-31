@@ -58,13 +58,13 @@ export default function SettingsPage() {
   const dbForm = useForm<z.infer<typeof dbFormSchema>>({
     resolver: zodResolver(dbFormSchema),
     defaultValues: {
-      name: "Umanet E-ticaret Veritabanı",
-      host: "localhost",
+      name: "",
+      host: "",
       port: 3306,
-      database: "herc_umanet",
-      username: "herc_umanet",
-      password: "e7G6ieyahg^uhFuJ",
-      isActive: true,
+      database: "",
+      username: "",
+      password: "",
+      isActive: false,
     },
   });
 
