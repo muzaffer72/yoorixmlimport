@@ -718,11 +718,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Check if category is mapped or use default
               let targetCategoryId = null;
               if (categoryName && categoryMappingMap.has(categoryName)) {
+                // Kategori eşleştirmesi var - kesinlikle işle
                 targetCategoryId = categoryMappingMap.get(categoryName);
                 hasRequiredFields = true;
               } else if (xmlSource.useDefaultCategory && xmlSource.defaultCategoryId) {
+                // Eşleştirme yok ama varsayılan kategori kullan seçeneği aktif
                 targetCategoryId = xmlSource.defaultCategoryId;
                 hasRequiredFields = true;
+              } else {
+                // Eşleştirme yok ve varsayılan kategori kullanma - ürünü atla
+                hasRequiredFields = false;
               }
               
               // Only process if we have a valid category
