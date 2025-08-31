@@ -79,8 +79,8 @@ export async function connectToImportDatabase(settings: {
   }
 }
 
-// Mevcut categories_languages tablosundan kategorileri çek
-export async function getLocalCategories(): Promise<Array<{id: number, title: string}>> {
+// Mevcut category_languages tablosundan kategorileri çek
+export async function getLocalCategories(): Promise<Array<{id: number, categoryId: number, title: string}>> {
   if (!importConnection) {
     console.error('❌ Import database connection is null');
     throw new Error('Import database not connected');
@@ -102,15 +102,15 @@ export async function getLocalCategories(): Promise<Array<{id: number, title: st
     const [columns] = await importConnection.execute('DESCRIBE category_languages');
     console.log('Table structure:', columns);
     
-    // Kategorileri çekelim
+    // Kategorileri çekelim - hem id hem category_id çekmemiz gerekiyor
     const [rows] = await importConnection.execute(
-      'SELECT id, title FROM category_languages WHERE title IS NOT NULL AND title != ""'
+      'SELECT id, category_id, title FROM category_languages WHERE title IS NOT NULL AND title != ""'
     );
     
     console.log(`✅ Found ${(rows as any[]).length} categories in category_languages table`);
     console.log('Sample categories:', (rows as any[]).slice(0, 3));
     
-    return rows as Array<{id: number, title: string}>;
+    return rows as Array<{id: number, categoryId: number, title: string}>;
   } catch (error) {
     console.error('❌ Error fetching local categories:');
     console.error('Error details:', error);

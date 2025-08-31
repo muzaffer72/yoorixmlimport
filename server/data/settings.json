@@ -6,7 +6,7 @@
     "isConfigured": false
   },
   "database": {
-    "host": "localhost",
+    "host": "109.71.252.34",
     "port": 3306,
     "database": "herc_umanet",
     "username": "herc_umanet",

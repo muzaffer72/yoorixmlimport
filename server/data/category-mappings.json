@@ -1,3 +1,124 @@
 {
-  "mappings": []
+  "mappings": [
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Araç İçi Telefon Tutucular",
+      "localCategoryId": "2",
+      "id": "d749a88f-0aaf-45a4-a535-d8447bf778cc",
+      "createdAt": "2025-08-31T13:41:27.749Z",
+      "updatedAt": "2025-08-31T13:41:27.749Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Elektrikli Ev Aletleri",
+      "localCategoryId": "5",
+      "id": "c656ff8d-6132-4df1-b016-4126c27c9ee9",
+      "createdAt": "2025-08-31T13:41:27.946Z",
+      "updatedAt": "2025-08-31T13:41:27.946Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Ev Gereçleri",
+      "localCategoryId": "5",
+      "id": "f15b2ed2-0aba-47f9-8069-405e9b18b5b9",
+      "createdAt": "2025-08-31T13:41:28.192Z",
+      "updatedAt": "2025-08-31T13:41:28.192Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Evcil Hayvan Ürünleri",
+      "localCategoryId": "5",
+      "id": "c4b43d6b-ae99-419d-9867-e54d20b3c461",
+      "createdAt": "2025-08-31T13:41:28.378Z",
+      "updatedAt": "2025-08-31T13:41:28.378Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Giyim",
+      "localCategoryId": "4",
+      "id": "843a2865-a723-4967-8559-4cbdc27840f3",
+      "createdAt": "2025-08-31T13:41:28.557Z",
+      "updatedAt": "2025-08-31T13:41:28.557Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Kevgir ve Süzgeç",
+      "localCategoryId": "5",
+      "id": "5dfdf2ec-a488-43d8-a56a-a07422ddeec7",
+      "createdAt": "2025-08-31T13:41:28.751Z",
+      "updatedAt": "2025-08-31T13:41:28.751Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Plastik ev gereçleri",
+      "localCategoryId": "5",
+      "id": "807a9ccf-7abb-4058-a14a-dc0615077c40",
+      "createdAt": "2025-08-31T13:41:28.971Z",
+      "updatedAt": "2025-08-31T13:41:28.971Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Pratik Ev Eşyaları",
+      "localCategoryId": "5",
+      "id": "e68bb910-b0de-4fd2-aa68-bab86c49f520",
+      "createdAt": "2025-08-31T13:41:29.166Z",
+      "updatedAt": "2025-08-31T13:41:29.166Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Spor Malzemeleri",
+      "localCategoryId": "6",
+      "id": "caee4e92-b655-4c81-bbd2-420bc2ad2f28",
+      "createdAt": "2025-08-31T13:41:29.354Z",
+      "updatedAt": "2025-08-31T13:41:29.354Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "telefon",
+      "localCategoryId": "2",
+      "id": "e6eb25b5-b53a-4d3c-8213-821ac3960be4",
+      "createdAt": "2025-08-31T13:41:29.541Z",
+      "updatedAt": "2025-08-31T13:41:29.541Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Çerçeveler",
+      "localCategoryId": "5",
+      "id": "c06bb5d8-0653-4691-b9e9-bca1904767c8",
+      "createdAt": "2025-08-31T13:41:29.739Z",
+      "updatedAt": "2025-08-31T13:41:29.739Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "xmlCategoryName": "Çift Kişilik Nevresim",
+      "localCategoryId": "5",
+      "id": "ee38ed99-beb2-41b2-b6cb-2c56845e03a5",
+      "createdAt": "2025-08-31T13:41:29.924Z",
+      "updatedAt": "2025-08-31T13:41:29.924Z",
+      "confidence": "0.00",
+      "isManual": false
+    }
+  ]
 }

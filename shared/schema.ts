@@ -100,7 +100,7 @@ export const categoryMappings = mysqlTable("category_mappings", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   xmlSourceId: varchar("xml_source_id", { length: 36 }).notNull(),
   xmlCategoryName: text("xml_category_name").notNull(),
-  localCategoryId: varchar("local_category_id", { length: 36 }).notNull(),
+  localCategoryId: int("local_category_id").notNull(), // MySQL category_languages tablosundaki ID
   confidence: decimal("confidence", { precision: 3, scale: 2 }).default("0.00"), // AI confidence score
   isManual: boolean("is_manual").default(false), // Manually set mapping
   createdAt: timestamp("created_at").defaultNow(),
@@ -133,6 +133,7 @@ export const databaseSettings = mysqlTable("database_settings", {
 // Mevcut MySQL veritabanınızdaki category_languages tablosuna bağlanmak için
 export const categoriesLanguages = mysqlTable("category_languages", {
   id: int("id").primaryKey(),
+  categoryId: int("category_id").notNull(), // Asıl kategori ID'si - products tablosunda kullanılacak
   title: text("title").notNull(), // Bu sütundan kategori isimleri çekilecek
   // Diğer sütunlar varsa ekleyin
 });

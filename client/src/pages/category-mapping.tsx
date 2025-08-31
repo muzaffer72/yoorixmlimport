@@ -130,7 +130,7 @@ export default function CategoryMapping() {
     createMappingMutation.mutate({
       xmlSourceId: selectedXmlSource,
       xmlCategoryName,
-      localCategoryId,
+      localCategoryId: parseInt(localCategoryId),
     });
   };
 
@@ -430,8 +430,8 @@ export default function CategoryMapping() {
                               </div>
                             ) : (
                               filteredLocalCategories.map((category) => (
-                                <SelectItem key={category.id} value={category.id}>
-                                  {category.name || "İsimsiz Kategori"}
+                                <SelectItem key={category.id} value={String(category.id)}>
+                                  {category.title || category.name || "İsimsiz Kategori"}
                                 </SelectItem>
                               ))
                             )}
@@ -487,6 +487,7 @@ export default function CategoryMapping() {
                   </TableHeader>
                   <TableBody>
                     {mappings.map((mapping) => {
+                      // MySQL kategorilerinde ID ile eşleştirme
                       const localCategory = categories.find(c => c.id === mapping.localCategoryId);
                       
                       return (
@@ -495,7 +496,7 @@ export default function CategoryMapping() {
                             {mapping.xmlCategoryName}
                           </TableCell>
                           <TableCell>
-                            {localCategory?.name || "Kategori bulunamadı"}
+                            {localCategory?.title || localCategory?.name || `Kategori bulunamadı (ID: ${mapping.localCategoryId})`}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {new Date(mapping.createdAt || "").toLocaleDateString('tr-TR')}

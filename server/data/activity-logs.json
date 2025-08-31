@@ -153,6 +153,17 @@
       "oldValue": null,
       "newValue": null,
       "entityId": null
+    },
+    {
+      "type": "database_settings_updated",
+      "title": "Veritabanı ayarları güncellendi",
+      "description": "109.71.252.34:3306 veritabanı bağlantısı yapılandırıldı",
+      "entityType": "settings",
+      "id": "f3a2265f-807f-4d76-9aa3-fcef27e21171",
+      "createdAt": "2025-08-31T13:40:20.044Z",
+      "oldValue": null,
+      "newValue": null,
+      "entityId": null
     }
   ]
 }
