@@ -11,9 +11,12 @@ import {
   type CategoryMapping,
   type InsertCategoryMapping,
   type DatabaseSettings,
-  type InsertDatabaseSettings
+  type InsertDatabaseSettings,
+  categories
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -146,6 +149,8 @@ export class MemStorage implements IStorage {
       shortDescription: null,
       description: null,
       xmlSourceId: null,
+      thumbnail: null,
+      images: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -173,6 +178,8 @@ export class MemStorage implements IStorage {
       shortDescription: null,
       description: null,
       xmlSourceId: null,
+      thumbnail: null,
+      images: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -220,8 +227,7 @@ export class MemStorage implements IStorage {
       updatedAt: now,
       productCount: 0,
       status: xmlSource.status || "active",
-      lastFetch: xmlSource.lastFetch || null,
-      mapping: xmlSource.mapping || null
+      lastFetch: xmlSource.lastFetch || null
     };
     this.xmlSources.set(id, newXmlSource);
     
@@ -446,7 +452,15 @@ export class MemStorage implements IStorage {
 
   // Category and Brand methods
   async getCategories(): Promise<Category[]> {
-    return Array.from(this.categories.values());
+    try {
+      // Mevcut veritabanından kategorileri çek
+      const dbCategories = await db.select().from(categories);
+      return dbCategories;
+    } catch (error) {
+      console.error("Error fetching categories from database:", error);
+      // Fallback olarak memory'den çek
+      return Array.from(this.categories.values());
+    }
   }
 
   async getBrands(): Promise<Brand[]> {

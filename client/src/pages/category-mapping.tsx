@@ -326,7 +326,7 @@ export default function CategoryMapping() {
                         ) : (
                           filteredLocalCategories.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
-                              {category.name}
+                              {category.name || "İsimsiz Kategori"}
                             </SelectItem>
                           ))
                         )}

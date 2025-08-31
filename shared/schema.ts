@@ -60,6 +60,7 @@ export const products = pgTable("products", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Mevcut sistem - String ID'li categories
 export const categories = pgTable("categories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -134,6 +135,7 @@ export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 
 export type Category = typeof categories.$inferSelect;
+export type CategoryLanguage = typeof categoryLanguages.$inferSelect;
 export type Brand = typeof brands.$inferSelect;
 
 export type CategoryMapping = typeof categoryMappings.$inferSelect;
