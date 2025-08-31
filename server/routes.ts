@@ -749,12 +749,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const extractedProducts = extractProducts(result);
-      console.log(`🔍 Debug: XML'den çıkarılan ürün sayısı: ${extractedProducts.length}`);
+      console.log(`🔍 DEBUG: XML'den çıkarılan ürün sayısı: ${extractedProducts.length}`);
+      console.log(`🔍 DEBUG: XML yapısı kontrol:`, Object.keys(result).slice(0, 5));
       
       if (extractedProducts.length > 0) {
         console.log(`📋 İlk ürün örneği:`, JSON.stringify(extractedProducts[0], null, 2));
+        console.log(`📋 İlk ürünün kategori bilgisi:`, extractedProducts[0].category, extractedProducts[0].categoryId);
       } else {
-        console.log(`⚠️ XML'den hiç ürün çıkarılamadı! XML yapısını kontrol edin.`);
+        console.log(`⚠️ XML'den hiç ürün çıkarılamadı!`);
+        console.log(`🔍 XML root keys:`, Object.keys(result));
+        if (result.products) {
+          console.log(`🔍 Products found:`, Array.isArray(result.products) ? result.products.length : 'Not array');
+        }
+        if (result.product) {
+          console.log(`🔍 Product found:`, Array.isArray(result.product) ? result.product.length : 'Not array');
+        }
       }
       
       let processedCount = 0;
@@ -788,17 +797,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Kategori eşleştirme bilgilerini kontrol et
+      const categoryMappings = await pageStorage.getCategoryMappings();
+      console.log(`📋 Toplam kategori eşleştirmesi: ${categoryMappings.length}`);
+      
+      if (categoryMappings.length > 0) {
+        console.log(`📋 İlk eşleştirme örneği:`, categoryMappings[0]);
+      }
+      
       // Sadece eşleştirilen kategorilere sahip ürünleri import et
       let skippedCount = 0;
+      let potentialImports = 0;
+      
+      // Önce kaç ürün import edilebilir kontrol et
+      for (const productData of extractedProducts) {
+        if (productData.categoryId && productData.categoryId !== 0) {
+          potentialImports++;
+        }
+      }
+      
+      console.log(`🎯 Import Öngörüsü: ${extractedProducts.length} ürün bulundu, ${potentialImports} ürün eşleştirilmiş kategoriye sahip`);
+      
+      if (potentialImports === 0) {
+        console.log(`⚠️ Hiç ürün import edilemeyecek - kategori eşleştirmelerini kontrol edin!`);
+      }
       
       for (const productData of extractedProducts) {
         try {
           // Category ID kontrolü - eşleştirme yoksa ürünü atla
           if (!productData.categoryId || productData.categoryId === 0) {
-            console.log(`⏭️ Skipping product "${productData.name}" - category not mapped`);
+            console.log(`⏭️ Skipping product "${productData.name}" - category "${productData.category}" not mapped`);
             skippedCount++;
             continue;
           }
+          
+          console.log(`✅ Will import: "${productData.name}" - category "${productData.category}" → ID: ${productData.categoryId}`);
 
           const importResult = await importProductToMySQL({
             name: productData.name,
