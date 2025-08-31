@@ -478,7 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(categories.map(cat => ({
-        id: cat.id,
+        id: cat.categoryId, // category_id'yi kullan (bu localCategoryId için gereken değer)
         name: cat.title,
         title: cat.title
       })));

@@ -175,6 +175,10 @@ export const insertCronjobSchema = createInsertSchema(cronjobs);
 export const insertProductSchema = createInsertSchema(products);
 export const insertCategorySchema = createInsertSchema(categories);
 export const insertBrandSchema = createInsertSchema(brands);
-export const insertCategoryMappingSchema = createInsertSchema(categoryMappings);
+export const insertCategoryMappingSchema = createInsertSchema(categoryMappings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
 export const insertGeminiSettingsSchema = createInsertSchema(geminiSettings);
 export const insertDatabaseSettingsSchema = createInsertSchema(databaseSettings);

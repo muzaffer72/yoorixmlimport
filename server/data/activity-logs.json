@@ -571,6 +571,39 @@
       "createdAt": "2025-08-31T18:42:42.845Z",
       "oldValue": null,
       "newValue": null
+    },
+    {
+      "type": "xml_source_added",
+      "title": "Yeni XML kaynağı eklendi",
+      "description": "hercuma XML kaynağı sisteme eklendi",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "6b6b92fd-4fcb-4871-9900-ea0288e3cc2c",
+      "createdAt": "2025-08-31T19:23:46.789Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "categories_extracted",
+      "title": "Kategoriler çıkarıldı",
+      "description": "229 kategori XML'den çıkarıldı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "8bdef530-038b-4a12-8ee0-16f3985bd610",
+      "createdAt": "2025-08-31T19:23:50.957Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "27e90954-c249-422a-8bab-6299295521c8",
+      "createdAt": "2025-08-31T19:26:03.454Z",
+      "oldValue": null,
+      "newValue": null
     }
   ]
 }
