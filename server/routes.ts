@@ -789,8 +789,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   externalLink: "",
                   isRefundable: false, // Excel: "0"  
                   cashOnDelivery: false, // Excel: "0"
-                  shortDescription: descValue || nameValue || "Demo Product short description",
-                  description: descValue || nameValue || "Demo product long description",
+                  shortDescription: nameValue || "Kısa açıklama",
+                  description: (obj['_'] && typeof obj['_'] === 'string') ? obj['_'].substring(0, 1000) : nameValue || "Açıklama bulunamadı",
                   metaTitle: (nameValue || "Demo Product") + " - Meta Title",
                   metaDescription: "Demo meta description for " + (nameValue || "product"),
                   // Sistem alanları

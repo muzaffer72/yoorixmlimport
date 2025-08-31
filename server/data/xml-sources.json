@@ -7,7 +7,7 @@
       "fieldMapping": {
         "name": "adi",
         "price": "fiyat",
-        "description": "adi",
+        "description": "",
         "sku": "kod",
         "barcode": "barkod",
         "brand": "marka",
