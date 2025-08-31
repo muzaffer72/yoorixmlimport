@@ -770,12 +770,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   targetCategoryId
                 });
                 
+                // Kar oranı hesaplama
+                let finalPrice = parseFloat(priceValue as string) || 0;
+                
+                // XML source'dan kar oranı ayarlarını al
+                if (xmlSource.profitMarginType === "percent" && xmlSource.profitMarginPercent > 0) {
+                  finalPrice = finalPrice * (1 + xmlSource.profitMarginPercent / 100);
+                  console.log(`💰 Yüzde kar oranı uygulandı: %${xmlSource.profitMarginPercent} -> ${finalPrice} TL`);
+                } else if (xmlSource.profitMarginType === "fixed" && xmlSource.profitMarginFixed > 0) {
+                  finalPrice = finalPrice + xmlSource.profitMarginFixed;
+                  console.log(`💰 Sabit kar tutarı uygulandı: +${xmlSource.profitMarginFixed} TL -> ${finalPrice} TL`);
+                }
+
                 // Excel örneğinizdeki TAM veri yapısı  
                 const productData = {
                   name: nameValue || `Ürün-${Date.now()}`, // XML'den gelen ad
                   categoryId: targetCategoryId, // XML'den gelen kategori
                   brandId: 1, // Excel örneğindeki varsayılan brand_id
-                  price: parseFloat(priceValue as string) || 0,
+                  price: Math.round(finalPrice * 100) / 100, // 2 ondalık basamağa yuvarla
                   unit: unitValue || "adet",
                   barcode: barcodeValue || "",
                   sku: skuValue || `XML-${Date.now()}`,
@@ -923,6 +935,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Sadece eşleştirilen kategorilere sahip ürünleri import et
       let skippedCount = 0;
       let potentialImports = 0;
+      let addedCount = 0;
+      let updatedCount = 0;
       
       // Önce kaç ürün import edilebilir kontrol et
       for (const productData of extractedProducts) {
@@ -974,9 +988,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           
           processedCount++;
-          const progress = Math.round((processedCount / potentialImports) * 100);
           
-          console.log(`✅ ÜRÜN EKLENDİ [${processedCount}/${potentialImports}]: ${productData.name}`);
+          // Güncellenen mi eklenen mi sayılarını takip et
+          if (importResult.isUpdate) {
+            updatedCount++;
+            console.log(`🔄 ÜRÜN GÜNCELLENDİ [${processedCount}/${potentialImports}]: ${productData.name}`);
+          } else {
+            addedCount++;
+            console.log(`➕ ÜRÜN EKLENDİ [${processedCount}/${potentialImports}]: ${productData.name}`);
+          }
+          
+          const progress = Math.round((processedCount / potentialImports) * 100);
           console.log(`   └─ ID: ${importResult.productId} | Kategori: ${productData.categoryId} | Fiyat: ${productData.price} TL`);
           console.log(`   └─ İlerleme: %${progress}`);
           
@@ -989,12 +1011,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      console.log(`📊 Import Summary: ${processedCount} imported, ${skippedCount} skipped (no category mapping)`);
+      console.log(`📊 Import Summary: ${addedCount} eklendi, ${updatedCount} güncellendi, ${skippedCount} atlandı (kategori eşleşmesi yok)`);
       
       await pageStorage.createActivityLog({
         type: "xml_synced",
         title: "XML kaynağı güncellendi",
-        description: `${xmlSource.name} - ${processedCount} ürün MySQL'e kaydedildi, ${skippedCount} ürün kategori eşleşmesi olmadığı için atlandı`,
+        description: `${xmlSource.name} - ${addedCount} yeni ürün eklendi, ${updatedCount} ürün güncellendi, ${skippedCount} ürün atlandı`,
         entityId: xmlSourceId,
         entityType: "xml_source"
       });
@@ -1002,6 +1024,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         message: "XML import başarıyla tamamlandı",
         processed: processedCount,
+        added: addedCount,
+        updated: updatedCount,
+        skipped: skippedCount,
         found: extractedProducts.length
       });
     } catch (error: any) {

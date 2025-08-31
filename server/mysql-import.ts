@@ -176,6 +176,92 @@ export async function downloadImage(imageUrl: string, productId: number, imageIn
   }
 }
 
+// SKU'ya göre mevcut ürünü kontrol et
+async function checkExistingProductBySKU(sku: string) {
+  if (!importConnection) {
+    throw new Error('Import database not connected');
+  }
+
+  try {
+    const [rows] = await importConnection.execute(
+      `SELECT p.id, p.price, p.current_stock, ps.price as stock_price, ps.current_stock as stock_current_stock 
+       FROM products p 
+       LEFT JOIN product_stocks ps ON p.id = ps.product_id 
+       WHERE p.barcode = ? OR ps.sku = ? 
+       LIMIT 1`,
+      [sku, sku]
+    );
+    
+    return (rows as any[])[0] || null;
+  } catch (error) {
+    console.error('❌ SKU kontrol hatası:', error);
+    return null;
+  }
+}
+
+// Mevcut ürünü güncelle
+async function updateExistingProduct(productId: number, product: any) {
+  if (!importConnection) {
+    throw new Error('Import database not connected');
+  }
+
+  try {
+    console.log(`🔄 Mevcut ürün güncelleniyor: ID ${productId}`);
+    
+    // 1. PRODUCTS tablosunu güncelle
+    await importConnection.execute(
+      `UPDATE products SET 
+        price = ?, current_stock = ?, 
+        video_provider = ?, video_url = ?,
+        updated_at = NOW()
+       WHERE id = ?`,
+      [
+        product.price,
+        product.stock || 0,
+        product.videoProvider === "none" ? '' : (product.videoProvider || ''),
+        product.videoProvider === "none" ? '' : (product.videoUrl || ''),
+        productId
+      ]
+    );
+    
+    // 2. PRODUCT_LANGUAGES tablosunu güncelle
+    await importConnection.execute(
+      `UPDATE product_languages SET 
+        name = ?, short_description = ?, description = ?, 
+        tags = ?, meta_title = ?, meta_description = ?
+       WHERE product_id = ?`,
+      [
+        product.name,
+        product.shortDescription || '',
+        product.description || '',
+        product.tags || '',
+        product.metaTitle || product.name,
+        product.metaDescription || '',
+        productId
+      ]
+    );
+    
+    // 3. PRODUCT_STOCKS tablosunu güncelle
+    await importConnection.execute(
+      `UPDATE product_stocks SET 
+        price = ?, current_stock = ?
+       WHERE product_id = ?`,
+      [
+        product.price,
+        product.stock || 0,
+        productId
+      ]
+    );
+    
+    console.log(`✅ Ürün başarıyla güncellendi: ${product.name} (ID: ${productId})`);
+    return { productId, isUpdate: true };
+    
+  } catch (error) {
+    console.error('❌ Ürün güncelleme hatası:', error);
+    throw error;
+  }
+}
+
 // 3 tablolu ürün import sistemi (Laravel PHP örneğine uygun)
 export async function importProductToMySQL(product: {
   name: string;
@@ -207,6 +293,19 @@ export async function importProductToMySQL(product: {
 
   try {
     console.log('📦 Starting 3-table import for:', product.name);
+    
+    // SKU kontrolü - mevcut ürün var mı?
+    if (product.sku) {
+      const existingProduct = await checkExistingProductBySKU(product.sku);
+      if (existingProduct) {
+        console.log(`🔄 Mevcut ürün bulundu (SKU: ${product.sku}), güncelleniyor...`);
+        return await updateExistingProduct(existingProduct.id, product);
+      } else {
+        console.log(`➕ Yeni ürün (SKU: ${product.sku}), ekleniyor...`);
+      }
+    } else {
+      console.log(`➕ SKU yok, yeni ürün ekleniyor...`);
+    }
     
     // 1. PRODUCTS tablosuna ana ürün bilgilerini ekle (gerçek tablo yapısına uygun)
     const productSlug = product.name.toLowerCase().replace(/[^a-z0-9çğııöşü]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Math.random().toString(36).substr(2, 5);
@@ -361,7 +460,7 @@ export async function importProductToMySQL(product: {
     }
 
     console.log(`🎉 Complete product import finished for: ${product.name} (ID: ${productId})`);
-    return { productId, thumbnailImage, downloadedImages };
+    return { productId, thumbnailImage, downloadedImages, isUpdate: false };
     
   } catch (error) {
     console.error('❌ Error in 3-table product import:', error);
