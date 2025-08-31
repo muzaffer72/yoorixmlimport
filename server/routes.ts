@@ -253,6 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/xml-sources/extract-categories", async (req, res) => {
     try {
       const { url, categoryField } = req.body;
+      console.log("Extracting categories from URL:", url, "using field:", categoryField);
       
       if (!url || !categoryField) {
         return res.status(400).json({ message: "URL ve kategori alanı gerekli" });
@@ -277,7 +278,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      console.log("Reading XML text for categories...");
       const xmlText = await response.text();
+      console.log("XML text length:", xmlText.length, "characters");
       
       // Limit XML size to prevent memory issues (50MB max)
       if (xmlText.length > 50 * 1024 * 1024) {
@@ -286,51 +289,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      console.log("Parsing XML for categories...");
       const parser = new xml2js.Parser({ 
         explicitArray: false,
         ignoreAttrs: false,
         mergeAttrs: true
       });
       const result = await parser.parseStringPromise(xmlText);
+      console.log("XML parsed successfully for categories");
       
-      // Extract categories from XML based on the specified field
-      const extractCategories = (obj: any): string[] => {
-        const categories: string[] = [];
+      // Extract categories from XML using iterative approach to prevent stack overflow
+      const extractCategoriesIterative = (rootObj: any): string[] => {
+        const categories = new Set<string>();
+        const queue: any[] = [rootObj];
+        const fields = categoryField.split('.');
+        const maxItems = 10000; // Limit items processed for performance
+        let processedItems = 0;
         
-        const traverse = (data: any) => {
-          if (typeof data === "object" && data !== null) {
-            if (Array.isArray(data)) {
-              data.forEach(item => traverse(item));
+        console.log("Looking for category field:", categoryField, "split into:", fields);
+        
+        while (queue.length > 0 && processedItems < maxItems) {
+          const current = queue.shift();
+          processedItems++;
+          
+          if (typeof current !== "object" || current === null) {
+            continue;
+          }
+          
+          // Check if this object has the category field
+          let value = current;
+          let foundPath = true;
+          
+          for (const field of fields) {
+            if (value && typeof value === 'object' && field in value) {
+              value = value[field];
             } else {
-              // Check if this object has the category field
-              const fields = categoryField.split('.');
-              let value = data;
-              for (const field of fields) {
-                if (value && typeof value === 'object' && field in value) {
-                  value = value[field];
-                } else {
-                  value = null;
-                  break;
-                }
-              }
-              
-              if (value && typeof value === 'string') {
-                categories.push(value);
-              }
-              
-              // Continue traversing
-              for (const key in data) {
-                traverse(data[key]);
+              foundPath = false;
+              break;
+            }
+          }
+          
+          if (foundPath && value && typeof value === 'string' && value.trim()) {
+            categories.add(value.trim());
+            console.log("Found category:", value.trim());
+          }
+          
+          // Add children to queue
+          if (Array.isArray(current)) {
+            // Process only first few items of large arrays for performance
+            const itemsToProcess = Math.min(current.length, 100);
+            for (let i = 0; i < itemsToProcess; i++) {
+              queue.push(current[i]);
+            }
+          } else {
+            for (const key in current) {
+              if (current.hasOwnProperty(key)) {
+                queue.push(current[key]);
               }
             }
           }
-        };
+        }
         
-        traverse(obj);
-        return Array.from(new Set(categories)); // Remove duplicates
+        console.log("Processed items:", processedItems, "Found categories:", categories.size);
+        return Array.from(categories);
       };
 
-      const categories = extractCategories(result);
+      console.log("Starting category extraction...");
+      const categories = extractCategoriesIterative(result);
+      console.log("Category extraction completed. Found:", categories.length, "categories");
       
       res.json({ 
         message: "Kategoriler başarıyla çekildi",
