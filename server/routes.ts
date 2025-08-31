@@ -780,9 +780,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Her ürünü 3-tablo sistemine kaydet (products, product_languages, product_stocks)
+      // Sadece eşleştirilen kategorilere sahip ürünleri import et
+      let skippedCount = 0;
+      
       for (const productData of extractedProducts) {
         try {
+          // Category ID kontrolü - eşleştirme yoksa ürünü atla
+          if (!productData.categoryId || productData.categoryId === 0) {
+            console.log(`⏭️ Skipping product "${productData.name}" - category not mapped`);
+            skippedCount++;
+            continue;
+          }
+
           const importResult = await importProductToMySQL({
             name: productData.name,
             categoryId: productData.categoryId,
@@ -808,7 +817,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             cashOnDelivery: productData.cashOnDelivery
           });
           
-          console.log(`✅ Product imported: ${productData.name} (ID: ${importResult.productId})`);
+          console.log(`✅ Product imported: ${productData.name} (ID: ${importResult.productId}, Category: ${productData.categoryId})`);
           if (importResult.downloadedImages.length > 0) {
             console.log(`📸 Downloaded ${importResult.downloadedImages.length} images`);
           }
@@ -819,10 +828,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      console.log(`📊 Import Summary: ${processedCount} imported, ${skippedCount} skipped (no category mapping)`);
+      
       await pageStorage.createActivityLog({
         type: "xml_synced",
         title: "XML kaynağı güncellendi",
-        description: `${xmlSource.name} - ${processedCount} ürün işlendi`,
+        description: `${xmlSource.name} - ${processedCount} ürün MySQL'e kaydedildi, ${skippedCount} ürün kategori eşleşmesi olmadığı için atlandı`,
         entityId: xmlSourceId,
         entityType: "xml_source"
       });
