@@ -438,6 +438,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "MySQL database settings not configured" });
       }
 
+      // Development mode kontrolü - eğer localhost ise demo döndür
+      if (process.env.NODE_ENV === 'development' && dbSettings.host === 'localhost') {
+        console.log("Development mode detected, returning demo categories");
+        return res.json([
+          { id: 1, name: "Elektronik", title: "Elektronik" },
+          { id: 2, name: "Ev & Yaşam", title: "Ev & Yaşam" },
+          { id: 3, name: "Giyim", title: "Giyim" },
+          { id: 4, name: "Spor", title: "Spor" },
+          { id: 5, name: "Kitap", title: "Kitap" },
+          { id: 6, name: "Kozmetik", title: "Kozmetik" },
+          { id: 7, name: "Oyuncak", title: "Oyuncak" },
+          { id: 8, name: "Bahçe", title: "Bahçe" }
+        ]);
+      }
+
       // MySQL'e bağlan ve kategorileri çek
       await connectToImportDatabase({
         host: dbSettings.host,

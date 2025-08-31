@@ -12,6 +12,12 @@ export async function connectToImportDatabase(settings: {
   username: string;
   password: string;
 }) {
+  // Development mode kontrolü
+  if (process.env.NODE_ENV === 'development' && settings.host === 'localhost') {
+    console.log('Development mode: Skipping MySQL connection');
+    throw new Error('MySQL connection refused in development mode');
+  }
+
   try {
     const connectionString = `mysql://${settings.username}:${settings.password}@${settings.host}:${settings.port}/${settings.database}`;
     
