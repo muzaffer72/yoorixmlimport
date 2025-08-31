@@ -171,25 +171,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await parser.parseStringPromise(xmlText);
       console.log("XML parsed successfully");
       
-      // Extract structure from XML
-      const extractTags = (obj: any, path = ""): string[] => {
+      // Extract structure from XML with depth limit to prevent stack overflow
+      const extractTags = (obj: any, path = "", depth = 0, maxDepth = 8, visited = new WeakSet()): string[] => {
+        // Prevent infinite recursion and stack overflow
+        if (depth > maxDepth) return [];
+        
+        // Check for circular references
+        if (typeof obj === "object" && obj !== null) {
+          if (visited.has(obj)) return [];
+          visited.add(obj);
+        }
+        
         const tags: string[] = [];
         
         if (typeof obj === "object" && obj !== null) {
-          for (const key in obj) {
-            const fullPath = path ? `${path}.${key}` : key;
-            tags.push(fullPath);
-            
-            if (typeof obj[key] === "object" && obj[key] !== null) {
-              tags.push(...extractTags(obj[key], fullPath));
+          if (Array.isArray(obj)) {
+            // For arrays, just analyze the first item if it exists
+            if (obj.length > 0) {
+              const newVisited = new WeakSet(visited);
+              tags.push(...extractTags(obj[0], path, depth + 1, maxDepth, newVisited));
+            }
+          } else {
+            for (const key in obj) {
+              const fullPath = path ? `${path}.${key}` : key;
+              tags.push(fullPath);
+              
+              // Only recurse if we haven't hit depth limit
+              if (depth < maxDepth && typeof obj[key] === "object" && obj[key] !== null) {
+                const newVisited = new WeakSet(visited);
+                tags.push(...extractTags(obj[key], fullPath, depth + 1, maxDepth, newVisited));
+              }
             }
           }
         }
         
-        return Array.from(new Set(tags)); // Remove duplicates
+        return tags;
       };
 
-      const tags = extractTags(result);
+      console.log("Extracting tags from XML structure...");
+      const tags = Array.from(new Set(extractTags(result)));
+      console.log("Found", tags.length, "tags");
       
       res.json({ 
         message: "XML yapısı başarıyla alındı",
