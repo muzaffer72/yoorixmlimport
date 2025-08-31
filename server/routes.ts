@@ -754,8 +754,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Özel olarak Urunler kontrol et
         if (data.Urunler) {
           console.log(`🔍 Urunler bulundu, tipi:`, typeof data.Urunler, Array.isArray(data.Urunler) ? `Array(${data.Urunler.length})` : 'Object');
-          if (Array.isArray(data.Urunler) && data.Urunler.length > 0) {
-            console.log(`🔍 İlk Urun örneği:`, JSON.stringify(data.Urunler[0], null, 2).substring(0, 500));
+          
+          // XML yapısını detayına kadar incele
+          if (Array.isArray(data.Urunler)) {
+            console.log(`🔍 Urunler Array - İlk eleman:`, JSON.stringify(data.Urunler[0], null, 2).substring(0, 800));
+          } else {
+            console.log(`🔍 Urunler Object - Keys:`, Object.keys(data.Urunler));
+            if (data.Urunler.Urun) {
+              console.log(`🔍 Urunler.Urun bulundu, tipi:`, typeof data.Urunler.Urun, Array.isArray(data.Urunler.Urun) ? `Array(${data.Urunler.Urun.length})` : 'Object');
+              if (Array.isArray(data.Urunler.Urun) && data.Urunler.Urun.length > 0) {
+                console.log(`🔍 İlk Urun örneği:`, JSON.stringify(data.Urunler.Urun[0], null, 2).substring(0, 800));
+              }
+            }
           }
         }
         
