@@ -122,6 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/xml-sources/fetch-structure", async (req, res) => {
     try {
       const { url } = req.body;
+      console.log("Fetching XML structure for URL:", url);
       
       if (!url) {
         return res.status(400).json({ message: "URL is required" });
@@ -131,6 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000);
       
+      console.log("Starting XML fetch...");
       const response = await fetch(url, { 
         signal: controller.signal,
         headers: {
@@ -139,28 +141,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       clearTimeout(timeoutId);
+      console.log("XML fetch completed, status:", response.status);
       
       if (!response.ok) {
+        console.log("XML fetch failed:", response.status, response.statusText);
         return res.status(400).json({ 
           message: `XML kaynağına ulaşılamıyor: ${response.status} ${response.statusText}` 
         });
       }
 
+      console.log("Reading XML text...");
       const xmlText = await response.text();
+      console.log("XML text length:", xmlText.length, "characters");
       
       // Limit XML size to prevent memory issues (50MB max)
       if (xmlText.length > 50 * 1024 * 1024) {
+        console.log("XML file too large:", xmlText.length);
         return res.status(400).json({ 
           message: "XML dosyası çok büyük (maksimum 50MB)" 
         });
       }
       
+      console.log("Parsing XML...");
       const parser = new xml2js.Parser({ 
         explicitArray: false,
         ignoreAttrs: false,
         mergeAttrs: true
       });
       const result = await parser.parseStringPromise(xmlText);
+      console.log("XML parsed successfully");
       
       // Extract structure from XML
       const extractTags = (obj: any, path = ""): string[] => {
@@ -189,6 +198,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error("XML structure fetch error:", error);
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        code: error.code,
+        stack: error.stack?.substring(0, 500)
+      });
       
       let errorMessage = "XML yapısı alınırken hata oluştu";
       
@@ -198,6 +213,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         errorMessage = "XML URL'sine ulaşılamıyor. Lütfen URL'yi kontrol edin.";
       } else if (error.message && error.message.includes('timeout')) {
         errorMessage = "XML yükleme zaman aşımına uğradı. Dosya çok büyük olabilir.";
+      } else if (error.message && error.message.includes('XML')) {
+        errorMessage = `XML parse hatası: ${error.message}`;
+      } else if (error.message) {
+        errorMessage = `Hata: ${error.message}`;
       }
       
       res.status(500).json({ message: errorMessage });
@@ -443,7 +462,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               obj.forEach(item => traverse(item));
             } else {
               // Check if this looks like a product object
-              const fieldMapping = xmlSource.fieldMapping || {};
+              const fieldMapping = (xmlSource.fieldMapping as Record<string, string>) || {};
               let hasRequiredFields = false;
               
               // Check if we can extract a category
