@@ -109,6 +109,50 @@
       "oldValue": null,
       "newValue": null,
       "entityId": null
+    },
+    {
+      "type": "xml_source_deleted",
+      "title": "XML kaynağı silindi",
+      "description": "enginithalat XML kaynağı sistemden silindi",
+      "entityId": "dd2aebb6-9722-42dd-b4dc-99fc2eb09344",
+      "entityType": "xml_source",
+      "id": "2fa3fdaf-0c84-403b-ba2d-6ae9bf1a2cc9",
+      "createdAt": "2025-08-31T12:54:56.430Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_source_added",
+      "title": "Yeni XML kaynağı eklendi",
+      "description": "enginithalat XML kaynağı sisteme eklendi",
+      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "entityType": "xml_source",
+      "id": "e8cc2014-7477-4e3f-b783-51a851ab8890",
+      "createdAt": "2025-08-31T12:56:14.651Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "categories_extracted",
+      "title": "Kategoriler çıkarıldı",
+      "description": "229 kategori XML'den çıkarıldı",
+      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "entityType": "xml_source",
+      "id": "59a78556-ba42-4fb1-9994-c189d36e16d3",
+      "createdAt": "2025-08-31T12:56:25.753Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "database_settings_updated",
+      "title": "Veritabanı ayarları güncellendi",
+      "description": "localhost:3306 veritabanı bağlantısı yapılandırıldı",
+      "entityType": "settings",
+      "id": "ab55e5d0-7973-43c0-87d8-aa29e09bc764",
+      "createdAt": "2025-08-31T12:57:36.902Z",
+      "oldValue": null,
+      "newValue": null,
+      "entityId": null
     }
   ]
 }
