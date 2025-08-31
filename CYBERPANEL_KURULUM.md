@@ -1,76 +1,143 @@
-# Cyberpanel Kurulum Rehberi
+# XML Management Panel - Cyberpanel Kurulum Kılavuzu
 
-## 1. Dosyaları Yükleme
-- Tüm proje dosyalarını `/home/domain.com/public_html/` klasörüne yükleyin
-- SSH ile bağlanın veya File Manager kullanın
+## Sistem Gereksinimleri
+- PHP 8.1+ 
+- MySQL/MariaDB 10.4+
+- Composer
+- Node.js 18+ (frontend için)
 
-## 2. Node.js Kurulumu (Cyberpanel)
+## Kurulum Adımları
+
+### 1. Dosyaları Yükle
 ```bash
-# Cyberpanel'de Node.js etkinleştir
-# Terminal'den:
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+# Ana dizine dosyaları yükle
+cd /home/kullanici.com/xml.kullanici.com
+
+# Laravel backend'i kurmak için
+cd laravel-backend
+composer install --optimize-autoloader --no-dev
 ```
 
-## 3. Veritabanı Kurulumu
-Cyberpanel'de:
-- Database → Create Database
-- Database Name: `xml_manager`
-- Username: `xml_user` 
-- Password: güçlü şifre
-- Host: `localhost`
-
-## 4. Bağımlılıkları Yükleme
+### 2. Environment Dosyası
 ```bash
-cd /home/domain.com/public_html
+# .env dosyasını kopyala ve düzenle
+cp .env.example .env
+
+# Laravel key oluştur
+php artisan key:generate
+```
+
+### 3. .env Dosyasını Düzenle
+```env
+APP_NAME="XML Product Manager"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=http://xml.hercuma.com
+
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=herc_xmlaktar
+DB_USERNAME=herc_xmlaktar
+DB_PASSWORD=güçlü_şifre_buraya
+
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+### 4. Veritabanı Kurulumu
+```bash
+# Migration'ları çalıştır
+php artisan migrate
+
+# Cache temizle
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+### 5. Frontend Build
+```bash
+# Ana dizinde
 npm install
+npm run build
 ```
 
-## 5. Ortam Değişkenleri (.env)
+### 6. Dosya İzinleri
 ```bash
-# Ana sistem veritabanı (MySQL)
-DATABASE_URL="mysql://xml_user:şifreniz@localhost:3306/xml_manager"
-
-# Gemini AI (opsiyonel)
-GEMINI_API_KEY=your_api_key_here
-
-# Session güvenlik
-SESSION_SECRET=uzun_güvenli_anahtar_buraya
-
-# Ortam
-NODE_ENV=production
+# Laravel için gerekli izinler
+chmod -R 775 laravel-backend/storage
+chmod -R 775 laravel-backend/bootstrap/cache
+chown -R www-data:www-data laravel-backend/storage
+chown -R www-data:www-data laravel-backend/bootstrap/cache
 ```
 
-## 6. Veritabanı Tablolarını Oluşturma
+## API Proxy Yapısı
+
+Frontend'den Laravel API'ye erişim için proxy sistem:
+
+```php
+// public_html/api/index.php
+<?php
+// Tüm API isteklerini Laravel'e yönlendir
+$request_uri = $_SERVER['REQUEST_URI'];
+$api_path = str_replace('/api', '', $request_uri);
+
+// Laravel API'ye proxy
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'http://localhost:8000/api' . $api_path);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $_SERVER['REQUEST_METHOD']);
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    curl_setopt($ch, CURLOPT_POSTFIELDS, file_get_contents('php://input'));
+}
+
+$headers = getallheaders();
+$curl_headers = [];
+foreach($headers as $key => $value) {
+    $curl_headers[] = $key . ': ' . $value;
+}
+curl_setopt($ch, CURLOPT_HTTPHEADER, $curl_headers);
+
+$result = curl_exec($ch);
+$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+http_response_code($http_code);
+header('Content-Type: application/json');
+echo $result;
+?>
+```
+
+### 7. Cron Job Kurulumu
 ```bash
-npm run db:push
+# Crontab düzenle
+crontab -e
+
+# XML sync için dakikada bir çalışacak job
+* * * * * cd /path/to/laravel-backend && php artisan schedule:run >> /dev/null 2>&1
 ```
-
-## 7. Uygulamayı Başlatma
-```bash
-# Geliştirme modu
-npm run dev
-
-# Üretim modu
-NODE_ENV=production npm run dev
-```
-
-## 8. Port Ayarı (Cyberpanel)
-- App → Create App
-- App Type: Node.js
-- Port: 5000
-- Startup File: index.js
-
-## 9. Domain Bağlama
-- Domain'inizi 5000 portuna yönlendirin
-- Veya reverse proxy ile 80/443'e yönlendirin
-
-## Kullanım
-1. Ana sistem veritabanı: XML kaynakları ve ayarları için
-2. Hedef veritabanı: Ayarlar sayfasından ekleyeceğiniz e-ticaret veritabanı
-3. XML'ler parse edilip hedef veritabanına yazılır
 
 ## Sorun Giderme
-- Port 5000'in açık olduğunu kontrol edin
-- MySQL servisinin çalıştığını kontrol edin
-- Log dosyalarını kontrol edin: `pm2 logs` veya konsol çıktısı
+
+### Hata: "Permission denied"
+```bash
+chmod -R 755 laravel-backend/
+chown -R www-data:www-data laravel-backend/
+```
+
+### Hata: "Database connection failed"
+1. MySQL servisinin çalıştığını kontrol et
+2. Veritabanı kullanıcısının izinlerini kontrol et
+3. .env dosyasındaki bağlantı bilgilerini kontrol et
+
+### Frontend'den API'ye erişim sorunu
+1. .htaccess dosyasının doğru yapılandırıldığını kontrol et
+2. PHP proxy dosyasının çalıştığını test et
+3. CORS ayarlarını kontrol et
+
+## Güvenlik Önerileri
+- .env dosyasını web erişimi dışında tut
+- Database şifrelerini güçlü yap
+- Production'da debug modunu kapat
+- SSL sertifikası kullan
