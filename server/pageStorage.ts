@@ -169,6 +169,11 @@ export class PageStorage {
     const mappingData = this.loadJsonFile('category-mappings.json', { mappings: [] });
     mappingData.mappings = mappingData.mappings.filter((mapping: any) => mapping.xmlSourceId !== xmlSourceId);
     this.saveJsonFile('category-mappings.json', mappingData);
+
+    // Delete extracted categories for this XML source
+    const categoryData = this.loadJsonFile('extracted-categories.json', { categories: [] });
+    categoryData.categories = categoryData.categories.filter((cat: any) => cat.xmlSourceId !== xmlSourceId);
+    this.saveJsonFile('extracted-categories.json', categoryData);
   }
 
   // Activity Logs Management
@@ -680,6 +685,53 @@ export class PageStorage {
   testGeminiApiKey(apiKey: string): boolean {
     // Mock test - always return true for demo
     return apiKey && apiKey.length > 10;
+  }
+
+  // XML Source bazlı kategori yönetimi
+  async getExtractedCategoriesForSource(xmlSourceId: string): Promise<string[]> {
+    const data = this.loadJsonFile('extracted-categories.json', { categories: [] });
+    const sourceCategories = data.categories.filter((cat: any) => cat.xmlSourceId === xmlSourceId);
+    return sourceCategories.map((cat: any) => cat.name);
+  }
+
+  async saveExtractedCategoriesForSource(xmlSourceId: string, categories: string[]): Promise<void> {
+    const data = this.loadJsonFile('extracted-categories.json', { categories: [] });
+    
+    // Bu XML source'un mevcut kategorilerini sil
+    data.categories = data.categories.filter((cat: any) => cat.xmlSourceId !== xmlSourceId);
+    
+    // Yeni kategorileri ekle
+    const newCategories = categories.map(name => ({
+      xmlSourceId,
+      name,
+      createdAt: new Date().toISOString()
+    }));
+    
+    data.categories.push(...newCategories);
+    this.saveJsonFile('extracted-categories.json', data);
+
+    // XML source'u güncelle
+    const xmlData = this.loadJsonFile('xml-sources.json', { sources: [] });
+    const sourceIndex = xmlData.sources.findIndex((source: any) => source.id === xmlSourceId);
+    if (sourceIndex !== -1) {
+      xmlData.sources[sourceIndex].extractedCategories = categories;
+      xmlData.sources[sourceIndex].updatedAt = new Date();
+      this.saveJsonFile('xml-sources.json', xmlData);
+    }
+
+    // Log activity
+    await this.createActivityLog({
+      type: "categories_extracted",
+      title: "Kategoriler çıkarıldı",
+      description: `${categories.length} kategori XML'den çıkarıldı`,
+      entityId: xmlSourceId,
+      entityType: "xml_source"
+    });
+  }
+
+  // Sadece belirli bir XML source'un kategorilerini döndür
+  async getCategoriesForSource(xmlSourceId: string): Promise<string[]> {
+    return await this.getExtractedCategoriesForSource(xmlSourceId);
   }
 }
 

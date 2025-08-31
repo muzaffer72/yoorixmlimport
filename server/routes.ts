@@ -255,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/xml-sources/extract-categories", async (req, res) => {
     try {
-      const { url, categoryField } = req.body;
+      const { url, categoryField, xmlSourceId } = req.body;
       console.log("Extracting categories from URL:", url, "using field:", categoryField);
       
       if (!url || !categoryField) {
@@ -406,6 +406,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sampleData = JSON.stringify(result, null, 2).substring(0, 2000);
       console.log("Sample XML data:", sampleData);
       
+      // Kategorileri bu XML source için kaydet (izolasyon için)
+      if (xmlSourceId) {
+        await pageStorage.saveExtractedCategoriesForSource(xmlSourceId, categories.sort());
+      }
+      
       res.json({ 
         message: "Kategoriler başarıyla çekildi",
         categories: categories.sort(),
@@ -426,6 +431,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(500).json({ message: errorMessage });
+    }
+  });
+
+  // XML source'a özel kategorileri getir
+  app.get("/api/xml-sources/:id/categories", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const categories = await pageStorage.getCategoriesForSource(id);
+      res.json({ categories });
+    } catch (error) {
+      res.status(500).json({ message: "Kategoriler getirilemedi" });
     }
   });
 

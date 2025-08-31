@@ -139,7 +139,7 @@ export default function CategoryMapping() {
     }
   };
 
-  const loadStoredCategories = () => {
+  const loadStoredCategories = async () => {
     if (!selectedXmlSource) {
       toast({
         title: "Hata",
@@ -149,27 +149,28 @@ export default function CategoryMapping() {
       return;
     }
 
-    const xmlSource = xmlSources.find(source => source.id === selectedXmlSource);
-    if (!xmlSource) {
+    try {
+      // XML source'a özel kategorileri API'den çek
+      const response = await apiRequest("GET", `/api/xml-sources/${selectedXmlSource}/categories`);
+      const data = await response.json();
+      
+      if (data.categories && data.categories.length > 0) {
+        setXmlCategories(data.categories);
+        toast({
+          title: "Başarılı",
+          description: `${data.categories.length} kategori yüklendi`,
+        });
+      } else {
+        toast({
+          title: "Uyarı", 
+          description: "Bu XML kaynağında önceden çekilen kategori bulunamadı. XML eklerken kategorileri çektiğinizden emin olun.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
         title: "Hata",
-        description: "XML kaynağı bulunamadı",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Use stored categories if available
-    if (xmlSource.extractedCategories && Array.isArray(xmlSource.extractedCategories)) {
-      setXmlCategories(xmlSource.extractedCategories);
-      toast({
-        title: "Başarılı",
-        description: `${xmlSource.extractedCategories.length} kategori yüklendi`,
-      });
-    } else {
-      toast({
-        title: "Uyarı",
-        description: "Bu XML kaynağında önceden çekilen kategori bulunamadı. XML eklerken kategorileri çektiğinizden emin olun.",
+        description: "Kategoriler yüklenirken hata oluştu",
         variant: "destructive",
       });
     }

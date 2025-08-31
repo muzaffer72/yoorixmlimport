@@ -54,13 +54,27 @@ export default function XmlSourceForm() {
       const response = await apiRequest("POST", "/api/xml-sources", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async (createdSource) => {
+      // Eğer kategoriler çekilmişse, bu XML source için kaydet
+      if (xmlCategories.length > 0 && createdSource.id) {
+        try {
+          await apiRequest("POST", "/api/xml-sources/extract-categories", {
+            url: createdSource.url,
+            categoryField: createdSource.categoryTag,
+            xmlSourceId: createdSource.id
+          });
+        } catch (error) {
+          console.log("Kategori kaydetme hatası:", error);
+        }
+      }
+      
       toast({
         title: "Başarılı",
         description: "XML kaynağı başarıyla eklendi",
       });
       form.reset();
       setXmlTags([]);
+      setXmlCategories([]);
       queryClient.invalidateQueries({ queryKey: ["/api/xml-sources"] });
     },
     onError: () => {
