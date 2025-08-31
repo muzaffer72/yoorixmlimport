@@ -130,8 +130,8 @@ export const databaseSettings = mysqlTable("database_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Mevcut MySQL veritabanınızdaki categories_languages tablosuna bağlanmak için
-export const categoriesLanguages = mysqlTable("categories_languages", {
+// Mevcut MySQL veritabanınızdaki category_languages tablosuna bağlanmak için
+export const categoriesLanguages = mysqlTable("category_languages", {
   id: int("id").primaryKey(),
   title: text("title").notNull(), // Bu sütundan kategori isimleri çekilecek
   // Diğer sütunlar varsa ekleyin

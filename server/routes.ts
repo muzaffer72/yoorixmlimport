@@ -468,11 +468,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const categories = await getLocalCategories();
-      console.log(`Found ${categories.length} categories from MySQL categories_languages table`);
+      console.log(`Found ${categories.length} categories from MySQL category_languages table`);
       
       if (categories.length === 0) {
         return res.status(404).json({
-          message: "categories_languages tablosunda kategori bulunamadı",
+          message: "category_languages tablosunda kategori bulunamadı",
           error: "NO_CATEGORIES_FOUND"
         });
       }
@@ -854,13 +854,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Bağlantı başarılıysa kategorileri test çek
       const categories = await getLocalCategories();
-      console.log(`Test successful: Found ${categories.length} categories in categories_languages table`);
+      console.log(`Test successful: Found ${categories.length} categories in category_languages table`);
       
       res.json({ 
         message: `Veritabanı bağlantısı başarılı! ${categories.length} kategori bulundu.`,
         status: "success",
         categoriesCount: categories.length,
-        details: `categories_languages tablosundan ${categories.length} kategori okundu`
+        details: `category_languages tablosundan ${categories.length} kategori okundu`
       });
     } catch (error: any) {
       console.error("MySQL test connection error:", error);

@@ -87,27 +87,27 @@ export async function getLocalCategories(): Promise<Array<{id: number, title: st
   }
 
   try {
-    console.log('🔍 Fetching categories from categories_languages table...');
+    console.log('🔍 Fetching categories from category_languages table...');
     
     // Önce tabloyu kontrol edelim
-    const [tables] = await importConnection.execute('SHOW TABLES LIKE "categories_languages"');
+    const [tables] = await importConnection.execute('SHOW TABLES LIKE "category_languages"');
     console.log('Tables check result:', tables);
     
     if (!tables || (tables as any[]).length === 0) {
-      console.log('⚠️ categories_languages table does not exist');
-      throw new Error('categories_languages tablosu bulunamadı');
+      console.log('⚠️ category_languages table does not exist');
+      throw new Error('category_languages tablosu bulunamadı');
     }
     
     // Tablo yapısını kontrol edelim
-    const [columns] = await importConnection.execute('DESCRIBE categories_languages');
+    const [columns] = await importConnection.execute('DESCRIBE category_languages');
     console.log('Table structure:', columns);
     
     // Kategorileri çekelim
     const [rows] = await importConnection.execute(
-      'SELECT id, title FROM categories_languages WHERE title IS NOT NULL AND title != ""'
+      'SELECT id, title FROM category_languages WHERE title IS NOT NULL AND title != ""'
     );
     
-    console.log(`✅ Found ${(rows as any[]).length} categories in categories_languages table`);
+    console.log(`✅ Found ${(rows as any[]).length} categories in category_languages table`);
     console.log('Sample categories:', (rows as any[]).slice(0, 3));
     
     return rows as Array<{id: number, title: string}>;
