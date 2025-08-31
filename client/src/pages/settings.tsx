@@ -82,9 +82,21 @@ export default function SettingsPage() {
     queryKey: ["/api/database-settings"],
   });
 
-  const { data: geminiSettings = [] } = useQuery<GeminiSettings[]>({
+  const { data: geminiSettingsData } = useQuery({
     queryKey: ["/api/gemini-settings"],
   });
+
+  // API'den gelen tek objeyi dizi formatına çevir
+  const geminiSettings = geminiSettingsData ? [
+    {
+      id: "gemini-1",
+      name: "Gemini AI",
+      apiKey: geminiSettingsData.api_key,
+      selectedModel: geminiSettingsData.selected_model,
+      isActive: geminiSettingsData.is_active,
+      isConfigured: geminiSettingsData.is_configured,
+    }
+  ] : [];
 
   const createDatabaseSettingMutation = useMutation({
     mutationFn: async (data: InsertDatabaseSettings) => {
