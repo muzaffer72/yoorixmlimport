@@ -977,11 +977,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             cashOnDelivery: productData.cashOnDelivery
           });
           
-          console.log(`✅ Product imported: ${productData.name} (ID: ${importResult.productId}, Category: ${productData.categoryId})`);
-          if (importResult.downloadedImages.length > 0) {
-            console.log(`📸 Downloaded ${importResult.downloadedImages.length} images`);
-          }
           processedCount++;
+          const progress = Math.round((processedCount / potentialImports) * 100);
+          
+          console.log(`✅ ÜRÜN EKLENDİ [${processedCount}/${potentialImports}]: ${productData.name}`);
+          console.log(`   └─ ID: ${importResult.productId} | Kategori: ${productData.categoryId} | Fiyat: ${productData.price} TL`);
+          console.log(`   └─ İlerleme: %${progress}`);
+          
+          if (importResult.downloadedImages.length > 0) {
+            console.log(`   └─ 📸 ${importResult.downloadedImages.length} resim indirildi`);
+          }
         } catch (error) {
           console.error("Failed to import product to MySQL:", error);
           // Hatalı ürünü atla, devam et
