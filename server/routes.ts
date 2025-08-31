@@ -745,6 +745,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         
         console.log(`🔍 XML traverse başlatılıyor...`);
+        console.log(`🔍 FIELD MAPPING DEBUG:`, xmlSource.fieldMapping);
+        console.log(`🔍 XML SOURCE DEBUG:`, xmlSource);
         console.log(`🔍 Field mapping ayarları:`, fieldMapping);
         console.log(`🔍 Category tag:`, xmlSource.categoryTag);
         console.log(`🔍 XML data keys:`, Object.keys(data));
@@ -763,8 +765,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       console.log(`🔍 BAŞLANGIC DEBUG: XML parse sonucu:`, typeof result, Object.keys(result || {}));
-      console.log(`🔍 FIELD MAPPING DEBUG:`, xmlSource.fieldMapping);
-      console.log(`🔍 XML SOURCE DEBUG:`, xmlSource);
       
       const extractedProducts = extractProducts(result);
       console.log(`🔍 DEBUG: XML'den çıkarılan ürün sayısı: ${extractedProducts.length}`);
