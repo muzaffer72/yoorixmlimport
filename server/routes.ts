@@ -870,18 +870,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Hata türüne göre öneriler
       if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-        suggestions = [
-          "MySQL kullanıcısının şifresi yanlış olabilir",
-          "Kullanıcının bu IP adresinden bağlanma izni olmayabilir",
-          "MySQL'de kullanıcı için '%' (herhangi bir host) izni verilmeli",
-          "Veya Replit IP'si için özel izin tanımlanmalı"
-        ];
+        if (host === 'localhost' || host === '127.0.0.1') {
+          suggestions = [
+            "Kullanıcı adı veya şifre yanlış",
+            "MySQL'de: GRANT ALL PRIVILEGES ON *.* TO 'kullanici'@'localhost' IDENTIFIED BY 'sifre';",
+            "Alternatif: GRANT ALL PRIVILEGES ON *.* TO 'kullanici'@'127.0.0.1' IDENTIFIED BY 'sifre';",
+            "Sonra: FLUSH PRIVILEGES; komutunu çalıştırın"
+          ];
+        } else {
+          suggestions = [
+            "MySQL kullanıcısının şifresi yanlış olabilir",
+            "Kullanıcının bu IP adresinden bağlanma izni olmayabilir",
+            "MySQL'de kullanıcı için '%' (herhangi bir host) izni verilmeli"
+          ];
+        }
       } else if (error.code === 'ECONNREFUSED') {
-        suggestions = [
-          "MySQL sunucusu çalışmıyor olabilir",
-          "Port numarası hatalı olabilir (genelde 3306)",
-          "Host adresi yanlış olabilir"
-        ];
+        if (host === 'localhost' || host === '127.0.0.1') {
+          suggestions = [
+            "MySQL servisi çalışmıyor: sudo service mysql start",
+            "Port 3306 kullanımda değil: netstat -an | grep 3306",
+            "MySQL config kontrolü: /etc/mysql/mysql.conf.d/mysqld.cnf",
+            "Alternatif host deneyiniz: localhost yerine 127.0.0.1 veya tersi"
+          ];
+        } else {
+          suggestions = [
+            "MySQL sunucusu çalışmıyor olabilir",
+            "Port numarası hatalı olabilir (genelde 3306)",
+            "Host adresi yanlış olabilir"
+          ];
+        }
       } else if (error.code === 'ENOTFOUND') {
         suggestions = [
           "Host adresi/domain bulunamıyor",
