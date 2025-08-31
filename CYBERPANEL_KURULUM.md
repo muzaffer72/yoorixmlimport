@@ -14,7 +14,7 @@
 cd /home/kullanici.com/xml.kullanici.com
 
 # Laravel backend'i kurmak için
-cd laravel-backend
+cd laravel
 composer install --optimize-autoloader --no-dev
 ```
 
@@ -65,10 +65,10 @@ npm run build
 ### 6. Dosya İzinleri
 ```bash
 # Laravel için gerekli izinler
-chmod -R 775 laravel-backend/storage
-chmod -R 775 laravel-backend/bootstrap/cache
-chown -R www-data:www-data laravel-backend/storage
-chown -R www-data:www-data laravel-backend/bootstrap/cache
+chmod -R 775 laravel/storage
+chmod -R 775 laravel/bootstrap/cache
+chown -R www-data:www-data laravel/storage
+chown -R www-data:www-data laravel/bootstrap/cache
 ```
 
 ## API Proxy Yapısı
@@ -115,15 +115,15 @@ echo $result;
 crontab -e
 
 # XML sync için dakikada bir çalışacak job
-* * * * * cd /path/to/laravel-backend && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /path/to/laravel && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 ## Sorun Giderme
 
 ### Hata: "Permission denied"
 ```bash
-chmod -R 755 laravel-backend/
-chown -R www-data:www-data laravel-backend/
+chmod -R 755 laravel/
+chown -R www-data:www-data laravel/
 ```
 
 ### Hata: "Database connection failed"
