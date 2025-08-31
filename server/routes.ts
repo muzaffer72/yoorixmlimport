@@ -648,6 +648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Extract products from XML
       const extractProducts = (data: any): any[] => {
         const products: any[] = [];
+        const fieldMapping = (xmlSource.fieldMapping as Record<string, string>) || {};
         
         const traverse = (obj: any) => {
           if (typeof obj === "object" && obj !== null) {
@@ -655,7 +656,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               obj.forEach(item => traverse(item));
             } else {
               // Check if this looks like a product object
-              const fieldMapping = (xmlSource.fieldMapping as Record<string, string>) || {};
               let hasRequiredFields = false;
               
               // Check if we can extract a category
