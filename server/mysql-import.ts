@@ -16,6 +16,8 @@ export async function connectToImportDatabase(settings: {
   try {
     const connectionString = `mysql://${settings.username}:${settings.password}@${settings.host}:${settings.port}/${settings.database}`;
     
+    console.log(`Attempting MySQL connection to: ${settings.host}:${settings.port}/${settings.database} with user: ${settings.username}`);
+    
     importConnection = mysql.createPool({
       host: settings.host,
       port: settings.port,
@@ -23,8 +25,12 @@ export async function connectToImportDatabase(settings: {
       password: settings.password,
       database: settings.database,
       waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0
+      connectionLimit: 5,
+      queueLimit: 0,
+      acquireTimeout: 60000,
+      timeout: 60000,
+      reconnect: true,
+      ssl: false
     });
 
     // Test connection

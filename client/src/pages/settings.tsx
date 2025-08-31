@@ -130,15 +130,27 @@ export default function SettingsPage() {
     },
     onSuccess: (data) => {
       toast({
-        title: "Bağlantı Başarılı",
-        description: data.message,
+        title: "✅ Bağlantı Başarılı!",
+        description: data.details || data.message,
       });
     },
-    onError: (error: any) => {
+    onError: async (error: any) => {
+      // API'den dönen detaylı hata mesajını al
+      let errorData;
+      try {
+        errorData = await error.response?.json?.() || error;
+      } catch {
+        errorData = error;
+      }
+      
+      const suggestions = errorData.suggestions || [];
+      const errorCode = errorData.code;
+      
       toast({
-        title: "Bağlantı Hatası",
-        description: error.message,
+        title: "❌ MySQL Bağlantı Hatası",
+        description: `${errorData.message || error.message}${suggestions.length > 0 ? '\n\nÖneriler:\n• ' + suggestions.join('\n• ') : ''}`,
         variant: "destructive",
+        duration: 10000, // Uzun süre göster ki kullanıcı okuyabilsin
       });
     },
   });

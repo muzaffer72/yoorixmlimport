@@ -859,13 +859,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         message: `Veritabanı bağlantısı başarılı! ${categories.length} kategori bulundu.`,
         status: "success",
-        categoriesCount: categories.length
+        categoriesCount: categories.length,
+        details: `categories_languages tablosundan ${categories.length} kategori okundu`
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("MySQL test connection error:", error);
+      
+      let errorMessage = `Veritabanı bağlantısı başarısız: ${error.message}`;
+      let suggestions = [];
+      
+      // Hata türüne göre öneriler
+      if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+        suggestions = [
+          "MySQL kullanıcısının şifresi yanlış olabilir",
+          "Kullanıcının bu IP adresinden bağlanma izni olmayabilir",
+          "MySQL'de kullanıcı için '%' (herhangi bir host) izni verilmeli",
+          "Veya Replit IP'si için özel izin tanımlanmalı"
+        ];
+      } else if (error.code === 'ECONNREFUSED') {
+        suggestions = [
+          "MySQL sunucusu çalışmıyor olabilir",
+          "Port numarası hatalı olabilir (genelde 3306)",
+          "Host adresi yanlış olabilir"
+        ];
+      } else if (error.code === 'ENOTFOUND') {
+        suggestions = [
+          "Host adresi/domain bulunamıyor",
+          "DNS çözümleme hatası"
+        ];
+      }
+      
       res.status(400).json({ 
-        message: `Veritabanı bağlantısı başarısız: ${error.message}`,
-        status: "error"
+        message: errorMessage,
+        status: "error",
+        code: error.code,
+        suggestions: suggestions
       });
     }
   });

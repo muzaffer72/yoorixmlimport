@@ -2,7 +2,7 @@
   "stats": {
     "todayAddedProducts": 0,
     "updatedProducts": 0,
-    "activeXmlSources": 0,
+    "activeXmlSources": 1,
     "pendingImports": 0,
     "totalCategories": 8,
     "activeCronjobs": 0
