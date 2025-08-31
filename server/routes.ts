@@ -749,6 +749,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const extractedProducts = extractProducts(result);
+      console.log(`🔍 Debug: XML'den çıkarılan ürün sayısı: ${extractedProducts.length}`);
+      
+      if (extractedProducts.length > 0) {
+        console.log(`📋 İlk ürün örneği:`, JSON.stringify(extractedProducts[0], null, 2));
+      } else {
+        console.log(`⚠️ XML'den hiç ürün çıkarılamadı! XML yapısını kontrol edin.`);
+      }
+      
       let processedCount = 0;
       
       // Real MySQL product import

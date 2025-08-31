@@ -208,41 +208,64 @@ export async function importProductToMySQL(product: {
   try {
     console.log('📦 Starting 3-table import for:', product.name);
     
-    // 1. PRODUCTS tablosuna ana ürün bilgilerini ekle
+    // 1. PRODUCTS tablosuna ana ürün bilgilerini ekle (gerçek tablo yapısına uygun)
+    const productSlug = product.name.toLowerCase().replace(/[^a-z0-9çğııöşü]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Math.random().toString(36).substr(2, 5);
+    
     const [productResult] = await importConnection.execute(
       `INSERT INTO products (
-        user_id, brand_id, category_id, created_by, slug, price, purchase_cost, 
-        barcode, video_provider, video_url, current_stock, minimum_order_quantity,
-        is_approved, is_catalog, external_link, is_refundable, cash_on_delivery,
-        attribute_sets, thumbnail, images, meta_image, colors, selected_variants,
-        selected_variants_ids, contact_info, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+        brand_id, category_id, user_id, created_by, slug, price, 
+        special_discount, special_discount_type, special_discount_start, special_discount_end,
+        purchase_cost, barcode, video_provider, video_url, colors, attribute_sets, 
+        vat_taxes, has_variant, selected_variants, selected_variants_ids, 
+        thumbnail, images, description_images, current_stock, minimum_order_quantity,
+        stock_visibility, status, is_approved, is_catalog, external_link, 
+        is_featured, is_classified, is_wholesale, contact_info, is_digital, 
+        is_refundable, todays_deal, rating, viewed, shipping_type, 
+        cash_on_delivery, meta_image, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
+        product.brandId || null, // brand_id
+        product.categoryId || null, // category_id  
         1, // user_id (varsayılan admin)
-        product.brandId || null,
-        product.categoryId || null,
         1, // created_by (varsayılan admin)
-        product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), // slug
-        product.price,
-        '', // purchase_cost
-        product.barcode || '',
-        product.videoProvider || '',
-        product.videoUrl || '',
-        product.stock || 0,
-        product.minimumOrderQuantity || 1,
+        productSlug, // slug (benzersiz)
+        product.price, // price
+        0, // special_discount
+        'flat', // special_discount_type
+        null, // special_discount_start
+        null, // special_discount_end
+        product.price * 0.7 || 0, // purchase_cost (fiyatın %70'i)
+        product.barcode || '', // barcode
+        product.videoProvider || '', // video_provider
+        product.videoUrl || '', // video_url
+        '[]', // colors (JSON)
+        '[]', // attribute_sets (JSON)
+        '', // vat_taxes
+        0, // has_variant
+        '[]', // selected_variants (JSON)
+        '[]', // selected_variants_ids (JSON)
+        '{}', // thumbnail (JSON) - sonra güncellenecek
+        '[]', // images (JSON) - sonra güncellenecek
+        '[]', // description_images (JSON)
+        product.stock || 0, // current_stock
+        product.minimumOrderQuantity || 1, // minimum_order_quantity
+        'visible_with_quantity', // stock_visibility
+        'published', // status
         1, // is_approved
-        product.isCatalog ? 1 : 0,
-        product.externalLink || '',
-        product.isRefundable ? 1 : 0,
-        product.cashOnDelivery ? 1 : 0,
-        JSON.stringify([]), // attribute_sets
-        JSON.stringify([]), // thumbnail (şimdilik boş, resimleri sonra ekleyeceğiz)
-        JSON.stringify([]), // images (şimdilik boş, resimleri sonra ekleyeceğiz)
-        JSON.stringify([]), // meta_image
-        JSON.stringify([]), // colors
-        JSON.stringify([]), // selected_variants
-        JSON.stringify([]), // selected_variants_ids
-        JSON.stringify([])  // contact_info
+        product.isCatalog ? 1 : 0, // is_catalog
+        product.externalLink || '', // external_link
+        0, // is_featured
+        0, // is_classified
+        0, // is_wholesale
+        '', // contact_info
+        0, // is_digital
+        product.isRefundable ? 1 : 0, // is_refundable
+        0, // todays_deal
+        0, // rating
+        0, // viewed
+        'free', // shipping_type
+        product.cashOnDelivery ? 1 : 0, // cash_on_delivery
+        '', // meta_image
       ]
     );
     
