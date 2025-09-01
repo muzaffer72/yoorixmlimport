@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,12 +49,17 @@ export default function CategoryMapping() {
 
   const { data: categories = [], isError: categoriesError, error: categoriesErrorData } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
-    retry: false,
-    onSuccess: (data) => {
-      console.log('🏷️ Categories loaded:', data.length, 'items');
-      console.log('📋 Sample categories:', data.slice(0, 3));
-    }
+    retry: false
   });
+
+  // Debug categories data
+  useEffect(() => {
+    if (categories.length > 0) {
+      console.log('🏷️ Categories loaded:', categories.length, 'items');
+      console.log('📋 Sample categories:', categories.slice(0, 3));
+      console.log('🔍 localCategoryId state:', localCategoryId);
+    }
+  }, [categories, localCategoryId]);
 
   const { data: mappings = [], isLoading: mappingsLoading } = useQuery<CategoryMappingType[]>({
     queryKey: ["/api/category-mappings", selectedXmlSource],
