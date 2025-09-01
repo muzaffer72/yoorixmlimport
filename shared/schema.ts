@@ -190,6 +190,9 @@ export const insertXmlSourceSchema = createInsertSchema(xmlSources).omit({
   updatedAt: true,
   lastFetch: true,
   productCount: true
+}).extend({
+  profitMarginPercent: z.union([z.string(), z.number()]).optional().transform(val => val?.toString() || "0.00"),
+  profitMarginFixed: z.union([z.string(), z.number()]).optional().transform(val => val?.toString() || "0.00")
 });
 export const insertActivityLogSchema = createInsertSchema(activityLogs);
 export const insertCronjobSchema = createInsertSchema(cronjobs);
