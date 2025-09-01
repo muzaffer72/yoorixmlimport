@@ -313,7 +313,7 @@ async function updateExistingProduct(productId: number, product: any) {
 }
 
 // HIZLI BATCH IMPORT - Çok ürün için optimize edilmiş
-export async function batchImportProductsToMySQL(products: any[], xmlSourceId: string, batchSize = 100) {
+export async function batchImportProductsToMySQL(products: any[], batchSize: number = 100, xmlSourceId: string) {
   if (!importConnection) {
     throw new Error('Import database not connected');
   }
@@ -825,7 +825,7 @@ async function collectImageNamesForXmlSource(xmlSourceId: string): Promise<strin
     }
     
     // Tekrarlanan dosya adlarını temizle
-    const uniqueImageNames = [...new Set(imageNames)];
+    const uniqueImageNames = Array.from(new Set(imageNames));
     console.log(`📸 Toplam ${uniqueImageNames.length} benzersiz resim dosyası bulundu.`);
     
     return uniqueImageNames;
