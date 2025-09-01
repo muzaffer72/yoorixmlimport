@@ -1,17 +1,6 @@
 {
   "logs": [
     {
-      "type": "categories_extracted",
-      "title": "Kategoriler çıkarıldı",
-      "description": "791 kategori XML'den çıkarıldı",
-      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
-      "entityType": "xml_source",
-      "id": "1d6e0045-523a-4253-9582-e9d451301a27",
-      "createdAt": "2025-09-01T13:13:31.085Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
       "type": "xml_synced",
       "title": "XML kaynağı güncellendi",
       "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
@@ -1097,6 +1086,17 @@
       "entityType": "xml_source",
       "id": "c4bcf155-36b0-409a-b2fd-ed842c065c42",
       "createdAt": "2025-09-01T23:44:44.010Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "9abf09fd-a67b-4ce1-b72a-c548236d6f17",
+      "createdAt": "2025-09-01T23:48:08.726Z",
       "oldValue": null,
       "newValue": null
     }

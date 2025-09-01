@@ -727,12 +727,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else {
               objectCount++;
               
-              // Debug first 5 objects to understand XML structure
+              // Debug first 5 objects to understand XML structure  
               if (objectCount <= 5) {
                 console.log(`\n🔍 === XML OBJECT DEBUG #${objectCount} (depth: ${depth}) ===`);
-                console.log(`📋 Keys: [${Object.keys(obj).join(', ')}]`);
-                console.log(`🎯 categoryTag setting: "${xmlSource.categoryTag}"`);
+                console.log(`📋 Object keys: [${Object.keys(obj).join(', ')}]`);
+                console.log(`🎯 categoryTag setting: "${xmlSource.categoryTag}" (type: ${typeof xmlSource.categoryTag})`);
                 console.log(`📝 fieldMapping: ${JSON.stringify(xmlSource.fieldMapping)}`);
+                
+                // Eğer categoryTag tanımlıysa onu bulabilir miyiz kontrol et
+                if (xmlSource.categoryTag) {
+                  const categoryFields = xmlSource.categoryTag.split('.');
+                  let testValue = obj;
+                  let pathResult = [];
+                  
+                  for (const field of categoryFields) {
+                    if (testValue && typeof testValue === 'object' && field in testValue) {
+                      testValue = testValue[field];
+                      pathResult.push(`✅ ${field}: ${testValue}`);
+                    } else {
+                      pathResult.push(`❌ ${field}: NOT_FOUND`);
+                      break;
+                    }
+                  }
+                  console.log(`🔍 Category path test: ${pathResult.join(' → ')}`);
+                }
+                
+                // Ürünün tüm alanlarını göster
+                console.log(`📝 Sample values:`, {
+                  urun_id: obj.urun_id,
+                  adi: obj.adi,
+                  kategori: obj.kategori || 'NOT_FOUND',
+                  category: obj.category || 'NOT_FOUND',
+                  kategori_adi: obj.kategori_adi || 'NOT_FOUND'
+                });
               }
               // Check if this looks like a product object
               let hasRequiredFields = false;
