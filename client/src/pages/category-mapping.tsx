@@ -75,10 +75,15 @@ export default function CategoryMapping() {
 
   const createMappingMutation = useMutation({
     mutationFn: async (data: { xmlSourceId: string; xmlCategoryName: string; localCategoryId: string }) => {
-      const response = await apiRequest("POST", "/api/category-mappings", {
-        ...data,
-        localCategoryId: Number(data.localCategoryId)
-      });
+      const payload = {
+        xmlSourceId: data.xmlSourceId,
+        xmlCategoryName: data.xmlCategoryName,
+        localCategoryId: Number(data.localCategoryId),
+        confidence: 1.0, // Manuel eşleştirme için yüksek güven
+        isManual: true // Manuel eşleştirme
+      };
+      console.log('Sending category mapping:', payload);
+      const response = await apiRequest("POST", "/api/category-mappings", payload);
       return response.json();
     },
     onSuccess: () => {
@@ -90,10 +95,11 @@ export default function CategoryMapping() {
       setLocalCategoryId("");
       queryClient.invalidateQueries({ queryKey: ["/api/category-mappings"] });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Category mapping error:', error);
       toast({
         title: "Hata",
-        description: "Kategori eşleştirmesi eklenirken hata oluştu",
+        description: error.message || "Kategori eşleştirmesi eklenirken hata oluştu",
         variant: "destructive",
       });
     },
