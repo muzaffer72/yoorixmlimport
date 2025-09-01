@@ -1,0 +1,114 @@
+Products tablom aşağıdaki gibi 
+CREATE TABLE `products` (
+  `id` bigint UNSIGNED NOT NULL,
+  `brand_id` bigint UNSIGNED DEFAULT NULL,
+  `category_id` bigint UNSIGNED DEFAULT NULL,
+  `user_id` bigint UNSIGNED DEFAULT NULL COMMENT 'if none or 1 then own else sellers',
+  `created_by` bigint UNSIGNED NOT NULL,
+  `slug` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `price` double DEFAULT NULL,
+  `special_discount` double DEFAULT NULL,
+  `special_discount_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `special_discount_start` datetime DEFAULT NULL,
+  `special_discount_end` datetime DEFAULT NULL,
+  `purchase_cost` double DEFAULT NULL,
+  `barcode` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `video_provider` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `video_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `colors` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `attribute_sets` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `vat_taxes` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `has_variant` tinyint NOT NULL DEFAULT '0',
+  `selected_variants` mediumtext COLLATE utf8mb4_unicode_ci,
+  `selected_variants_ids` mediumtext COLLATE utf8mb4_unicode_ci,
+  `thumbnail` text COLLATE utf8mb4_unicode_ci,
+  `images` text COLLATE utf8mb4_unicode_ci,
+  `description_images` longtext COLLATE utf8mb4_unicode_ci,
+  `thumbnail_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `image_ids` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `current_stock` int NOT NULL,
+  `minimum_order_quantity` int NOT NULL DEFAULT '1',
+  `stock_notification` tinyint NOT NULL DEFAULT '0',
+  `low_stock_to_notify` int DEFAULT NULL,
+  `stock_visibility` enum('hide_stock','visible_with_quantity','visible_with_text') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hide_stock',
+  `total_sale` bigint NOT NULL DEFAULT '0',
+  `status` enum('unpublished','published','trash') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpublished',
+  `is_approved` tinyint NOT NULL DEFAULT '0' COMMENT 'use for seller product approval purpose',
+  `is_catalog` tinyint NOT NULL DEFAULT '0' COMMENT 'if 1 can''t added to cart only view',
+  `external_link` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_featured` tinyint NOT NULL DEFAULT '0',
+  `is_classified` tinyint NOT NULL DEFAULT '0',
+  `is_wholesale` tinyint NOT NULL DEFAULT '0',
+  `contact_info` text COLLATE utf8mb4_unicode_ci,
+  `is_digital` tinyint NOT NULL DEFAULT '0',
+  `is_refundable` tinyint NOT NULL DEFAULT '0',
+  `todays_deal` tinyint NOT NULL DEFAULT '0',
+  `rating` double DEFAULT '0',
+  `viewed` bigint NOT NULL DEFAULT '0' COMMENT 'total views of the product',
+  `shipping_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `shipping_fee` double DEFAULT NULL,
+  `shipping_fee_depend_on_quantity` tinyint NOT NULL DEFAULT '0',
+  `estimated_shipping_days` text COLLATE utf8mb4_unicode_ci COMMENT 'estimated time of delivering the product',
+  `cash_on_delivery` tinyint NOT NULL DEFAULT '0' COMMENT '0 not available, 1 available',
+  `meta_image` text COLLATE utf8mb4_unicode_ci,
+  `product_file` text COLLATE utf8mb4_unicode_ci,
+  `product_file_id` bigint UNSIGNED DEFAULT NULL,
+  `meta_image_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reward` double DEFAULT NULL,
+  `gift_idea` tinyint(1) NOT NULL DEFAULT '0',
+  `business_idea` tinyint(1) NOT NULL DEFAULT '0',
+  `is_deleted` tinyint NOT NULL DEFAULT '0',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+Örnek ürün içeriği 
+
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `user_id`, `created_by`, `slug`, `price`, `special_discount`, `special_discount_type`, `special_discount_start`, `special_discount_end`, `purchase_cost`, `barcode`, `video_provider`, `video_url`, `colors`, `attribute_sets`, `vat_taxes`, `has_variant`, `selected_variants`, `selected_variants_ids`, `thumbnail`, `images`, `description_images`, `thumbnail_id`, `image_ids`, `current_stock`, `minimum_order_quantity`, `stock_notification`, `low_stock_to_notify`, `stock_visibility`, `total_sale`, `status`, `is_approved`, `is_catalog`, `external_link`, `is_featured`, `is_classified`, `is_wholesale`, `contact_info`, `is_digital`, `is_refundable`, `todays_deal`, `rating`, `viewed`, `shipping_type`, `shipping_fee`, `shipping_fee_depend_on_quantity`, `estimated_shipping_days`, `cash_on_delivery`, `meta_image`, `product_file`, `product_file_id`, `meta_image_id`, `reward`, `gift_idea`, `business_idea`, `is_deleted`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, NULL, 1, 1, 1, 'demo-product-znkzt', 9, 5, 'flat', '2025-08-17 23:50:00', '2025-08-27 23:50:00', 0, '8Y6M2FWIBSDXEDPL', '', '', '[]', '[]', '', 0, '[]', '[]', '{\"image_40x40\":\"images\\/2025081808281440x40_media_347.png\",\"image_72x72\":\"images\\/2025081808281572x72_media_456.png\",\"image_190x230\":\"images\\/20250818082816190x230_media_432.png\",\"storage\":\"local\",\"original_image\":\"images\\/20250818082814_original__media_9.png\",\"image_210x205\":\"images\\/20250818082828210x205_media_5.png\"}', '[]', '[]', '1', NULL, 200, 1, 1, 10, 'visible_with_quantity', 0, 'published', 1, 0, NULL, 1, 0, 0, '[]', 0, 0, 1, 0, 0, 'flat_rate', 10, 1, '0', 1, '{\"image_40x40\":\"images\\/2025081808281440x40_media_347.png\",\"image_72x72\":\"images\\/2025081808281572x72_media_456.png\",\"image_190x230\":\"images\\/20250818082816190x230_media_432.png\",\"storage\":\"local\",\"original_image\":\"images\\/20250818082814_original__media_9.png\",\"image_210x205\":\"images\\/20250818082828210x205_media_5.png\"}', NULL, NULL, '1', 0, 0, 0, 0, NULL, '2025-08-17 21:50:32', '2025-08-18 06:28:29');
+
+product_languages tablomun yapısı aşağıdaki gibi 
+CREATE TABLE `product_languages` (
+  `id` bigint UNSIGNED NOT NULL,
+  `product_id` bigint UNSIGNED NOT NULL,
+  `lang` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'en',
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `short_description` text COLLATE utf8mb4_unicode_ci,
+  `description` longtext COLLATE utf8mb4_unicode_ci,
+  `pdf_specification_id` bigint UNSIGNED DEFAULT NULL,
+  `pdf_specification` mediumtext COLLATE utf8mb4_unicode_ci,
+  `tags` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `unit` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `meta_title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `meta_description` text COLLATE utf8mb4_unicode_ci,
+  `meta_keywords` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+product_languages için örnek ürün aşağıdaki gibi
+
+INSERT INTO `product_languages` (`id`, `product_id`, `lang`, `name`, `short_description`, `description`, `pdf_specification_id`, `pdf_specification`, `tags`, `unit`, `meta_title`, `meta_description`, `meta_keywords`, `created_at`, `updated_at`) VALUES
+(1, 1, 'en', 'Demo Product', 'Short Description......', '<p>Long Description.......<br></p>', NULL, '[]', 'demo,demo tag', 'PCS', '', '', '', '2025-08-17 21:50:32', '2025-08-17 21:50:32');
+
+product_stocks tablomun yapısı aşağıdaki gibi 
+CREATE TABLE `product_stocks` (
+  `id` bigint UNSIGNED NOT NULL,
+  `variant_ids` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'first one is color,rest is attribute values',
+  `product_id` bigint UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'auto generated by attributes and colors',
+  `sku` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `current_stock` int NOT NULL DEFAULT '0',
+  `price` double DEFAULT NULL,
+  `image` mediumtext COLLATE utf8mb4_unicode_ci,
+  `image_id` bigint UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+product_stocks örnek ürün aşağıdaki gibi. 
+
+INSERT INTO `product_stocks` (`id`, `variant_ids`, `product_id`, `name`, `sku`, `current_stock`, `price`, `image`, `image_id`, `created_at`, `updated_at`) VALUES
+(1, NULL, 1, '', 'Q59GQLJDJY9YKOQP', 200, 9, '[]', NULL, '2025-08-18 06:28:29', '2025-08-18 06:28:29');

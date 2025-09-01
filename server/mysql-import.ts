@@ -273,15 +273,6 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
   let skippedCount = 0;
 
   console.log(`🚀 BATCH IMPORT başlatılıyor: ${products.length} ürün, ${batchSize}'li gruplar halinde`);
-  
-  // TABLE STRUCTURE DEBUG - Console başında göster
-  console.log(`\n🚨 === TABLE STRUCTURE DEBUG ===`);
-  const [describeResult] = await importConnection.execute('DESCRIBE products');
-  console.log(`📊 Products table has ${(describeResult as any[]).length} columns:`);
-  (describeResult as any[]).forEach((col, index) => {
-    console.log(`  ${index + 1}. ${col.Field} (${col.Type})`);
-  });
-  console.log(`🚨 === END TABLE DEBUG ===\n`);
 
   // Ürünleri batch'lere böl
   for (let i = 0; i < products.length; i += batchSize) {
@@ -346,27 +337,24 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
             
             const productSlug = createUrlSafeSlug(product.name) + '-' + Date.now();
             
-            // 1. Products tablosuna ekle
+            // 1. Products tablosuna ekle - ONLY VALID COLUMNS
             const [productResult] = await importConnection.execute(
               `INSERT INTO products (
-                brand_id, category_id, user_id, created_by, slug, name, price, unit,
-                purchase_cost, barcode, current_stock, minimum_order_quantity,
+                brand_id, category_id, user_id, created_by, slug, price,
+                purchase_cost, barcode, minimum_order_quantity,
                 status, is_approved, is_catalog, external_link, is_refundable, 
-                cash_on_delivery, colors, attribute_sets, short_description, description,
-                thumbnail, images, video_provider, video_url, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                cash_on_delivery, colors, attribute_sets, 
+                thumbnail, images, video_provider, video_url, current_stock, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
-                product.brandId || 1, 
-                product.categoryId || 1, 
+                product.brandId || null, 
+                product.categoryId || null, 
                 1, // user_id
                 1, // created_by
                 productSlug, 
-                product.name || null,
-                product.price || 0,
-                product.unit || 'adet',
+                product.price || null,
                 (product.price || 0) * 0.7, // purchase_cost
                 product.sku || null, 
-                product.stock || 0, 
                 product.minimumOrderQuantity || 1,
                 'published', 
                 1, // is_approved
@@ -376,12 +364,11 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 product.cashOnDelivery ? 1 : 0,
                 '[]', // colors (boş JSON array)
                 '[]', // attribute_sets (boş JSON array)
-                product.shortDescription || null, // short_description
-                product.description || null, // description
                 '{}', // thumbnail (boş JSON object)
                 '[]', // images (boş JSON array)
                 '', // video_provider
                 '', // video_url
+                product.stock || 0, // current_stock
                 new Date(), // created_at 
                 new Date()  // updated_at
               ]
@@ -411,14 +398,14 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
             // 3. Product_stocks tablosuna ekle
             await importConnection.execute(
               `INSERT INTO product_stocks (
-                product_id, name, sku, price, current_stock, image
+                product_id, name, sku, current_stock, price, image
               ) VALUES (?, ?, ?, ?, ?, ?)`,
               [
                 productId, 
-                null, // name (null)
+                '', // name (empty string)
                 product.sku || null, 
-                product.price || 0, 
-                product.stock || 0, 
+                product.stock || 0, // current_stock
+                product.price || 0, // price
                 '[]' // image (boş array string)
               ]
             );

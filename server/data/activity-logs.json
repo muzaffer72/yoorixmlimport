@@ -6,17 +6,6 @@
       "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
       "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
       "entityType": "xml_source",
-      "id": "252bd671-c15f-461c-9253-e1293b4fa544",
-      "createdAt": "2025-08-31T14:33:22.553Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
       "id": "40334e45-dce1-4752-a6d9-0b42948d825f",
       "createdAt": "2025-08-31T14:39:46.703Z",
       "oldValue": null,
@@ -1097,6 +1086,17 @@
       "entityType": "xml_source",
       "id": "7f8697de-1a98-49c0-9e4f-f63684abb6dd",
       "createdAt": "2025-09-01T13:49:05.465Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "fc23b55a-1c5f-4ab4-bc35-94dc7994d75c",
+      "createdAt": "2025-09-01T13:51:44.225Z",
       "oldValue": null,
       "newValue": null
     }
