@@ -868,6 +868,61 @@
       "createdAt": "2025-09-01T12:47:51.560Z",
       "oldValue": null,
       "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 12 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "a67e6ac8-ad29-447d-b13e-2adab2318baa",
+      "createdAt": "2025-09-01T13:04:50.467Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_source_added",
+      "title": "Yeni XML kaynağı eklendi",
+      "description": "Collezium XML kaynağı sisteme eklendi",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "4eb86c73-384e-4806-bead-43abea5edc5c",
+      "createdAt": "2025-09-01T13:13:26.376Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "categories_extracted",
+      "title": "Kategoriler çıkarıldı",
+      "description": "791 kategori XML'den çıkarıldı",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "1d6e0045-523a-4253-9582-e9d451301a27",
+      "createdAt": "2025-09-01T13:13:31.085Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "2157e826-c118-47cd-a32a-1732542d3ffb",
+      "createdAt": "2025-09-01T13:15:40.744Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "ba5eb80b-8c10-4e3b-aed6-c9e623a718a3",
+      "createdAt": "2025-09-01T13:17:19.169Z",
+      "oldValue": null,
+      "newValue": null
     }
   ]
 }

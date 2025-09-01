@@ -749,12 +749,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 targetCategoryId = xmlSource.defaultCategoryId;
                 hasRequiredFields = true;
               } else {
-                // Eşleştirme yok ve varsayılan kategori kullanma - ürünü atla
-                hasRequiredFields = false;
+                // Eşleştirme yok - ürünü extract et ama categoryId = null olarak işaretle
+                // Import sırasında filtrelenecek
+                targetCategoryId = null;
+                hasRequiredFields = true;
               }
               
-              // Only process if we have a valid category
-              if (hasRequiredFields && targetCategoryId) {
+              // Extract all products - filtering will happen later during import
+              if (hasRequiredFields) {
                 // Extract field values based on field mapping
                 const extractValue = (mapping: string | undefined) => {
                   if (!mapping) return null;

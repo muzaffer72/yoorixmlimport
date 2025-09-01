@@ -219,6 +219,566 @@
       "updatedAt": "2025-08-31T19:49:48.857Z",
       "confidence": "0.00",
       "isManual": false
+    },
+    {
+      "xmlSourceId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "xmlCategoryName": "Alez",
+      "localCategoryId": 477,
+      "confidence": "1.00",
+      "isManual": true,
+      "id": "0b70765e-4a87-4c14-9a24-e070bd2081a3",
+      "createdAt": "2025-09-01T13:04:20.798Z",
+      "updatedAt": "2025-09-01T13:04:20.798Z"
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Acil Çıkış Levhaları",
+      "localCategoryId": 500,
+      "id": "2897f661-8170-4830-9830-a2d7ea5780db",
+      "createdAt": "2025-09-01T13:16:49.570Z",
+      "updatedAt": "2025-09-01T13:16:49.570Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Aksesuar ve Yedek Parçaları",
+      "localCategoryId": 368,
+      "id": "d673e98e-7b8a-4397-adf5-c0da4fb82a62",
+      "createdAt": "2025-09-01T13:16:49.742Z",
+      "updatedAt": "2025-09-01T13:16:49.742Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Arıza Bakım Levhaları",
+      "localCategoryId": 500,
+      "id": "b2b4c361-7175-4f7d-85ed-1bf9bab39a1c",
+      "createdAt": "2025-09-01T13:16:49.915Z",
+      "updatedAt": "2025-09-01T13:16:49.915Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Banyo Duş Hamam Aksesuarları",
+      "localCategoryId": 368,
+      "id": "9f64c4fe-4ee0-421e-8b1e-1f336ec159a2",
+      "createdAt": "2025-09-01T13:16:50.086Z",
+      "updatedAt": "2025-09-01T13:16:50.086Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Battaniyeli Nevresim Takımı",
+      "localCategoryId": 500,
+      "id": "8f358dff-172d-43ad-b5c8-dd4b3804c012",
+      "createdAt": "2025-09-01T13:16:50.260Z",
+      "updatedAt": "2025-09-01T13:16:50.260Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Bebek Nevresim Takımı",
+      "localCategoryId": 500,
+      "id": "797e6be7-d0fd-4a46-8342-57ae253e2681",
+      "createdAt": "2025-09-01T13:16:50.434Z",
+      "updatedAt": "2025-09-01T13:16:50.434Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Ceviz Yaprağı",
+      "localCategoryId": 500,
+      "id": "8647983d-7851-4e80-9fdd-e8cad7392e23",
+      "createdAt": "2025-09-01T13:16:50.607Z",
+      "updatedAt": "2025-09-01T13:16:50.607Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Demirdikeni, Deve - Çoban Çökerten",
+      "localCategoryId": 500,
+      "id": "474c8810-06ea-4c1a-846e-e2c8a2c15aba",
+      "createdAt": "2025-09-01T13:16:50.779Z",
+      "updatedAt": "2025-09-01T13:16:50.779Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Depolama Levhaları",
+      "localCategoryId": 500,
+      "id": "5178f09c-e28c-46dc-aab5-6a6774d8f117",
+      "createdAt": "2025-09-01T13:16:50.953Z",
+      "updatedAt": "2025-09-01T13:16:50.953Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Depolama Levhası",
+      "localCategoryId": 500,
+      "id": "7d077c95-46e3-44af-9b2f-1b5429630f42",
+      "createdAt": "2025-09-01T13:16:51.126Z",
+      "updatedAt": "2025-09-01T13:16:51.126Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Diğer",
+      "localCategoryId": 369,
+      "id": "91565555-faed-4f06-83c8-9f56519d1e6b",
+      "createdAt": "2025-09-01T13:16:51.301Z",
+      "updatedAt": "2025-09-01T13:16:51.301Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Diğer Saç Aksesuarları",
+      "localCategoryId": 368,
+      "id": "73ca8e04-8064-4499-be02-d5fb4b6f37ec",
+      "createdAt": "2025-09-01T13:16:51.477Z",
+      "updatedAt": "2025-09-01T13:16:51.477Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Elektrik Levhaları",
+      "localCategoryId": 500,
+      "id": "08ce439c-01f6-4cda-a5db-e7d5696ae75c",
+      "createdAt": "2025-09-01T13:16:51.649Z",
+      "updatedAt": "2025-09-01T13:16:51.649Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Erkek Termal Giyim",
+      "localCategoryId": 450,
+      "id": "3b510eec-5f84-4056-8ed6-3096b864e97c",
+      "createdAt": "2025-09-01T13:16:51.821Z",
+      "updatedAt": "2025-09-01T13:16:51.821Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Ev Dışı Endüstriyel Çöp Torba",
+      "localCategoryId": 500,
+      "id": "8a3ed68a-19ea-4f0c-ac94-c9c278ee6ea7",
+      "createdAt": "2025-09-01T13:16:51.993Z",
+      "updatedAt": "2025-09-01T13:16:51.993Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Evastar",
+      "localCategoryId": 500,
+      "id": "72d3f311-8ce3-4668-943a-50502cecf28d",
+      "createdAt": "2025-09-01T13:16:52.164Z",
+      "updatedAt": "2025-09-01T13:16:52.164Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Evobond",
+      "localCategoryId": 500,
+      "id": "f34e48cd-1811-49de-a83d-74680505d363",
+      "createdAt": "2025-09-01T13:16:52.337Z",
+      "updatedAt": "2025-09-01T13:16:52.337Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Genç Tek Kişilik Nevresim",
+      "localCategoryId": 500,
+      "id": "8efa8ff0-b607-41a0-a707-7c49c38c23eb",
+      "createdAt": "2025-09-01T13:16:52.513Z",
+      "updatedAt": "2025-09-01T13:16:52.513Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Göz Çevresi Bakımı",
+      "localCategoryId": 500,
+      "id": "47640024-7200-401d-9854-bffcabba0703",
+      "createdAt": "2025-09-01T13:16:52.684Z",
+      "updatedAt": "2025-09-01T13:16:52.684Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Kaynak Oksijen Tüpü Levhaları",
+      "localCategoryId": 500,
+      "id": "93d805a3-1bc9-4582-948c-1056b06d4f6a",
+      "createdAt": "2025-09-01T13:16:52.856Z",
+      "updatedAt": "2025-09-01T13:16:52.856Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Kimyasal Tehlikeli Madde Levhaları",
+      "localCategoryId": 500,
+      "id": "a11ec908-28b9-4ef5-a98d-a4cb5d7950fa",
+      "createdAt": "2025-09-01T13:16:53.030Z",
+      "updatedAt": "2025-09-01T13:16:53.030Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Kişisel Koruyucu Levhalar",
+      "localCategoryId": 500,
+      "id": "554c432d-b821-407a-a003-4cd3d879dd09",
+      "createdAt": "2025-09-01T13:16:53.203Z",
+      "updatedAt": "2025-09-01T13:16:53.203Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Kostüm Aksesuarları",
+      "localCategoryId": 368,
+      "id": "9f9cb21b-3cc3-4526-a966-de0d088d6d65",
+      "createdAt": "2025-09-01T13:16:53.380Z",
+      "updatedAt": "2025-09-01T13:16:53.380Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Kostüm Tamamlayıcı Aksesuar",
+      "localCategoryId": 368,
+      "id": "504e7d1d-1787-4b8c-909d-afe533137eda",
+      "createdAt": "2025-09-01T13:16:53.552Z",
+      "updatedAt": "2025-09-01T13:16:53.552Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Kuş Kafes Aksesuarları",
+      "localCategoryId": 368,
+      "id": "647d07ea-3720-4ea7-98c6-bf9b118328ad",
+      "createdAt": "2025-09-01T13:16:53.726Z",
+      "updatedAt": "2025-09-01T13:16:53.726Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Köpek Aksesuarları",
+      "localCategoryId": 368,
+      "id": "88904580-08dc-4768-9476-cccfb34355b1",
+      "createdAt": "2025-09-01T13:16:53.896Z",
+      "updatedAt": "2025-09-01T13:16:53.896Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Makina Levhaları",
+      "localCategoryId": 500,
+      "id": "544ca5e5-869f-4a56-ae5c-6a855782b23f",
+      "createdAt": "2025-09-01T13:16:54.069Z",
+      "updatedAt": "2025-09-01T13:16:54.069Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Makyaj Aksesuar Aletleri",
+      "localCategoryId": 368,
+      "id": "f6bc86c0-9c57-4637-bb63-00cdb8e8f4fa",
+      "createdAt": "2025-09-01T13:16:54.242Z",
+      "updatedAt": "2025-09-01T13:16:54.242Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Meryemana Dikeni, Devedikeni, Kenger Otu",
+      "localCategoryId": 500,
+      "id": "bfd9d6f2-6a62-4743-af76-aa211fa26d54",
+      "createdAt": "2025-09-01T13:16:54.415Z",
+      "updatedAt": "2025-09-01T13:16:54.415Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Muskat, Hindistan Cevizi (Küçük)",
+      "localCategoryId": 500,
+      "id": "8fcfd134-7f8a-469a-b79a-c1526ed2f402",
+      "createdAt": "2025-09-01T13:16:54.588Z",
+      "updatedAt": "2025-09-01T13:16:54.588Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Musluk Aksesuarları",
+      "localCategoryId": 368,
+      "id": "126f7802-efce-4a45-b11d-088c1341dc63",
+      "createdAt": "2025-09-01T13:16:54.758Z",
+      "updatedAt": "2025-09-01T13:16:54.758Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Saten Nevresim",
+      "localCategoryId": 500,
+      "id": "ec1b93f3-278c-412e-a11d-b3034f69f256",
+      "createdAt": "2025-09-01T13:16:54.931Z",
+      "updatedAt": "2025-09-01T13:16:54.931Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Saten Nevresim Takımı",
+      "localCategoryId": 500,
+      "id": "9601a5c4-1e6b-47dd-b053-1ef9b569ad88",
+      "createdAt": "2025-09-01T13:16:55.103Z",
+      "updatedAt": "2025-09-01T13:16:55.103Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Saç Aksesuar Taraklar",
+      "localCategoryId": 368,
+      "id": "cbc74d3c-bc46-46aa-b0ba-67787b457d85",
+      "createdAt": "2025-09-01T13:16:55.276Z",
+      "updatedAt": "2025-09-01T13:16:55.276Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Saç Aksesuar Tokalar",
+      "localCategoryId": 368,
+      "id": "50a36a06-836f-4a4c-8b14-55b9cc8b9142",
+      "createdAt": "2025-09-01T13:16:55.447Z",
+      "updatedAt": "2025-09-01T13:16:55.447Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Saç Makyaj Bakım ve Aksesuar Ürünleri",
+      "localCategoryId": 368,
+      "id": "2652dd9f-ad50-4e05-bee7-273be4234c74",
+      "createdAt": "2025-09-01T13:16:55.621Z",
+      "updatedAt": "2025-09-01T13:16:55.621Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Standart Ev Tipi Çöp Torba",
+      "localCategoryId": 500,
+      "id": "579586c2-a72d-4434-bf0a-b62826f4375a",
+      "createdAt": "2025-09-01T13:16:55.797Z",
+      "updatedAt": "2025-09-01T13:16:55.797Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Stevya",
+      "localCategoryId": 500,
+      "id": "36955342-32da-4e58-8f3e-958af096f034",
+      "createdAt": "2025-09-01T13:16:55.969Z",
+      "updatedAt": "2025-09-01T13:16:55.969Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Tek Kişilik Disney Lisanslı Nevresim",
+      "localCategoryId": 500,
+      "id": "6ebde7a0-4c78-4c44-8a7a-cbcf1d6a278e",
+      "createdAt": "2025-09-01T13:16:56.141Z",
+      "updatedAt": "2025-09-01T13:16:56.141Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Tek Kişilik Nevresim",
+      "localCategoryId": 500,
+      "id": "420f691b-9cdc-4a2c-b7d6-24bd0da33185",
+      "createdAt": "2025-09-01T13:16:56.359Z",
+      "updatedAt": "2025-09-01T13:16:56.359Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Tek Kişilik Poplin Nevresim Takımı",
+      "localCategoryId": 500,
+      "id": "17a3e39d-195c-4871-ae74-d5d2c8bbc0fb",
+      "createdAt": "2025-09-01T13:16:56.533Z",
+      "updatedAt": "2025-09-01T13:16:56.533Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Tek Kişilik Ranforce Nevresim",
+      "localCategoryId": 500,
+      "id": "79665a75-c83a-4995-bd57-b392d7cd0cb6",
+      "createdAt": "2025-09-01T13:16:56.705Z",
+      "updatedAt": "2025-09-01T13:16:56.705Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Tek Kişilik Ranforce Nevresim Takımı",
+      "localCategoryId": 500,
+      "id": "99ba4b04-b4aa-445f-ae51-a7f4678a7301",
+      "createdAt": "2025-09-01T13:16:56.876Z",
+      "updatedAt": "2025-09-01T13:16:56.876Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Tek Kişilik Saten Nevresim",
+      "localCategoryId": 500,
+      "id": "9db8e211-866b-49b9-b289-7eecdbfaffec",
+      "createdAt": "2025-09-01T13:16:57.048Z",
+      "updatedAt": "2025-09-01T13:16:57.048Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Tuvalet Aksesuarları",
+      "localCategoryId": 368,
+      "id": "13e7a559-ba93-461e-ab26-0718e28a6613",
+      "createdAt": "2025-09-01T13:16:57.222Z",
+      "updatedAt": "2025-09-01T13:16:57.222Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Yangın Levhaları",
+      "localCategoryId": 500,
+      "id": "bbebedf5-0bc9-4003-87e5-af667fc00062",
+      "createdAt": "2025-09-01T13:16:57.395Z",
+      "updatedAt": "2025-09-01T13:16:57.395Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Çevre Sağlığı Ürünleri",
+      "localCategoryId": 500,
+      "id": "c70ef38f-9dfb-4edb-b9cf-fc5fe9e36956",
+      "createdAt": "2025-09-01T13:16:57.568Z",
+      "updatedAt": "2025-09-01T13:16:57.568Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Çevre Temizlik Levhaları",
+      "localCategoryId": 500,
+      "id": "acdd29a4-2e85-44e8-b297-f8761b3775b0",
+      "createdAt": "2025-09-01T13:16:57.743Z",
+      "updatedAt": "2025-09-01T13:16:57.743Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Çift Kişilik Nevresim Takımı",
+      "localCategoryId": 500,
+      "id": "2527fa01-96c6-4afd-9158-75f56735987f",
+      "createdAt": "2025-09-01T13:16:57.920Z",
+      "updatedAt": "2025-09-01T13:16:57.920Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Çift Kişilik Poplin Nevresim Takımı",
+      "localCategoryId": 500,
+      "id": "9a1b18c5-b529-4280-9e92-9960491ae65a",
+      "createdAt": "2025-09-01T13:16:58.095Z",
+      "updatedAt": "2025-09-01T13:16:58.095Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Çift Kişilik Ranforce Nevresim",
+      "localCategoryId": 500,
+      "id": "c4216e9f-409c-4a01-a55a-6ca46641398a",
+      "createdAt": "2025-09-01T13:16:58.269Z",
+      "updatedAt": "2025-09-01T13:16:58.269Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Çift Kişilik Ranforce Nevresim Takımı",
+      "localCategoryId": 500,
+      "id": "c0a5d2c2-0dc6-459d-aae6-4691648fbbf1",
+      "createdAt": "2025-09-01T13:16:58.441Z",
+      "updatedAt": "2025-09-01T13:16:58.441Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Çift Kişilik Saten Nevresim",
+      "localCategoryId": 500,
+      "id": "be290d57-2efd-412b-ab4d-266b29ecf386",
+      "createdAt": "2025-09-01T13:16:58.620Z",
+      "updatedAt": "2025-09-01T13:16:58.620Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "Çöven Otu, Çöğenotu, Çevgen",
+      "localCategoryId": 500,
+      "id": "ae1a6c67-2d50-4e57-86c7-9f989a20bc5b",
+      "createdAt": "2025-09-01T13:16:58.797Z",
+      "updatedAt": "2025-09-01T13:16:58.797Z",
+      "confidence": "0.00",
+      "isManual": false
+    },
+    {
+      "xmlSourceId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "xmlCategoryName": "İlk Yardım Levhaları",
+      "localCategoryId": 500,
+      "id": "dfe2b121-242c-4964-8e23-47a849bc562b",
+      "createdAt": "2025-09-01T13:16:58.970Z",
+      "updatedAt": "2025-09-01T13:16:58.970Z",
+      "confidence": "0.00",
+      "isManual": false
     }
   ]
 }
