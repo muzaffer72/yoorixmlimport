@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { XmlSource } from "@shared/schema";
-import { Edit, Play, Trash2, Save, FlaskConical } from "lucide-react";
+import { Edit, Play, Trash2, Save, FlaskConical, Package, Loader2 } from "lucide-react";
 
 interface XmlSourcesTableProps {
   xmlSources: XmlSource[];
@@ -89,6 +89,28 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
     },
   });
 
+  const deleteProductsMutation = useMutation({
+    mutationFn: async (xmlSourceId: string) => {
+      const response = await apiRequest("DELETE", `/api/products/delete-by-xml-source/${xmlSourceId}`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Başarılı",
+        description: `${data.data.deletedProducts} ürün ve ${data.data.deletedImages} resim dosyası silindi`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/xml-sources"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Ürünler silinirken hata oluştu",
+        variant: "destructive",
+      });
+    },
+  });
+
   const testXmlSourceMutation = useMutation({
     mutationFn: async (url: string) => {
       const response = await apiRequest("POST", "/api/xml-sources/test-connection", { url });
@@ -112,6 +134,12 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
   const handleDelete = (id: string) => {
     if (confirm("Bu XML kaynağını silmek istediğinizden emin misiniz?")) {
       deleteXmlSourceMutation.mutate(id);
+    }
+  };
+
+  const handleDeleteProducts = (xmlSourceId: string) => {
+    if (confirm("Bu XML kaynağından gelen tüm ürünleri ve resimlerini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")) {
+      deleteProductsMutation.mutate(xmlSourceId);
     }
   };
 
@@ -266,6 +294,21 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
                         data-testid={`button-test-${source.id}`}
                       >
                         <Play className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-orange-600 hover:text-orange-800"
+                        onClick={() => handleDeleteProducts(source.id)}
+                        disabled={deleteProductsMutation.isPending}
+                        data-testid={`button-delete-products-${source.id}`}
+                        title="Bu XML kaynağından gelen ürünleri sil"
+                      >
+                        {deleteProductsMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Package className="h-4 w-4" />
+                        )}
                       </Button>
                       <Button
                         size="sm"

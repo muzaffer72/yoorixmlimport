@@ -6,7 +6,7 @@ import { z } from "zod";
 import * as xml2js from "xml2js";
 import { ObjectStorageService } from "./objectStorage";
 import { GeminiService } from "./geminiService";
-import { getLocalCategories, connectToImportDatabase, importProductToMySQL, batchImportProductsToMySQL, checkProductTableStructure, deleteAllProductsFromMySQL } from "./mysql-import";
+import { getLocalCategories, connectToImportDatabase, importProductToMySQL, batchImportProductsToMySQL, checkProductTableStructure, deleteAllProductsFromMySQL, deleteProductsByXmlSource } from "./mysql-import";
 
 // Global import state management
 let isImportInProgress = false;
@@ -1092,7 +1092,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🚀 HIZLI BATCH IMPORT başlatılıyor: ${validProducts.length} geçerli ürün bulundu`);
 
       // BATCH IMPORT kullan - çok daha hızlı!
-      const batchResult = await batchImportProductsToMySQL(validProducts, 50); // 50'li gruplar halinde
+      const batchResult = await batchImportProductsToMySQL(validProducts, 50, xmlSourceId); // 50'li gruplar halinde
       
       addedCount = batchResult.addedCount;
       updatedCount = batchResult.updatedCount;
@@ -1289,6 +1289,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // TÜM ÜRÜNLERİ SİL endpoint
+  // API endpoint: XML source'a göre ürünleri sil
+  app.delete("/api/products/delete-by-xml-source/:xmlSourceId", async (req, res) => {
+    try {
+      const { xmlSourceId } = req.params;
+      
+      if (!xmlSourceId) {
+        return res.status(400).json({ error: 'XML source ID is required' });
+      }
+      
+      console.log(`🗑️ ${xmlSourceId} XML kaynağına ait ürünler siliniyor...`);
+      
+      // Database ayarlarını kontrol et
+      const dbSettings = await pageStorage.getDatabaseSettings();
+      if (!dbSettings.host) {
+        return res.status(400).json({ 
+          message: "MySQL veritabanı ayarları yapılmamış. Lütfen önce ayarları tamamlayın." 
+        });
+      }
+
+      // Import veritabanına bağlan
+      await connectToImportDatabase();
+      
+      const result = await deleteProductsByXmlSource(xmlSourceId);
+      
+      // Activity log ekle
+      await pageStorage.addActivity({
+        type: 'products_deleted',
+        title: 'XML Source Products Deleted',
+        description: `${result.deletedProducts} products from XML source ${xmlSourceId} were deleted successfully`,
+        metadata: {
+          xmlSourceId,
+          deletedProducts: result.deletedProducts,
+          deletedImages: result.deletedImages
+        }
+      });
+      
+      res.json({
+        message: 'XML source products deleted successfully',
+        data: result
+      });
+    } catch (error: any) {
+      console.error('XML source delete error:', error);
+      res.status(500).json({ 
+        error: 'Failed to delete XML source products',
+        details: error.message 
+      });
+    }
+  });
+
   app.delete("/api/products/delete-all", async (req, res) => {
     try {
       console.log("🗑️ TÜM ÜRÜNLER SİLME isteği alındı...");

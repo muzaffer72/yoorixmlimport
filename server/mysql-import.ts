@@ -313,7 +313,7 @@ async function updateExistingProduct(productId: number, product: any) {
 }
 
 // HIZLI BATCH IMPORT - Çok ürün için optimize edilmiş
-export async function batchImportProductsToMySQL(products: any[], batchSize = 100) {
+export async function batchImportProductsToMySQL(products: any[], xmlSourceId: string, batchSize = 100) {
   if (!importConnection) {
     throw new Error('Import database not connected');
   }
@@ -394,8 +394,8 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 purchase_cost, barcode, minimum_order_quantity,
                 status, is_approved, is_catalog, external_link, is_refundable, 
                 cash_on_delivery, colors, attribute_sets, 
-                thumbnail, images, video_provider, video_url, current_stock, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                thumbnail, images, video_provider, video_url, current_stock, xml_source_id, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 product.brandId || null, 
                 product.categoryId || null, 
@@ -419,6 +419,7 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 '', // video_provider
                 '', // video_url
                 product.stock || 0, // current_stock
+                xmlSourceId, // xml_source_id
                 new Date(), // created_at 
                 new Date()  // updated_at
               ]
@@ -557,7 +558,7 @@ export async function importProductToMySQL(product: {
   externalLink?: string;
   isRefundable?: boolean;
   cashOnDelivery?: boolean;
-}) {
+}, xmlSourceId: string) {
   if (!importConnection) {
     throw new Error('Import database not connected');
   }
@@ -591,8 +592,8 @@ export async function importProductToMySQL(product: {
         stock_visibility, status, is_approved, is_catalog, external_link, 
         is_featured, is_classified, is_wholesale, contact_info, is_digital, 
         is_refundable, todays_deal, rating, viewed, shipping_type, shipping_fee,
-        cash_on_delivery, meta_image, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        cash_on_delivery, meta_image, xml_source_id, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
         product.brandId || null, // brand_id
         product.categoryId || null, // category_id  
@@ -639,6 +640,7 @@ export async function importProductToMySQL(product: {
         0, // shipping_fee
         product.cashOnDelivery ? 1 : 0, // cash_on_delivery
         '', // meta_image
+        xmlSourceId, // xml_source_id
       ]
     );
     
@@ -753,6 +755,218 @@ export async function importProductToMySQL(product: {
     
   } catch (error) {
     console.error('❌ Error in 3-table product import:', error);
+    throw error;
+  }
+}
+
+// XML SOURCE'A GÖRE RESİM ADLARINI TOPLAMA FONKSIYONU
+async function collectImageNamesForXmlSource(xmlSourceId: string): Promise<string[]> {
+  if (!importConnection) {
+    throw new Error('Import database not connected');
+  }
+
+  try {
+    console.log(`🔍 ${xmlSourceId} XML kaynağına ait resim adları toplanıyor...`);
+    
+    // XML source'a ait ürünlerin thumbnail ve images verilerini al
+    const [rows] = await importConnection.execute(
+      `SELECT id, thumbnail, images FROM products WHERE xml_source_id = ?`,
+      [xmlSourceId]
+    );
+    
+    const products = rows as any[];
+    const imageNames: string[] = [];
+    
+    for (const product of products) {
+      // Thumbnail'dan resim adlarını çıkar
+      if (product.thumbnail) {
+        try {
+          const thumbnailObj = JSON.parse(product.thumbnail);
+          if (thumbnailObj.original_image) {
+            // "images/filename.png" formatından sadece filename'i al
+            const fileName = thumbnailObj.original_image.replace('images/', '');
+            imageNames.push(fileName);
+          }
+          // Diğer boyutlardaki resimler
+          ['40x40', '72x72', '190x230'].forEach(size => {
+            if (thumbnailObj[`image_${size}`]) {
+              const fileName = thumbnailObj[`image_${size}`].replace('images/', '');
+              imageNames.push(fileName);
+            }
+          });
+        } catch (e) {
+          console.warn(`⚠️ Thumbnail JSON parse hatası (product ${product.id}):`, e);
+        }
+      }
+      
+      // Images array'dan resim adlarını çıkar
+      if (product.images) {
+        try {
+          const imagesArray = JSON.parse(product.images);
+          if (Array.isArray(imagesArray)) {
+            for (const imageObj of imagesArray) {
+              if (imageObj.original_image) {
+                const fileName = imageObj.original_image.replace('images/', '');
+                imageNames.push(fileName);
+              }
+              // Diğer boyutlardaki resimler
+              ['40x40', '72x72', '190x230'].forEach(size => {
+                if (imageObj[`image_${size}`]) {
+                  const fileName = imageObj[`image_${size}`].replace('images/', '');
+                  imageNames.push(fileName);
+                }
+              });
+            }
+          }
+        } catch (e) {
+          console.warn(`⚠️ Images JSON parse hatası (product ${product.id}):`, e);
+        }
+      }
+    }
+    
+    // Tekrarlanan dosya adlarını temizle
+    const uniqueImageNames = [...new Set(imageNames)];
+    console.log(`📸 Toplam ${uniqueImageNames.length} benzersiz resim dosyası bulundu.`);
+    
+    return uniqueImageNames;
+    
+  } catch (error) {
+    console.error('❌ Resim adları toplarken hata:', error);
+    throw error;
+  }
+}
+
+// XML SOURCE'A GÖRE RESİMLERİ SİLME FONKSIYONU
+async function deleteImagesForXmlSource(xmlSourceId: string): Promise<number> {
+  try {
+    const { pageStorage } = await import('./pageStorage');
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    
+    // Ayarlardan resim klasörü yolunu al
+    const imageStoragePath = await pageStorage.getImageStoragePath();
+    console.log(`📁 Resim klasörü: ${imageStoragePath}`);
+    
+    // Bu XML source'a ait resim adlarını topla
+    const imageNames = await collectImageNamesForXmlSource(xmlSourceId);
+    
+    if (imageNames.length === 0) {
+      console.log('📸 Silinecek resim bulunamadı.');
+      return 0;
+    }
+    
+    let deletedCount = 0;
+    console.log(`🗑️ ${imageNames.length} resim dosyası silinecek...`);
+    
+    for (const imageName of imageNames) {
+      try {
+        const imagePath = path.join(imageStoragePath, imageName);
+        await fs.unlink(imagePath);
+        deletedCount++;
+        console.log(`✅ Silindi: ${imageName}`);
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          console.warn(`⚠️ Dosya bulunamadı (zaten silinmiş): ${imageName}`);
+        } else {
+          console.error(`❌ Resim silme hatası (${imageName}):`, error);
+        }
+      }
+    }
+    
+    console.log(`🎉 ${deletedCount}/${imageNames.length} resim dosyası başarıyla silindi.`);
+    return deletedCount;
+    
+  } catch (error) {
+    console.error('❌ Resim silme işlemi sırasında hata:', error);
+    throw error;
+  }
+}
+
+// XML SOURCE'A GÖRE TÜM ÜRÜNLERİ VE RESİMLERİ SİLME
+export async function deleteProductsByXmlSource(xmlSourceId: string) {
+  if (!importConnection) {
+    throw new Error('Import database not connected');
+  }
+
+  try {
+    console.log(`🗑️ ${xmlSourceId} XML kaynağına ait tüm ürünler siliniyor...`);
+    
+    // Transaction başlat
+    await importConnection.execute('START TRANSACTION');
+    
+    // 1. Önce resimleri sil (ürünler silinmeden önce resim bilgilerini al)
+    const deletedImagesCount = await deleteImagesForXmlSource(xmlSourceId);
+    
+    // 2. XML source'a ait ürün ID'lerini al
+    const [productRows] = await importConnection.execute(
+      `SELECT id FROM products WHERE xml_source_id = ?`,
+      [xmlSourceId]
+    );
+    
+    const productIds = (productRows as any[]).map(row => row.id);
+    
+    if (productIds.length === 0) {
+      console.log('⚠️ Bu XML kaynağına ait ürün bulunamadı.');
+      await importConnection.execute('COMMIT');
+      return {
+        success: true,
+        deletedProducts: 0,
+        deletedLanguages: 0,
+        deletedStocks: 0,
+        deletedImages: deletedImagesCount
+      };
+    }
+    
+    console.log(`📦 ${productIds.length} ürün bulundu, siliniyor...`);
+    
+    // 3. İlişkili tabloları temizle
+    const productIdsList = productIds.map(() => '?').join(',');
+    
+    // PRODUCT_STOCKS tablosunu temizle
+    const [stocksResult] = await importConnection.execute(
+      `DELETE FROM product_stocks WHERE product_id IN (${productIdsList})`,
+      productIds
+    );
+    console.log(`✅ PRODUCT_STOCKS temizlendi: ${(stocksResult as any).affectedRows} kayıt`);
+    
+    // PRODUCT_LANGUAGES tablosunu temizle
+    const [languagesResult] = await importConnection.execute(
+      `DELETE FROM product_languages WHERE product_id IN (${productIdsList})`,
+      productIds
+    );
+    console.log(`✅ PRODUCT_LANGUAGES temizlendi: ${(languagesResult as any).affectedRows} kayıt`);
+    
+    // IMAGES tablosunu temizle (polymorphic relationship)
+    const [imagesResult] = await importConnection.execute(
+      `DELETE FROM images WHERE imageable_type = 'App\\\\Models\\\\Product' AND imageable_id IN (${productIdsList})`,
+      productIds
+    );
+    console.log(`✅ IMAGES tablosu temizlendi: ${(imagesResult as any).affectedRows} kayıt`);
+    
+    // 4. Ana PRODUCTS tablosunu temizle
+    const [productsResult] = await importConnection.execute(
+      `DELETE FROM products WHERE xml_source_id = ?`,
+      [xmlSourceId]
+    );
+    console.log(`✅ PRODUCTS tablosu temizlendi: ${(productsResult as any).affectedRows} kayıt`);
+    
+    // Transaction commit
+    await importConnection.execute('COMMIT');
+    
+    console.log(`🎉 ${xmlSourceId} XML kaynağına ait tüm ürünler ve resimler başarıyla silindi!`);
+    
+    return {
+      success: true,
+      deletedProducts: (productsResult as any).affectedRows,
+      deletedLanguages: (languagesResult as any).affectedRows,
+      deletedStocks: (stocksResult as any).affectedRows,
+      deletedImages: deletedImagesCount
+    };
+
+  } catch (error) {
+    // Transaction rollback
+    await importConnection.execute('ROLLBACK');
+    console.error('❌ XML source ürün silme hatası, rollback yapıldı:', error);
     throw error;
   }
 }
