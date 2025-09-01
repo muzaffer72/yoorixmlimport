@@ -725,16 +725,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (xmlSource.categoryTag) {
                 const categoryFields = xmlSource.categoryTag.split('.');
                 let categoryValue = obj;
+                console.log(`🔍 Debug category extraction for object keys: [${Object.keys(obj).join(', ')}]`);
+                console.log(`🔍 Looking for categoryTag: ${xmlSource.categoryTag} (split: [${categoryFields.join(', ')}])`);
+                
                 for (const field of categoryFields) {
                   if (categoryValue && typeof categoryValue === 'object' && field in categoryValue) {
+                    console.log(`  ✅ Found field "${field}", value:`, categoryValue[field]);
                     categoryValue = categoryValue[field];
                   } else {
+                    console.log(`  ❌ Field "${field}" not found in object`);
                     categoryValue = null;
                     break;
                   }
                 }
                 if (categoryValue && typeof categoryValue === 'string') {
                   categoryName = categoryValue;
+                  console.log(`🎯 Extracted category: "${categoryName}"`);
+                } else {
+                  console.log(`⚠️ No valid category found, final value:`, categoryValue, typeof categoryValue);
                 }
               }
               
