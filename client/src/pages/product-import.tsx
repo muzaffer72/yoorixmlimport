@@ -421,13 +421,13 @@ export default function ProductImport() {
 
       {/* Import Preview Modal */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-          <DialogHeader>
+        <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>İthalat Önizlemesi</DialogTitle>
           </DialogHeader>
           
           {previewData && (
-            <div className="space-y-6 overflow-y-auto pr-2">
+            <div className="flex-1 overflow-y-auto space-y-6 pr-4" style={{ maxHeight: 'calc(90vh - 120px)' }}>
               {/* XML Source Info */}
               <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                 <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">XML Kaynak Bilgileri</h3>
@@ -484,24 +484,27 @@ export default function ProductImport() {
                 </details>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end space-x-3 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsPreviewOpen(false)}
-                  data-testid="button-cancel-preview"
-                >
-                  İptal
-                </Button>
-                <Button
-                  onClick={handleConfirmImport}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  data-testid="button-confirm-import"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  İthalatı Başlat
-                </Button>
-              </div>
+            </div>
+          )}
+          
+          {/* Action Buttons - Fixed at bottom */}
+          {previewData && (
+            <div className="flex-shrink-0 flex justify-end space-x-3 pt-4 border-t bg-white dark:bg-gray-900">
+              <Button
+                variant="outline"
+                onClick={() => setIsPreviewOpen(false)}
+                data-testid="button-cancel-preview"
+              >
+                İptal
+              </Button>
+              <Button
+                onClick={handleConfirmImport}
+                className="bg-green-600 hover:bg-green-700 text-white"
+                data-testid="button-confirm-import"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                İthalatı Başlat
+              </Button>
             </div>
           )}
         </DialogContent>
