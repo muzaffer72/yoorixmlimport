@@ -1040,7 +1040,7 @@
       },
       "categoryTag": "products.product.category",
       "useDefaultCategory": false,
-      "defaultCategoryId": "",
+      "defaultCategoryId": null,
       "extractedCategories": [
         "3M",
         "3m",
@@ -1836,9 +1836,12 @@
       ],
       "id": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
       "createdAt": "2025-09-01T13:13:26.373Z",
-      "updatedAt": "2025-09-01T13:13:31.084Z",
+      "updatedAt": "2025-09-01T18:10:36.495Z",
       "productCount": 0,
-      "lastFetch": null
+      "lastFetch": null,
+      "profitMarginType": "none",
+      "profitMarginPercent": 0,
+      "profitMarginFixed": 0
     }
   ]
 }
