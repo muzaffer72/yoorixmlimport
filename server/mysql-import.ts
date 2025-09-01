@@ -466,6 +466,11 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
             let thumbnailId = null;
             let imageIds = [];
             
+            console.log(`🔍 Ürün resim debug: ${product.name}`);
+            console.log(`📸 product.images:`, product.images);
+            console.log(`📸 product.images type:`, typeof product.images);
+            console.log(`📸 product.images length:`, product.images?.length);
+            
             if (product.images && product.images.length > 0) {
               console.log(`📸 ${product.images.length} resim işleniyor: ${product.name}`);
               
