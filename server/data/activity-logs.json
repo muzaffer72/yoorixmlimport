@@ -1,17 +1,6 @@
 {
   "logs": [
     {
-      "type": "categories_extracted",
-      "title": "Kategoriler çıkarıldı",
-      "description": "229 kategori XML'den çıkarıldı",
-      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
-      "entityType": "xml_source",
-      "id": "8bdef530-038b-4a12-8ee0-16f3985bd610",
-      "createdAt": "2025-08-31T19:23:50.957Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
       "type": "xml_synced",
       "title": "XML kaynağı güncellendi",
       "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
@@ -1097,6 +1086,17 @@
       "entityType": "xml_source",
       "id": "0c903c90-a000-44a7-99e9-095039efe361",
       "createdAt": "2025-09-01T21:12:54.493Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 12 yeni ürün eklendi, 0 ürün güncellendi, 13113 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "13ceb85c-dde6-4df7-9d15-b98febfc9652",
+      "createdAt": "2025-09-01T21:19:58.280Z",
       "oldValue": null,
       "newValue": null
     }
