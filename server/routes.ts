@@ -770,15 +770,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Extract all products - filtering will happen later during import
               if (hasRequiredFields) {
-                // Extract field values based on field mapping
+                // ROBUST FIELD MAPPING - Supports deep object navigation
                 const extractValue = (mapping: string | undefined) => {
                   if (!mapping) return null;
                   
-                  // Artık basit field mapping: "adi", "fiyat" vs.
-                  if (obj && typeof obj === 'object' && mapping in obj) {
-                    return obj[mapping];
+                  // Support both direct and nested field mapping
+                  // Examples: "adi", "details.name", "product.title"
+                  const fields = mapping.split('.');
+                  let value = obj;
+                  
+                  for (const field of fields) {
+                    if (value && typeof value === 'object' && field in value) {
+                      value = value[field];
+                    } else {
+                      return null; // Field not found in hierarchy
+                    }
                   }
-                  return null;
+                  
+                  return value;
                 };
                 
                 // Extract image URLs
@@ -793,25 +802,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 }
 
-                // Extract values with detailed debugging
-                const nameValue = extractValue(fieldMapping?.name);
-                const priceValue = extractValue(fieldMapping?.price);
-                const descValue = extractValue(fieldMapping?.description);
-                const skuValue = extractValue(fieldMapping?.sku);
-                const barcodeValue = extractValue(fieldMapping?.barcode);
-                const stockValue = extractValue(fieldMapping?.currentStock);
-                const unitValue = extractValue(fieldMapping?.unit);
+                // EXTRACT WITH ROBUST FALLBACKS
+                let nameValue = extractValue(fieldMapping?.name);
+                let priceValue = extractValue(fieldMapping?.price);
+                let descValue = extractValue(fieldMapping?.description);
+                let skuValue = extractValue(fieldMapping?.sku);
+                let barcodeValue = extractValue(fieldMapping?.barcode);
+                let stockValue = extractValue(fieldMapping?.currentStock);
+                let unitValue = extractValue(fieldMapping?.unit);
                 
-                console.log(`🔍 EXTRACT VALUES DEBUG:`, {
-                  name: nameValue,
-                  price: priceValue,
-                  desc: descValue,
-                  sku: skuValue,
-                  stock: stockValue,
-                  unit: unitValue,
-                  category: categoryName,
-                  targetCategoryId
-                });
+                // FALLBACK STRATEGY - Try common field names if mapping fails
+                if (!nameValue) {
+                  nameValue = obj.adi || obj.name || obj.title || obj.baslik || obj.urun_adi || obj.product_name;
+                }
+                if (!priceValue) {
+                  priceValue = obj.fiyat || obj.price || obj.fiyati || obj.amount || obj.tutar;
+                }
+                if (!stockValue) {
+                  stockValue = obj.stok || obj.stock || obj.miktar || obj.quantity || obj.adet;
+                }
+                if (!skuValue) {
+                  skuValue = obj.sku || obj.kod || obj.code || obj.urun_kodu || obj.product_code;
+                }
+                
+                // ENHANCED DEBUG - Show first 3 extractions with detailed info
+                if (debugCount < 3) {
+                  console.log(`\n🔍 === EXTRACTION DEBUG #${debugCount + 1} ===`);
+                  console.log(`📝 Field Mappings: name="${fieldMapping?.name}", price="${fieldMapping?.price}", category="${xmlSource.categoryTag}"`);
+                  console.log(`📦 Object Keys: [${Object.keys(obj).slice(0, 10).join(', ')}${Object.keys(obj).length > 10 ? '...' : ''}]`);
+                  console.log(`✅ Raw Extracted Values:`, {
+                    name: `"${nameValue}" (type: ${typeof nameValue})`,
+                    price: `"${priceValue}" (type: ${typeof priceValue})`,
+                    category: `"${categoryName}" (type: ${typeof categoryName})`,
+                    targetCategoryId,
+                    hasValidName: !!(nameValue && nameValue !== "Ürün Adı Belirtilmemiş"),
+                    hasValidCategory: !!targetCategoryId
+                  });
+                  console.log(`🔍 === END EXTRACTION DEBUG ===\n`);
+                }
                 
                 // Kar oranı hesaplama
                 let finalPrice = parseFloat(priceValue as string) || 0;
@@ -825,9 +853,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   console.log(`💰 Sabit kar tutarı uygulandı: +${xmlSource.profitMarginFixed} TL -> ${finalPrice} TL`);
                 }
 
+                // STRICT NAME VALIDATION - No dummy names allowed
+                const finalName = nameValue && String(nameValue).trim();
+                
                 // Excel örneğinizdeki TAM veri yapısı  
                 const productData = {
-                  name: nameValue || `Ürün-${Date.now()}`, // XML'den gelen ad
+                  name: finalName || `Ürün-${Date.now()}`, // XML'den gelen ad
                   categoryId: targetCategoryId, // XML'den gelen kategori
                   brandId: 1, // Excel örneğindeki varsayılan brand_id
                   price: Math.round(finalPrice * 100) / 100, // 2 ondalık basamağa yuvarla
