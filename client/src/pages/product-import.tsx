@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { XmlSource } from "@shared/schema";
-import { Download, AlertCircle, CheckCircle } from "lucide-react";
+import { Download, AlertCircle, CheckCircle, Trash2 } from "lucide-react";
 
 export default function ProductImport() {
   const [selectedXmlSource, setSelectedXmlSource] = useState<string>("");
@@ -66,6 +66,28 @@ export default function ProductImport() {
     },
   });
 
+  const deleteAllProductsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", "/api/products/delete-all");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Başarılı!",
+        description: `${data.deletedProducts} ürün, ${data.deletedLanguages} dil verisi, ${data.deletedStocks} stok verisi silindi`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/activities"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Ürün silme işlemi başarısız",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleImport = () => {
     if (!selectedXmlSource) {
       toast({
@@ -78,6 +100,12 @@ export default function ProductImport() {
 
     if (confirm("Bu işlem ürünleri XML'den alarak veritabanını güncelleyecek. Devam etmek istediğinizden emin misiniz?")) {
       importProductsMutation.mutate(selectedXmlSource);
+    }
+  };
+
+  const handleDeleteAllProducts = () => {
+    if (window.confirm("⚠️ DİKKAT! Bu işlem veritabanındaki TÜM ürünleri silecek ve geri alınamaz!\n\nDevam etmek istediğinizden emin misiniz?")) {
+      deleteAllProductsMutation.mutate();
     }
   };
 
@@ -184,6 +212,17 @@ export default function ProductImport() {
                 >
                   <Download className="mr-2 h-4 w-4" />
                   {isImporting ? "İthalat Devam Ediyor..." : "İthalatı Başlat"}
+                </Button>
+                
+                <Button
+                  onClick={handleDeleteAllProducts}
+                  disabled={deleteAllProductsMutation.isPending}
+                  variant="destructive"
+                  className="bg-red-600 hover:bg-red-700"
+                  data-testid="button-delete-all-products"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {deleteAllProductsMutation.isPending ? "Siliniyor..." : "Tüm Ürünleri Sil"}
                 </Button>
               </div>
 

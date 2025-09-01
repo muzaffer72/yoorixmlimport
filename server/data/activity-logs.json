@@ -714,6 +714,17 @@
       "createdAt": "2025-08-31T20:13:29.836Z",
       "oldValue": null,
       "newValue": null
+    },
+    {
+      "type": "products_deleted",
+      "title": "Tüm ürünler silindi",
+      "description": "2457 ürün, 2457 dil verisi, 2456 stok verisi silindi. Auto-increment ID'ler sıfırlandı.",
+      "entityId": null,
+      "entityType": "products",
+      "id": "b9b3fa27-82fb-4493-be92-4a591899aefa",
+      "createdAt": "2025-09-01T11:55:49.074Z",
+      "oldValue": null,
+      "newValue": null
     }
   ]
 }

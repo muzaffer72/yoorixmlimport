@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { XmlSource } from "@shared/schema";
-import { Edit, Play, Trash2, Save, AlertTriangle } from "lucide-react";
+import { Edit, Play, Trash2, Save } from "lucide-react";
 
 interface XmlSourcesTableProps {
   xmlSources: XmlSource[];
@@ -132,27 +132,6 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
     },
   });
 
-  const deleteAllProductsMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("DELETE", "/api/products/delete-all");
-      return response.json();
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Başarılı!",
-        description: `${data.deletedProducts} ürün, ${data.deletedLanguages} dil verisi, ${data.deletedStocks} stok verisi silindi`,
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/activities"] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Hata",
-        description: error.message || "Ürün silme işlemi başarısız",
-        variant: "destructive",
-      });
-    },
-  });
 
   const handleEdit = (source: XmlSource) => {
     setEditingSource(source);
@@ -176,11 +155,6 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
     });
   };
 
-  const handleDeleteAllProducts = () => {
-    if (window.confirm("⚠️ DİKKAT! Bu işlem veritabanındaki TÜM ürünleri silecek ve geri alınamaz!\n\nDevam etmek istediğinizden emin misiniz?")) {
-      deleteAllProductsMutation.mutate();
-    }
-  };
 
   if (isLoading) {
     return (
@@ -196,32 +170,8 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Mevcut XML Kaynakları</CardTitle>
-            <p className="text-sm text-muted-foreground">Kayıtlı XML kaynaklarınızı yönetin</p>
-          </div>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleDeleteAllProducts}
-            disabled={deleteAllProductsMutation.isPending}
-            className="bg-red-600 hover:bg-red-700"
-            data-testid="button-delete-all-products"
-          >
-            {deleteAllProductsMutation.isPending ? (
-              <>
-                <AlertTriangle className="mr-2 h-4 w-4 animate-spin" />
-                Siliniyor...
-              </>
-            ) : (
-              <>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Tüm Ürünleri Sil
-              </>
-            )}
-          </Button>
-        </div>
+        <CardTitle>Mevcut XML Kaynakları</CardTitle>
+        <p className="text-sm text-muted-foreground">Kayıtlı XML kaynaklarınızı yönetin</p>
       </CardHeader>
       <CardContent>
         {xmlSources.length === 0 ? (
