@@ -1,28 +1,6 @@
 {
   "logs": [
     {
-      "type": "settings_updated",
-      "title": "Gemini ayarları güncellendi",
-      "description": "Gemini AI ayarları başarıyla güncellendi",
-      "entityType": "settings",
-      "id": "2d588500-4e81-404f-90d5-e4275efba693",
-      "createdAt": "2025-08-31T12:46:41.784Z",
-      "oldValue": null,
-      "newValue": null,
-      "entityId": null
-    },
-    {
-      "type": "xml_source_deleted",
-      "title": "XML kaynağı silindi",
-      "description": "enginithalat XML kaynağı sistemden silindi",
-      "entityId": "dd2aebb6-9722-42dd-b4dc-99fc2eb09344",
-      "entityType": "xml_source",
-      "id": "2fa3fdaf-0c84-403b-ba2d-6ae9bf1a2cc9",
-      "createdAt": "2025-08-31T12:54:56.430Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
       "type": "xml_source_added",
       "title": "Yeni XML kaynağı eklendi",
       "description": "enginithalat XML kaynağı sisteme eklendi",
@@ -1097,6 +1075,28 @@
       "entityType": "xml_source",
       "id": "bab9a368-e6ad-4684-83db-a2e25150a275",
       "createdAt": "2025-09-01T13:41:39.304Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 16966 ürün atlandı",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "c3b1668f-0373-43d2-a565-bbd4f7ca072b",
+      "createdAt": "2025-09-01T13:42:41.066Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "a98def45-50ae-4d8d-a8c7-5d8fba357bf4",
+      "createdAt": "2025-09-01T13:42:56.861Z",
       "oldValue": null,
       "newValue": null
     }
