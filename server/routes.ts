@@ -520,13 +520,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/category-mappings", async (req, res) => {
     try {
+      console.log('📥 Category mapping request body:', JSON.stringify(req.body, null, 2));
       const data = insertCategoryMappingSchema.parse(req.body);
+      console.log('✅ Validation passed, creating mapping:', data);
       const mapping = await pageStorage.createCategoryMapping(data);
       res.status(201).json(mapping);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error('❌ Zod validation error:', error.errors);
         res.status(400).json({ message: "Invalid data", errors: error.errors });
       } else {
+        console.error('❌ Server error:', error);
         res.status(500).json({ message: "Failed to create category mapping" });
       }
     }
