@@ -442,12 +442,19 @@ export default function ProductImport() {
               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                 <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">Field Mapping Önizlemesi</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  {Object.entries(previewData.xmlSource.fieldMapping || {}).map(([localField, xmlField]) => (
-                    <div key={localField} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border">
-                      <span className="font-medium text-green-700 dark:text-green-300">{localField}:</span>
-                      <span className="text-gray-600 dark:text-gray-400">{String(xmlField)}</span>
-                    </div>
-                  ))}
+                  {Object.entries(previewData.xmlSource.fieldMapping || {}).map(([localField, xmlField]) => {
+                    // XML field'dan sadece son kısmı al (path'den son nokta sonrası)
+                    const displayXmlField = String(xmlField).includes('.') 
+                      ? String(xmlField).split('.').pop() 
+                      : String(xmlField);
+                    
+                    return (
+                      <div key={localField} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border">
+                        <span className="font-medium text-green-700 dark:text-green-300">{localField}:</span>
+                        <span className="text-gray-600 dark:text-gray-400">{displayXmlField}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

@@ -3,17 +3,6 @@
     {
       "type": "xml_synced",
       "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 yeni ürün eklendi, 0 ürün güncellendi, 17 ürün atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "8aa64721-11b4-4843-abe0-cc8df0a78984",
-      "createdAt": "2025-09-01T12:15:13.096Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
       "description": "hercuma - 275 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
       "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
       "entityType": "xml_source",
@@ -1097,6 +1086,17 @@
       "entityType": "xml_source",
       "id": "aa3c6b86-75b7-4589-a630-d897732b7172",
       "createdAt": "2025-09-01T23:26:05.771Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "b2eecea2-19d0-42a9-a89f-20429460f6db",
+      "createdAt": "2025-09-01T23:27:42.387Z",
       "oldValue": null,
       "newValue": null
     }

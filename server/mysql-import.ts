@@ -473,14 +473,14 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
               console.log(`📸 product.images length:`, product.images?.length);
             }
             
-            // 1. Products tablosuna ekle - Önce basit hali
+            // 1. Products tablosuna ekle - Sadece mevcut kolonları kullan
             const [productResult] = await importConnection.execute(
               `INSERT INTO products (
                 brand_id, category_id, user_id, created_by, slug, price,
                 purchase_cost, barcode, minimum_order_quantity,
                 status, is_approved, is_catalog, external_link, is_refundable, 
                 cash_on_delivery, colors, attribute_sets, 
-                thumbnail, images, video_provider, video_url, current_stock, xmlkaynagi, created_at, updated_at
+                thumbnail, images, video_provider, video_url, current_stock, xmlkaynagi
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 product.brandId || null, 
@@ -505,9 +505,7 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                 '', // video_provider
                 '', // video_url
                 product.stock || 0, // current_stock
-                xmlSourceId, // xml_source_id
-                new Date(), // created_at 
-                new Date()  // updated_at
+                xmlSourceId // xml_source_id
               ]
             );
             
