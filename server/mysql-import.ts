@@ -146,34 +146,80 @@ export async function checkProductTableStructure() {
   }
 }
 
-// Resim URL'sini indirip sunucuya kaydet
-export async function downloadImage(imageUrl: string, productId: number, imageIndex: number): Promise<string | null> {
+// Laravel tarzı resim işleme sistemi - farklı boyutlarda resim oluştur
+export async function processImageForLaravel(imageUrl: string, productId: number, imageIndex: number): Promise<any | null> {
   try {
     if (!imageUrl || imageUrl.trim() === '') {
       return null;
     }
 
+    const sharp = (await import('sharp')).default;
+    const fs = await import('fs/promises');
+    const path = await import('path');
+
+    // Resmi indir
     const response = await fetch(imageUrl);
     if (!response.ok) {
       console.error(`❌ Failed to download image: ${imageUrl}`);
       return null;
     }
 
-    const buffer = await response.arrayBuffer();
-    const extension = imageUrl.split('.').pop()?.toLowerCase() || 'jpg';
-    const fileName = `product_${productId}_${imageIndex}.${extension}`;
-    const filePath = `/home/hercuma.com/public_html/public/images/${fileName}`;
-
-    // Node.js fs ile dosya kaydet
-    const fs = await import('fs/promises');
-    await fs.writeFile(filePath, Buffer.from(buffer));
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14); // YYYYMMDDHHmmss
+    const randomId = Math.floor(Math.random() * 1000);
     
-    console.log(`📸 Image downloaded: ${fileName}`);
-    return fileName;
+    // Laravel image boyutları (ürün resimleri için)
+    const imageSizes = ['40x40', '72x72', '190x230'];
+    const baseDirectory = '/home/hercuma.com/public_html/public/images/';
+    
+    // Dizin oluştur
+    await fs.mkdir(baseDirectory, { recursive: true });
+    
+    // Original image
+    const originalFileName = `${timestamp}_original__media_${randomId}.png`;
+    const originalPath = path.join(baseDirectory, originalFileName);
+    
+    // Original'i kaydet
+    await sharp(buffer)
+      .png({ quality: 90 })
+      .toFile(originalPath);
+    
+    // Resim JSON objesi oluştur (Laravel formatında)
+    const imageObject: any = {
+      storage: 'local',
+      original_image: `images/${originalFileName}`
+    };
+    
+    // Farklı boyutlarda resimler oluştur
+    for (const size of imageSizes) {
+      const [width, height] = size.split('x').map(Number);
+      const sizedFileName = `${timestamp}${size}_media_${randomId}.png`;
+      const sizedPath = path.join(baseDirectory, sizedFileName);
+      
+      await sharp(buffer)
+        .resize(width, height, { 
+          fit: 'cover', 
+          position: 'center' 
+        })
+        .png({ quality: 90 })
+        .toFile(sizedPath);
+      
+      imageObject[`image_${size}`] = `images/${sizedFileName}`;
+    }
+    
+    console.log(`📸 Laravel-style image processed: ${originalFileName}`);
+    return imageObject;
+    
   } catch (error) {
-    console.error(`❌ Error downloading image ${imageUrl}:`, error);
+    console.error(`❌ Error processing image ${imageUrl}:`, error);
     return null;
   }
+}
+
+// Eski downloadImage fonksiyonu geriye dönük uyumluluk için
+export async function downloadImage(imageUrl: string, productId: number, imageIndex: number): Promise<string | null> {
+  const imageObject = await processImageForLaravel(imageUrl, productId, imageIndex);
+  return imageObject ? imageObject.original_image : null;
 }
 
 // SKU'ya göre mevcut ürünü kontrol et
@@ -364,8 +410,8 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 product.cashOnDelivery ? 1 : 0,
                 '[]', // colors (boş JSON array)
                 '[]', // attribute_sets (boş JSON array)
-                '{}', // thumbnail (boş JSON object)
-                '[]', // images (boş JSON array)
+                '{}', // thumbnail (Laravel formatında doldurulacak)
+                '[]', // images (Laravel formatında doldurulacak)
                 '', // video_provider
                 '', // video_url
                 product.stock || 0, // current_stock
@@ -630,61 +676,76 @@ export async function importProductToMySQL(product: {
     );
     console.log(`✅ Product stock data created`);
 
-    // 4. RESİMLERİ İNDİR VE KAYDET
-    const downloadedImages: string[] = [];
-    let thumbnailImage = '';
+    // 4. RESİMLERİ LARAVEL FORMATINDA İŞLE VE KAYDET
+    let thumbnailObject = null;
+    let imagesArray: any[] = [];
 
-    // Thumbnail resmi indir
+    // Thumbnail'i Laravel formatında işle
     if (product.thumbnail && product.thumbnail.trim() !== '') {
-      const downloadedThumbnail = await downloadImage(product.thumbnail, productId, 0);
-      if (downloadedThumbnail) {
-        thumbnailImage = downloadedThumbnail;
+      console.log(`📸 Processing thumbnail: ${product.thumbnail}`);
+      const processedThumbnail = await processImageForLaravel(product.thumbnail, productId, 0);
+      if (processedThumbnail) {
+        thumbnailObject = processedThumbnail;
+        console.log(`✅ Thumbnail processed successfully`);
       }
     }
 
-    // Diğer resimleri indir
+    // Diğer resimleri Laravel formatında işle
     if (product.images && product.images.length > 0) {
+      console.log(`📸 Processing ${product.images.length} additional images...`);
       for (let i = 0; i < product.images.length; i++) {
         const imageUrl = product.images[i];
         if (imageUrl && imageUrl.trim() !== '') {
-          const downloadedImage = await downloadImage(imageUrl, productId, i + 1);
-          if (downloadedImage) {
-            downloadedImages.push(downloadedImage);
+          const processedImage = await processImageForLaravel(imageUrl, productId, i + 1);
+          if (processedImage) {
+            imagesArray.push(processedImage);
+            console.log(`✅ Image ${i + 1} processed successfully`);
           }
         }
       }
     }
 
-    // 5. İNDİRİLEN RESİMLERİ VERİTABANINDA GÜNCELLE
-    if (thumbnailImage || downloadedImages.length > 0) {
+    // 5. İŞLENEN RESİMLERİ LARAVEL FORMATINDA VERİTABANINDA GÜNCELLE
+    if (thumbnailObject || imagesArray.length > 0) {
+      const thumbnailJson = thumbnailObject ? JSON.stringify(thumbnailObject) : '{}';
+      const imagesJson = imagesArray.length > 0 ? JSON.stringify(imagesArray) : '[]';
+      
       await importConnection.execute(
         `UPDATE products SET thumbnail = ?, images = ? WHERE id = ?`,
         [
-          JSON.stringify(thumbnailImage ? [thumbnailImage] : []),
-          JSON.stringify(downloadedImages),
+          thumbnailJson,
+          imagesJson,
           productId
         ]
       );
-      console.log(`📸 Updated product images: thumbnail=${thumbnailImage}, images=${downloadedImages.length}`);
+      console.log(`📸 Updated product images in Laravel format: thumbnail=${!!thumbnailObject}, images=${imagesArray.length}`);
+      
+      // Debug log - Laravel format'ı kontrol et
+      if (thumbnailObject) {
+        console.log(`🔍 Thumbnail format:`, JSON.stringify(thumbnailObject, null, 2));
+      }
+      if (imagesArray.length > 0) {
+        console.log(`🔍 Images format (first item):`, JSON.stringify(imagesArray[0], null, 2));
+      }
     }
 
-    // 6. IMAGES TABLOSUNA RESİM KAYITLARINI EKLE
-    if (thumbnailImage) {
+    // 6. LARAVEL FORMATINDAKI RESİMLER İÇİN IMAGES TABLOSUNA KAYIT
+    if (thumbnailObject) {
       await importConnection.execute(
         `INSERT INTO images (imageable_type, imageable_id, file_name, file_path, alt_text) VALUES (?, ?, ?, ?, ?)`,
-        ['App\\Models\\Product', productId, thumbnailImage, `/public/images/${thumbnailImage}`, product.name]
+        ['App\\Models\\Product', productId, thumbnailObject.original_image, `/public/${thumbnailObject.original_image}`, product.name]
       );
     }
 
-    for (const imageName of downloadedImages) {
+    for (const imageObj of imagesArray) {
       await importConnection.execute(
         `INSERT INTO images (imageable_type, imageable_id, file_name, file_path, alt_text) VALUES (?, ?, ?, ?, ?)`,
-        ['App\\Models\\Product', productId, imageName, `/public/images/${imageName}`, product.name]
+        ['App\\Models\\Product', productId, imageObj.original_image, `/public/${imageObj.original_image}`, product.name]
       );
     }
 
     console.log(`🎉 Complete product import finished for: ${product.name} (ID: ${productId})`);
-    return { productId, thumbnailImage, downloadedImages, isUpdate: false };
+    return { productId, thumbnailObject, imagesArray, isUpdate: false };
     
   } catch (error) {
     console.error('❌ Error in 3-table product import:', error);
