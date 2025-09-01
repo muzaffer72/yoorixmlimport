@@ -399,6 +399,42 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
             
             const productSlug = createUrlSafeSlug(product.name) + '-' + Date.now();
             
+            // Resim işleme - thumbnail ve images
+            let thumbnailData = '{}';
+            let imagesData = '[]';
+            
+            if (product.images && product.images.length > 0) {
+              console.log(`📸 ${product.images.length} resim işleniyor: ${product.name}`);
+              
+              // İlk resmi thumbnail olarak kullan
+              const firstImageObject = await processImageForLaravel(product.images[0], productId || 0, 0);
+              if (firstImageObject) {
+                thumbnailData = JSON.stringify(firstImageObject);
+              }
+              
+              // Tüm resimleri işle
+              const processedImages = [];
+              for (let i = 0; i < product.images.length; i++) {
+                const imageObject = await processImageForLaravel(product.images[i], productId || 0, i);
+                if (imageObject) {
+                  processedImages.push(imageObject);
+                }
+              }
+              
+              if (processedImages.length > 0) {
+                imagesData = JSON.stringify(processedImages);
+              }
+              
+              console.log(`📸 Resim işleme tamamlandı: ${processedImages.length}/${product.images.length}`);
+            }
+            
+            // Debug: Ürün verilerini logla
+            console.log(`🔍 Ürün debug: ${product.name}`);
+            console.log(`📦 Stok: ${product.stock} | Quantity: ${product.quantity} | Final: ${product.stock || product.quantity || 0}`);
+            console.log(`📝 Kısa açıklama: ${product.shortDescription?.substring(0, 50)}...`);
+            console.log(`📄 Tam açıklama: ${product.description?.substring(0, 50)}...`);
+            console.log(`💰 Fiyat: ${product.price}`);
+            
             // 1. Products tablosuna ekle - ONLY VALID COLUMNS
             const [productResult] = await importConnection.execute(
               `INSERT INTO products (
@@ -426,11 +462,11 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                 product.cashOnDelivery ? 1 : 0,
                 '[]', // colors (boş JSON array)
                 '[]', // attribute_sets (boş JSON array)
-                '{}', // thumbnail (Laravel formatında doldurulacak)
-                '[]', // images (Laravel formatında doldurulacak)
+                thumbnailData, // thumbnail (Laravel formatında işlenmiş)
+                imagesData, // images (Laravel formatında işlenmiş)
                 '', // video_provider
                 '', // video_url
-                product.stock || 0, // current_stock
+                product.stock || product.quantity || 0, // current_stock (stok veya quantity alanından)
                 xmlSourceId, // xml_source_id
                 new Date(), // created_at 
                 new Date()  // updated_at
@@ -467,7 +503,7 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                 productId, 
                 '', // name (empty string)
                 product.sku || null, 
-                product.stock || 0, // current_stock
+                product.stock || product.quantity || 0, // current_stock (stok veya quantity alanından)
                 product.price || 0, // price
                 '[]' // image (boş array string)
               ]

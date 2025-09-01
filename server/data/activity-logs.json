@@ -1,17 +1,6 @@
 {
   "logs": [
     {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
-      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
-      "entityType": "xml_source",
-      "id": "98879706-419c-4cc5-9dbc-f0676c7089eb",
-      "createdAt": "2025-08-31T19:43:04.257Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
       "type": "xml_source_added",
       "title": "Yeni XML kaynağı eklendi",
       "description": "TUMKATEGORI XML kaynağı sisteme eklendi",
@@ -1097,6 +1086,17 @@
       "entityType": "xml_source",
       "id": "ce086cab-f759-44ba-a272-0ede1fbeabcb",
       "createdAt": "2025-09-01T21:36:10.545Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 12 yeni ürün eklendi, 0 ürün güncellendi, 13113 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "4fc8c7ce-1a0d-47c2-ada6-26c41db5e93e",
+      "createdAt": "2025-09-01T22:04:16.493Z",
       "oldValue": null,
       "newValue": null
     }
