@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { XmlSource } from "@shared/schema";
-import { Download, AlertCircle, CheckCircle, Trash2 } from "lucide-react";
+import { Download, AlertCircle, CheckCircle, Trash2, X, Square } from "lucide-react";
 
 export default function ProductImport() {
   const [selectedXmlSource, setSelectedXmlSource] = useState<string>("");
@@ -21,6 +21,13 @@ export default function ProductImport() {
 
   const { data: xmlSources = [] } = useQuery<XmlSource[]>({
     queryKey: ["/api/xml-sources"],
+  });
+
+  // Import durumu sorgulama
+  const { data: importStatus } = useQuery({
+    queryKey: ["/api/products/import-status"],
+    refetchInterval: 1000, // Her saniye kontrol et
+    enabled: isImporting, // Sadece import devam ederken sorguyla
   });
 
   const importProductsMutation = useMutation({
@@ -109,6 +116,65 @@ export default function ProductImport() {
     }
   };
 
+  // Import iptal etme
+  const cancelImportMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/products/cancel-import");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Bilgi",
+        description: data.message,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/products/import-status"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "İptal işlemi başarısız",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Import durdurma (force stop)
+  const stopImportMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/products/stop-import");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Başarılı!",
+        description: data.message,
+      });
+      setIsImporting(false);
+      setImportProgress(0);
+      queryClient.invalidateQueries({ queryKey: ["/api/products/import-status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Durdurma işlemi başarısız",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCancelImport = () => {
+    if (window.confirm("İthalat işlemini iptal etmek istediğinizden emin misiniz?\n\nMevcut işlem tamamlanana kadar beklenecek.")) {
+      cancelImportMutation.mutate();
+    }
+  };
+
+  const handleStopImport = () => {
+    if (window.confirm("⚠️ DİKKAT! Bu işlem ithalatı zorla durduracak!\n\nİşlem yarıda kalabilir. Devam etmek istediğinizden emin misiniz?")) {
+      stopImportMutation.mutate();
+    }
+  };
+
   const selectedSource = xmlSources.find(source => source.id === selectedXmlSource);
 
   return (
@@ -192,14 +258,53 @@ export default function ProductImport() {
 
               {isImporting && (
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Download className="h-4 w-4 animate-spin" />
-                    <span className="text-sm font-medium">İthalat işlemi devam ediyor...</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Download className="h-4 w-4 animate-spin" />
+                      <span className="text-sm font-medium">İthalat işlemi devam ediyor...</span>
+                    </div>
+                    
+                    {/* Import Control Buttons */}
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={handleCancelImport}
+                        disabled={cancelImportMutation.isPending}
+                        variant="outline"
+                        size="sm"
+                        className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                        data-testid="button-cancel-import"
+                      >
+                        <X className="mr-1 h-3 w-3" />
+                        {cancelImportMutation.isPending ? "İptal Ediliyor..." : "İptal Et"}
+                      </Button>
+                      
+                      <Button
+                        onClick={handleStopImport}
+                        disabled={stopImportMutation.isPending}
+                        variant="destructive"
+                        size="sm"
+                        className="bg-red-600 hover:bg-red-700"
+                        data-testid="button-stop-import"
+                      >
+                        <Square className="mr-1 h-3 w-3" />
+                        {stopImportMutation.isPending ? "Durduruluyor..." : "Zorla Durdur"}
+                      </Button>
+                    </div>
                   </div>
+                  
                   <Progress value={importProgress} className="w-full" />
                   <p className="text-xs text-muted-foreground">
                     İlerleme: %{Math.round(importProgress)}
                   </p>
+                  
+                  {importStatus && (
+                    <div className="text-xs text-muted-foreground">
+                      <p>Import ID: {importStatus.currentImportId}</p>
+                      {importStatus.shouldCancelImport && (
+                        <p className="text-orange-600 font-medium">⏳ İptal işlemi devam ediyor...</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 

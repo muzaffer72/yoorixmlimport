@@ -8,6 +8,11 @@ import { ObjectStorageService } from "./objectStorage";
 import { GeminiService } from "./geminiService";
 import { getLocalCategories, connectToImportDatabase, importProductToMySQL, batchImportProductsToMySQL, checkProductTableStructure, deleteAllProductsFromMySQL } from "./mysql-import";
 
+// Global import state management
+let isImportInProgress = false;
+let shouldCancelImport = false;
+let currentImportId: string | null = null;
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Dashboard endpoints
@@ -593,8 +598,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Product import from XML
   app.post("/api/products/import-from-xml", async (req, res) => {
     try {
+      // Import durumunu kontrol et
+      if (isImportInProgress) {
+        return res.status(400).json({ 
+          message: "Zaten bir ithalat işlemi devam ediyor. Önce mevcut işlemi tamamlayın veya iptal edin.",
+          success: false 
+        });
+      }
+
+      // Import state'ini güncelle
+      isImportInProgress = true;
+      shouldCancelImport = false;
+      currentImportId = `import_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
       console.log(`\n${'='.repeat(60)}`);
       console.log(`🚀 XML ÜRÜN İMPORT SÜRECİ BAŞLADI`);
+      console.log(`   Import ID: ${currentImportId}`);
       console.log(`${'='.repeat(60)}\n`);
       
       const { xmlSourceId } = req.body;
@@ -987,6 +1006,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityType: "xml_source"
       });
 
+      // Import başarıyla tamamlandı - state temizle
+      isImportInProgress = false;
+      shouldCancelImport = false;
+      currentImportId = null;
+
       res.json({ 
         message: "XML import başarıyla tamamlandı",
         processed: processedCount,
@@ -997,6 +1021,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error("XML import error:", error);
+      
+      // Hata durumunda da state temizle
+      isImportInProgress = false;
+      shouldCancelImport = false;
+      currentImportId = null;
       
       let errorMessage = "XML import sırasında hata oluştu";
       
@@ -1206,6 +1235,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Ürün silme işlemi başarısız",
         error: error.message,
         success: false
+      });
+    }
+  });
+
+  // Import status and control endpoints
+  app.get("/api/products/import-status", async (req, res) => {
+    try {
+      res.json({
+        isImportInProgress,
+        shouldCancelImport,
+        currentImportId
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get import status" });
+    }
+  });
+
+  app.post("/api/products/cancel-import", async (req, res) => {
+    try {
+      if (!isImportInProgress) {
+        return res.status(400).json({ 
+          message: "Şu anda devam eden bir ithalat işlemi yok",
+          success: false 
+        });
+      }
+
+      shouldCancelImport = true;
+      
+      // Activity log oluştur
+      await pageStorage.createActivityLog({
+        type: "import_cancelled",
+        title: "İthalat işlemi iptal edildi",
+        description: "Kullanıcı tarafından ithalat işlemi durduruldu",
+        entityId: currentImportId,
+        entityType: "import"
+      });
+
+      res.json({
+        message: "İthalat işlemi iptal ediliyor...",
+        success: true
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "İptal işlemi başarısız", 
+        error: error.message,
+        success: false 
+      });
+    }
+  });
+
+  app.post("/api/products/stop-import", async (req, res) => {
+    try {
+      if (!isImportInProgress) {
+        return res.status(400).json({ 
+          message: "Şu anda devam eden bir ithalat işlemi yok",
+          success: false 
+        });
+      }
+
+      // Force stop - hemen durdur
+      isImportInProgress = false;
+      shouldCancelImport = false;
+      currentImportId = null;
+      
+      // Activity log oluştur
+      await pageStorage.createActivityLog({
+        type: "import_stopped",
+        title: "İthalat işlemi durduruldu",
+        description: "Kullanıcı tarafından ithalat işlemi zorla durduruldu",
+        entityId: currentImportId,
+        entityType: "import"
+      });
+
+      res.json({
+        message: "İthalat işlemi durduruldu!",
+        success: true
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Durdurma işlemi başarısız", 
+        error: error.message,
+        success: false 
       });
     }
   });
