@@ -1086,6 +1086,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validProducts = extractedProducts.filter(productData => {
         if (!productData.categoryId || productData.categoryId === 0) {
           console.log(`⏭️ Skipping product "${productData.name}" - category "${productData.category}" not mapped`);
+          console.log(`   🔍 Debug: categoryId=${productData.categoryId}, category field value="${productData.category}"`);
+          console.log(`   📝 Available category mappings: ${categoryMappings.map(m => `"${m.xmlCategoryName}"`).slice(0, 3).join(', ')}${categoryMappings.length > 3 ? '...' : ''}`);
           skippedCount++;
           return false;
         }
