@@ -681,6 +681,39 @@
       "createdAt": "2025-08-31T19:51:01.456Z",
       "oldValue": null,
       "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "7cd38382-4200-43ef-aa4f-21ae242ec5df",
+      "createdAt": "2025-08-31T20:12:08.856Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "enginithalat - 17 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "entityType": "xml_source",
+      "id": "7120aa13-797f-4d65-8c65-35e3f7efc9b9",
+      "createdAt": "2025-08-31T20:13:06.599Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "70bfa5d5-58e9-48c8-b6b9-1148468ff7b8",
+      "createdAt": "2025-08-31T20:13:29.836Z",
+      "oldValue": null,
+      "newValue": null
     }
   ]
 }

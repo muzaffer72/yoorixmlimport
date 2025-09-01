@@ -553,8 +553,8 @@ export default function CategoryMapping() {
                   </TableHeader>
                   <TableBody>
                     {mappings.map((mapping) => {
-                      // MySQL kategorilerinde ID ile eşleştirme
-                      const localCategory = categories.find(c => c.id === mapping.localCategoryId);
+                      // MySQL kategorilerinde ID ile eşleştirme - number ve string karşılaştırması
+                      const localCategory = categories.find(c => Number(c.id) === Number(mapping.localCategoryId));
                       
                       return (
                         <TableRow key={mapping.id} data-testid={`mapping-${mapping.id}`}>
