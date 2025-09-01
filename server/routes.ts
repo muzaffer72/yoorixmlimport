@@ -6,7 +6,7 @@ import { z } from "zod";
 import * as xml2js from "xml2js";
 import { ObjectStorageService } from "./objectStorage";
 import { GeminiService } from "./geminiService";
-import { getLocalCategories, connectToImportDatabase, importProductToMySQL, checkProductTableStructure } from "./mysql-import";
+import { getLocalCategories, connectToImportDatabase, importProductToMySQL, batchImportProductsToMySQL, checkProductTableStructure } from "./mysql-import";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -956,65 +956,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`⚠️ Hiç ürün import edilemeyecek - kategori eşleştirmelerini kontrol edin!`);
       }
       
-      for (const productData of extractedProducts) {
-        try {
-          // Category ID kontrolü - eşleştirme yoksa ürünü atla
-          if (!productData.categoryId || productData.categoryId === 0) {
-            console.log(`⏭️ Skipping product "${productData.name}" - category "${productData.category}" not mapped`);
-            skippedCount++;
-            continue;
-          }
-          
-          console.log(`✅ Will import: "${productData.name}" - category "${productData.category}" → ID: ${productData.categoryId}`);
-
-          const importResult = await importProductToMySQL({
-            name: productData.name,
-            categoryId: productData.categoryId,
-            brandId: productData.brandId,
-            price: productData.price,
-            description: productData.description,
-            shortDescription: productData.shortDescription,
-            sku: productData.sku,
-            stock: productData.currentStock,
-            barcode: productData.barcode,
-            unit: productData.unit,
-            thumbnail: productData.thumbnail,
-            images: productData.images,
-            tags: productData.tags,
-            metaTitle: productData.metaTitle,
-            metaDescription: productData.metaDescription,
-            videoProvider: productData.videoProvider,
-            videoUrl: productData.videoUrl,
-            minimumOrderQuantity: productData.minimumOrderQuantity,
-            isCatalog: productData.isCatalog,
-            externalLink: productData.externalLink,
-            isRefundable: productData.isRefundable,
-            cashOnDelivery: productData.cashOnDelivery
-          });
-          
-          processedCount++;
-          
-          // Güncellenen mi eklenen mi sayılarını takip et
-          if (importResult.isUpdate) {
-            updatedCount++;
-            console.log(`🔄 ÜRÜN GÜNCELLENDİ [${processedCount}/${potentialImports}]: ${productData.name}`);
-          } else {
-            addedCount++;
-            console.log(`➕ ÜRÜN EKLENDİ [${processedCount}/${potentialImports}]: ${productData.name}`);
-          }
-          
-          const progress = Math.round((processedCount / potentialImports) * 100);
-          console.log(`   └─ ID: ${importResult.productId} | Kategori: ${productData.categoryId} | Fiyat: ${productData.price} TL`);
-          console.log(`   └─ İlerleme: %${progress}`);
-          
-          if (importResult.downloadedImages.length > 0) {
-            console.log(`   └─ 📸 ${importResult.downloadedImages.length} resim indirildi`);
-          }
-        } catch (error) {
-          console.error("Failed to import product to MySQL:", error);
-          // Hatalı ürünü atla, devam et
+      // Kategori eşleştirmesi olan ürünleri filtrele
+      const validProducts = extractedProducts.filter(productData => {
+        if (!productData.categoryId || productData.categoryId === 0) {
+          console.log(`⏭️ Skipping product "${productData.name}" - category "${productData.category}" not mapped`);
+          skippedCount++;
+          return false;
         }
-      }
+        console.log(`✅ Will import: "${productData.name}" - category "${productData.category}" → ID: ${productData.categoryId}`);
+        return true;
+      });
+
+      console.log(`🚀 HIZLI BATCH IMPORT başlatılıyor: ${validProducts.length} geçerli ürün bulundu`);
+
+      // BATCH IMPORT kullan - çok daha hızlı!
+      const batchResult = await batchImportProductsToMySQL(validProducts, 50); // 50'li gruplar halinde
+      
+      addedCount = batchResult.addedCount;
+      updatedCount = batchResult.updatedCount;
+      skippedCount += batchResult.skippedCount;
+      processedCount = addedCount + updatedCount + batchResult.skippedCount;
       
       console.log(`📊 Import Summary: ${addedCount} eklendi, ${updatedCount} güncellendi, ${skippedCount} atlandı (kategori eşleşmesi yok)`);
       

@@ -262,7 +262,128 @@ async function updateExistingProduct(productId: number, product: any) {
   }
 }
 
-// 3 tablolu ürün import sistemi (Laravel PHP örneğine uygun)
+// HIZLI BATCH IMPORT - Çok ürün için optimize edilmiş
+export async function batchImportProductsToMySQL(products: any[], batchSize = 100) {
+  if (!importConnection) {
+    throw new Error('Import database not connected');
+  }
+
+  let addedCount = 0;
+  let updatedCount = 0;
+  let skippedCount = 0;
+
+  console.log(`🚀 BATCH IMPORT başlatılıyor: ${products.length} ürün, ${batchSize}'li gruplar halinde`);
+
+  // Ürünleri batch'lere böl
+  for (let i = 0; i < products.length; i += batchSize) {
+    const batch = products.slice(i, i + batchSize);
+    console.log(`📦 Batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(products.length/batchSize)}: ${batch.length} ürün işleniyor...`);
+
+    try {
+      // Transaction başlat
+      await importConnection.execute('START TRANSACTION');
+
+      for (const product of batch) {
+        try {
+          // SKU kontrolü - mevcut ürün var mı?
+          let existingProduct = null;
+          if (product.sku) {
+            const [rows] = await importConnection.execute(
+              `SELECT p.id FROM products p WHERE p.barcode = ? LIMIT 1`,
+              [product.sku]
+            );
+            existingProduct = (rows as any[])[0] || null;
+          }
+
+          if (existingProduct) {
+            // GÜNCELLEME - Tek query ile 3 tablo
+            await importConnection.execute(
+              `UPDATE products p
+               LEFT JOIN product_languages pl ON p.id = pl.product_id
+               LEFT JOIN product_stocks ps ON p.id = ps.product_id
+               SET 
+                 p.price = ?, p.current_stock = ?, p.updated_at = NOW(),
+                 pl.name = ?, pl.short_description = ?, pl.description = ?,
+                 pl.tags = ?, pl.meta_title = ?, pl.meta_description = ?,
+                 ps.price = ?, ps.current_stock = ?
+               WHERE p.id = ?`,
+              [
+                product.price, product.stock || 0, // products
+                product.name, product.shortDescription || '', product.description || '', // product_languages
+                product.tags || '', product.metaTitle || product.name, product.metaDescription || '',
+                product.price, product.stock || 0, // product_stocks
+                existingProduct.id
+              ]
+            );
+            updatedCount++;
+          } else {
+            // YENİ EKLEME - Multi-table insert with single transaction
+            const productSlug = product.name.toLowerCase().replace(/[^a-z0-9çğııöşü]+/g, '-') + '-' + Date.now();
+            
+            // 1. Products tablosuna ekle
+            const [productResult] = await importConnection.execute(
+              `INSERT INTO products (
+                brand_id, category_id, user_id, created_by, slug, price, 
+                purchase_cost, barcode, current_stock, minimum_order_quantity,
+                status, is_approved, is_catalog, external_link, is_refundable, 
+                cash_on_delivery, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+              [
+                product.brandId || 1, product.categoryId || 1, 1, 1, productSlug, product.price,
+                product.price * 0.7, product.sku || '', product.stock || 0, product.minimumOrderQuantity || 1,
+                'published', 1, product.isCatalog ? 1 : 0, product.externalLink || '',
+                product.isRefundable ? 1 : 0, product.cashOnDelivery ? 1 : 0
+              ]
+            );
+            
+            const productId = (productResult as any).insertId;
+
+            // 2. Product_languages tablosuna ekle
+            await importConnection.execute(
+              `INSERT INTO product_languages (
+                product_id, lang, name, short_description, description, 
+                tags, meta_title, meta_description
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                productId, 'tr', product.name, product.shortDescription || '',
+                product.description || '', product.tags || '', product.metaTitle || product.name,
+                product.metaDescription || ''
+              ]
+            );
+
+            // 3. Product_stocks tablosuna ekle
+            await importConnection.execute(
+              `INSERT INTO product_stocks (
+                product_id, track_stock, current_stock, price, sku
+              ) VALUES (?, ?, ?, ?, ?)`,
+              [productId, 1, product.stock || 0, product.price, product.sku || '']
+            );
+
+            addedCount++;
+          }
+        } catch (productError) {
+          console.error(`❌ Ürün işleme hatası (${product.name}):`, productError.message);
+          skippedCount++;
+        }
+      }
+
+      // Transaction commit
+      await importConnection.execute('COMMIT');
+      console.log(`✅ Batch tamamlandı: ${batch.length} ürün işlendi`);
+
+    } catch (batchError) {
+      // Transaction rollback
+      await importConnection.execute('ROLLBACK');
+      console.error('❌ Batch hatası, rollback yapıldı:', batchError.message);
+      skippedCount += batch.length;
+    }
+  }
+
+  console.log(`🎉 BATCH IMPORT tamamlandı! Eklenen: ${addedCount}, Güncellenen: ${updatedCount}, Atlanan: ${skippedCount}`);
+  return { addedCount, updatedCount, skippedCount };
+}
+
+// TEK ÜRÜN IMPORT (geriye dönük uyumluluk için)
 export async function importProductToMySQL(product: {
   name: string;
   categoryId?: number;
