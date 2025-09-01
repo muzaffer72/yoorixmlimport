@@ -465,12 +465,6 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
             
             const productSlug = createUrlSafeSlug(product.name) + '-' + Date.now();
             
-            // RESİM İŞLEME - Media tablosuna ekle ve ID'leri al
-            let thumbnailData = '{}';
-            let imagesData = '[]';
-            let thumbnailId = null;
-            let imageIds = [];
-            
             // Resim debug - sadece ilk ürün için log çıkar
             if (productIndex === 0) {
               console.log(`🔍 Resim debug (ilk ürün): ${product.name}`);
@@ -479,57 +473,15 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
               console.log(`📸 product.images length:`, product.images?.length);
             }
             
-            if (product.images && product.images.length > 0) {
-              console.log(`📸 ${product.images.length} resim işleniyor: ${product.name}`);
-              
-              const processedImages = [];
-              
-              for (let i = 0; i < product.images.length; i++) {
-                try {
-                  // Resmi indir ve işle
-                  const response = await fetch(product.images[i]);
-                  if (response.ok) {
-                    const imageBuffer = Buffer.from(await response.arrayBuffer());
-                    const imageObject = await processImageForLaravel(product.images[i], productId || 0, i);
-                    
-                    if (imageObject) {
-                      // Media tablosuna resim ekle (buffer ile birlikte)
-                      const mediaId = await insertImageToMedia(product.images[i], i, imageObject, imageBuffer);
-                      if (mediaId) {
-                        processedImages.push(imageObject);
-                        imageIds.push(mediaId);
-                        
-                        // İlk resmi thumbnail olarak ayarla
-                        if (i === 0) {
-                          thumbnailData = JSON.stringify(imageObject);
-                          thumbnailId = mediaId;
-                        }
-                      }
-                    }
-                  } else {
-                    console.error(`❌ Resim indirilemedi: ${product.images[i]} - HTTP ${response.status}`);
-                  }
-                } catch (imageError) {
-                  console.error(`❌ Resim işleme hatası: ${product.images[i]}`, imageError.message);
-                }
-              }
-              
-              if (processedImages.length > 0) {
-                imagesData = JSON.stringify(processedImages);
-              }
-              
-              console.log(`📸 Resim işleme tamamlandı: ${processedImages.length}/${product.images.length} - Media IDs: [${imageIds.join(', ')}]`);
-            }
-            
-            // 1. Products tablosuna ekle - ONLY VALID COLUMNS
+            // 1. Products tablosuna ekle - Önce basit hali
             const [productResult] = await importConnection.execute(
               `INSERT INTO products (
                 brand_id, category_id, user_id, created_by, slug, price,
                 purchase_cost, barcode, minimum_order_quantity,
                 status, is_approved, is_catalog, external_link, is_refundable, 
                 cash_on_delivery, colors, attribute_sets, 
-                thumbnail, images, thumbnail_id, image_ids, video_provider, video_url, current_stock, xmlkaynagi, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                thumbnail, images, video_provider, video_url, current_stock, xmlkaynagi, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 product.brandId || null, 
                 product.categoryId || null, 
@@ -548,10 +500,8 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                 product.cashOnDelivery ? 1 : 0,
                 '[]', // colors (boş JSON array)
                 '[]', // attribute_sets (boş JSON array)
-                thumbnailData, // thumbnail (Laravel formatında)
-                imagesData, // images (Laravel formatında)
-                thumbnailId, // thumbnail_id (media tablosundan ID)
-                imageIds.join(','), // image_ids (media tablosundan ID'ler, virgülle ayrılmış)
+                '{}', // thumbnail (boş, sonra güncellenecek)
+                '[]', // images (boş, sonra güncellenecek)
                 '', // video_provider
                 '', // video_url
                 product.stock || 0, // current_stock
@@ -597,10 +547,63 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
               ]
             );
 
+            // 4. RESİM İŞLEME - Product eklendikten sonra
+            if (product.images && product.images.length > 0) {
+              console.log(`📸 ${product.images.length} resim işleniyor: ${product.name} (ID: ${productId})`);
+              
+              let thumbnailData = '{}';
+              let imagesData = '[]';
+              let thumbnailId = null;
+              let imageIds = [];
+              const processedImages = [];
+              
+              for (let i = 0; i < product.images.length; i++) {
+                try {
+                  // Resmi indir ve işle
+                  const response = await fetch(product.images[i]);
+                  if (response.ok) {
+                    const imageBuffer = Buffer.from(await response.arrayBuffer());
+                    const imageObject = await processImageForLaravel(product.images[i], productId, i);
+                    
+                    if (imageObject) {
+                      // Media tablosuna resim ekle (buffer ile birlikte)
+                      const mediaId = await insertImageToMedia(product.images[i], i, imageObject, imageBuffer);
+                      if (mediaId) {
+                        processedImages.push(imageObject);
+                        imageIds.push(mediaId);
+                        
+                        // İlk resmi thumbnail olarak ayarla
+                        if (i === 0) {
+                          thumbnailData = JSON.stringify(imageObject);
+                          thumbnailId = mediaId;
+                        }
+                      }
+                    }
+                  } else {
+                    console.error(`❌ Resim indirilemedi: ${product.images[i]} - HTTP ${response.status}`);
+                  }
+                } catch (imageError: any) {
+                  console.error(`❌ Resim işleme hatası: ${product.images[i]}`, imageError?.message || imageError);
+                }
+              }
+              
+              if (processedImages.length > 0) {
+                imagesData = JSON.stringify(processedImages);
+                
+                // Products tablosundaki resim alanlarını güncelle
+                await importConnection.execute(
+                  `UPDATE products SET thumbnail = ?, images = ?, thumbnail_id = ?, image_ids = ? WHERE id = ?`,
+                  [thumbnailData, imagesData, thumbnailId, imageIds.join(','), productId]
+                );
+                
+                console.log(`📸 Resim işleme tamamlandı: ${processedImages.length}/${product.images.length} - Media IDs: [${imageIds.join(', ')}]`);
+              }
+            }
+
             addedCount++;
           }
-        } catch (productError) {
-          console.error(`❌ Ürün işleme hatası (${product.name}):`, productError.message);
+        } catch (productError: any) {
+          console.error(`❌ Ürün işleme hatası (${product.name}):`, productError?.message || productError);
           skippedCount++;
         }
       }
@@ -609,10 +612,10 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
       await importConnection.execute('COMMIT');
       console.log(`✅ Batch tamamlandı: ${batch.length} ürün işlendi`);
 
-    } catch (batchError) {
+    } catch (batchError: any) {
       // Transaction rollback
       await importConnection.execute('ROLLBACK');
-      console.error('❌ Batch hatası, rollback yapıldı:', batchError.message);
+      console.error('❌ Batch hatası, rollback yapıldı:', batchError?.message || batchError);
       skippedCount += batch.length;
     }
   }
