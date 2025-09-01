@@ -7,15 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { XmlSource } from "@shared/schema";
-import { Download, AlertCircle, CheckCircle, Trash2, X, Square } from "lucide-react";
+import { Download, AlertCircle, CheckCircle, Trash2, X, Square, Eye, Loader2 } from "lucide-react";
 
 export default function ProductImport() {
   const [selectedXmlSource, setSelectedXmlSource] = useState<string>("");
   const [importProgress, setImportProgress] = useState(0);
   const [isImporting, setIsImporting] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -95,6 +98,25 @@ export default function ProductImport() {
     },
   });
 
+  // Preview mutation
+  const previewMutation = useMutation({
+    mutationFn: async (xmlSourceId: string) => {
+      const response = await apiRequest("POST", `/api/xml-sources/${xmlSourceId}/preview`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setPreviewData(data);
+      setIsPreviewOpen(true);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Önizleme Hatası",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleImport = () => {
     if (!selectedXmlSource) {
       toast({
@@ -105,7 +127,13 @@ export default function ProductImport() {
       return;
     }
 
-    if (confirm("Bu işlem ürünleri XML'den alarak veritabanını güncelleyecek. Devam etmek istediğinizden emin misiniz?")) {
+    // Önce önizleme göster
+    previewMutation.mutate(selectedXmlSource);
+  };
+
+  const handleConfirmImport = () => {
+    setIsPreviewOpen(false);
+    if (confirm("İthalat işlemini başlatmak istediğinizden emin misiniz?")) {
       importProductsMutation.mutate(selectedXmlSource);
     }
   };
@@ -311,12 +339,26 @@ export default function ProductImport() {
               <div className="flex space-x-4">
                 <Button
                   onClick={handleImport}
-                  disabled={!selectedXmlSource || isImporting || selectedSource?.status !== "active"}
+                  disabled={!selectedXmlSource || isImporting || selectedSource?.status !== "active" || previewMutation.isPending}
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
                   data-testid="button-start-import"
                 >
-                  <Download className="mr-2 h-4 w-4" />
-                  {isImporting ? "İthalat Devam Ediyor..." : "İthalatı Başlat"}
+                  {previewMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Önizleme Yükleniyor...
+                    </>
+                  ) : isImporting ? (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      İthalat Devam Ediyor...
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="mr-2 h-4 w-4" />
+                      İthalat Önizlemesi
+                    </>
+                  )}
                 </Button>
                 
                 <Button
@@ -376,6 +418,94 @@ export default function ProductImport() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Import Preview Modal */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>İthalat Önizlemesi</DialogTitle>
+          </DialogHeader>
+          
+          {previewData && (
+            <div className="space-y-6 overflow-y-auto pr-2">
+              {/* XML Source Info */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">XML Kaynak Bilgileri</h3>
+                <div className="space-y-1 text-sm">
+                  <div><strong>Kaynak:</strong> {previewData.xmlSource.name}</div>
+                  <div><strong>URL:</strong> {previewData.xmlSource.url}</div>
+                  <div><strong>Toplam Ürün:</strong> {previewData.totalProducts.toLocaleString()} adet</div>
+                </div>
+              </div>
+
+              {/* Field Mapping Preview */}
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">Field Mapping Önizlemesi</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  {Object.entries(previewData.xmlSource.fieldMapping || {}).map(([localField, xmlField]) => (
+                    <div key={localField} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border">
+                      <span className="font-medium text-green-700 dark:text-green-300">{localField}:</span>
+                      <span className="text-gray-600 dark:text-gray-400">{String(xmlField)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sample Product Data */}
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Örnek Ürün Verisi (İlk Ürün)</h3>
+                
+                {/* Mapped Data */}
+                <div className="mb-4">
+                  <h4 className="font-medium text-sm mb-2">Eşleştirilmiş Veriler:</h4>
+                  <div className="grid grid-cols-1 gap-2 text-sm">
+                    {Object.entries(previewData.mappedData || {}).map(([field, value]) => (
+                      <div key={field} className="flex items-start justify-between p-2 bg-white dark:bg-gray-800 rounded border">
+                        <span className="font-medium text-yellow-700 dark:text-yellow-300 capitalize">{field}:</span>
+                        <span className="text-gray-600 dark:text-gray-400 text-right max-w-xs truncate">
+                          {Array.isArray(value) ? 
+                            `[${value.length} öğe: ${value.filter(Boolean).slice(0, 2).join(', ')}${value.length > 2 ? '...' : ''}]` : 
+                            String(value).substring(0, 100) + (String(value).length > 100 ? '...' : '')
+                          }
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Raw XML Data (collapsed) */}
+                <details className="mt-4">
+                  <summary className="cursor-pointer font-medium text-sm text-yellow-700 dark:text-yellow-300 mb-2">
+                    Ham XML Verisi (Genişletmek için tıklayın)
+                  </summary>
+                  <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded text-xs font-mono overflow-x-auto">
+                    <pre>{JSON.stringify(previewData.rawXmlData, null, 2)}</pre>
+                  </div>
+                </details>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsPreviewOpen(false)}
+                  data-testid="button-cancel-preview"
+                >
+                  İptal
+                </Button>
+                <Button
+                  onClick={handleConfirmImport}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  data-testid="button-confirm-import"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  İthalatı Başlat
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -57,13 +57,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/xml-sources", async (req, res) => {
     try {
+      console.log('📥 XML Source creation request body:', JSON.stringify(req.body, null, 2));
       const data = insertXmlSourceSchema.parse(req.body);
+      console.log('✅ Schema validation passed');
       const xmlSource = await pageStorage.createXmlSource(data);
       res.status(201).json(xmlSource);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.log('❌ Zod validation error:', JSON.stringify(error.errors, null, 2));
         res.status(400).json({ message: "Invalid data", errors: error.errors });
       } else {
+        console.log('❌ Other error:', error);
         res.status(500).json({ message: "Failed to create XML source" });
       }
     }
@@ -1743,6 +1747,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: error.message || "Failed to trigger cronjob",
         status: "error",
         timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // XML Preview endpoint - İthalat öncesi önizleme
+  app.post("/api/xml-sources/:id/preview", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const xmlSource = await pageStorage.getXmlSource(id);
+      
+      if (!xmlSource) {
+        return res.status(404).json({ message: "XML source not found" });
+      }
+
+      if (!xmlSource.url) {
+        return res.status(400).json({ message: "XML source URL not configured" });
+      }
+
+      console.log(`🔍 XML Preview başlatılıyor: ${xmlSource.name}`);
+      
+      // XML'i indir ve parse et
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 saniye timeout
+      
+      const response = await fetch(xmlSource.url, { 
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; XML-Parser/1.0)'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        return res.status(400).json({ 
+          message: `XML kaynağına erişilemiyor: ${response.status} ${response.statusText}` 
+        });
+      }
+
+      const xmlText = await response.text();
+      const parser = new xml2js.Parser({ explicitArray: false });
+      const xmlData = await parser.parseStringPromise(xmlText);
+
+      // İlk ürünü bul
+      const products = xmlData?.Urunler?.Urun;
+      if (!products || (!Array.isArray(products) && typeof products !== 'object')) {
+        return res.status(400).json({ message: "XML'de ürün verisi bulunamadı" });
+      }
+
+      const firstProduct = Array.isArray(products) ? products[0] : products;
+      
+      // Field mapping'i uygula
+      const fieldMapping = xmlSource.fieldMapping || {};
+      const mappedProduct = {};
+      
+      // Standard field'ları mapple
+      for (const [localField, xmlField] of Object.entries(fieldMapping)) {
+        if (typeof xmlField === 'string') {
+          if (xmlField.includes(',')) {
+            // Multiple fields (images gibi)
+            const fields = xmlField.split(',').map(f => f.trim());
+            const values = fields.map(field => firstProduct[field]).filter(Boolean);
+            mappedProduct[localField] = values;
+          } else {
+            mappedProduct[localField] = firstProduct[xmlField];
+          }
+        }
+      }
+
+      // XML raw data'yı da ekle
+      const preview = {
+        xmlSource: {
+          name: xmlSource.name,
+          url: xmlSource.url,
+          fieldMapping: xmlSource.fieldMapping || {}
+        },
+        rawXmlData: firstProduct,
+        mappedData: mappedProduct,
+        totalProducts: Array.isArray(products) ? products.length : 1
+      };
+
+      console.log(`✅ Preview hazırlandı: ${preview.totalProducts} ürün bulundu`);
+      res.json(preview);
+      
+    } catch (error) {
+      console.error("XML preview error:", error);
+      res.status(500).json({ 
+        message: error.name === 'AbortError' ? 
+          "XML dosyası yükleme zaman aşımına uğradı" : 
+          "XML önizleme sırasında hata oluştu" 
       });
     }
   });
