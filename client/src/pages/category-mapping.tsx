@@ -79,7 +79,7 @@ export default function CategoryMapping() {
         xmlSourceId: data.xmlSourceId,
         xmlCategoryName: data.xmlCategoryName,
         localCategoryId: Number(data.localCategoryId),
-        confidence: 1.0, // Manuel eşleştirme için yüksek güven
+        confidence: "1.00", // String olarak gönder (decimal için)
         isManual: true // Manuel eşleştirme
       };
       console.log('Sending category mapping:', payload);
