@@ -483,7 +483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(categories.map(cat => ({
-        id: cat.categoryId, // category_id'yi kullan (bu localCategoryId için gereken değer)
+        id: cat.category_id, // MySQL'den gelen category_id field'ını kullan
         name: cat.title,
         title: cat.title
       })));
