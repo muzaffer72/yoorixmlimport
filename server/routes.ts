@@ -1288,8 +1288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // TÜM ÜRÜNLERİ SİL endpoint
-  // API endpoint: XML source'a göre ürünleri sil
+  // XML source'a göre ürünleri sil
   app.delete("/api/products/delete-by-xml-source/:xmlSourceId", async (req, res) => {
     try {
       const { xmlSourceId } = req.params;
@@ -1300,35 +1299,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`🗑️ ${xmlSourceId} XML kaynağına ait ürünler siliniyor...`);
       
-      // Import veritabanı bağlantısını kontrol et
-      if (!getImportConnection()) {
+      // Database ayarlarını al
+      const dbSettings = await pageStorage.getDatabaseSettings();
+      if (!dbSettings || !dbSettings.host) {
         return res.status(400).json({ 
-          message: "MySQL veritabanı bağlantısı bulunamadı. Lütfen önce bir XML import işlemi yapın." 
+          message: "MySQL ayarları bulunamadı. Lütfen database ayarlarını yapın." 
         });
       }
-      
-      const result = await deleteProductsByXmlSource(xmlSourceId);
+
+      // Basit MySQL bağlantısı ve silme
+      const mysql = await import('mysql2/promise');
+      const connection = await mysql.createConnection({
+        host: dbSettings.host,
+        port: dbSettings.port,
+        user: dbSettings.username,
+        password: dbSettings.password,
+        database: dbSettings.database,
+        ssl: false
+      });
+
+      // xmlkaynagi sütunu ile eşleşen ürünleri sil
+      const [result] = await connection.execute(
+        'DELETE FROM products WHERE xmlkaynagi = ?',
+        [xmlSourceId]
+      );
+
+      await connection.end();
+
+      const deletedCount = (result as any).affectedRows || 0;
+      console.log(`✅ ${deletedCount} ürün silindi.`);
       
       // Activity log ekle
       await pageStorage.addActivity({
         type: 'products_deleted',
-        title: 'XML Source Products Deleted',
-        description: `${result.deletedProducts} products from XML source ${xmlSourceId} were deleted successfully`,
+        title: 'XML Kaynak Ürünleri Silindi',
+        description: `${deletedCount} ürün ${xmlSourceId} XML kaynağından silindi`,
         metadata: {
           xmlSourceId,
-          deletedProducts: result.deletedProducts,
-          deletedImages: result.deletedImages
+          deletedProducts: deletedCount
         }
       });
       
       res.json({
-        message: 'XML source products deleted successfully',
-        data: result
+        message: `${deletedCount} ürün başarıyla silindi`,
+        deletedCount: deletedCount
       });
     } catch (error: any) {
       console.error('XML source delete error:', error);
       res.status(500).json({ 
-        error: 'Failed to delete XML source products',
+        error: 'Ürün silme hatası',
         details: error.message 
       });
     }
