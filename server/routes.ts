@@ -766,10 +766,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 targetCategoryId = xmlSource.defaultCategoryId;
                 hasRequiredFields = true;
               } else {
-                // Eşleştirme yok - ürünü extract et ama categoryId = null olarak işaretle
-                // Import sırasında filtrelenecek
-                targetCategoryId = null;
-                hasRequiredFields = true;
+                // Eşleştirme yok - ürünü hiç extract etme (performans optimizasyonu)
+                hasRequiredFields = false;
+                return; // Skip this product
               }
               
               // Extract all products - filtering will happen later during import
@@ -1069,31 +1068,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let addedCount = 0;
       let updatedCount = 0;
       
-      // Önce kaç ürün import edilebilir kontrol et
-      for (const productData of extractedProducts) {
-        if (productData.categoryId && productData.categoryId !== 0) {
-          potentialImports++;
-        }
-      }
+      // Artık sadece eşleştirilen kategorilerden ürünler extract edildiği için hepsi geçerli
+      potentialImports = extractedProducts.length;
       
-      console.log(`🎯 Import Öngörüsü: ${extractedProducts.length} ürün bulundu, ${potentialImports} ürün eşleştirilmiş kategoriye sahip`);
+      console.log(`🎯 Import Öngörüsü: ${extractedProducts.length} ürün eşleştirilmiş kategorilerden extract edildi`);
       
       if (potentialImports === 0) {
         console.log(`⚠️ Hiç ürün import edilemeyecek - kategori eşleştirmelerini kontrol edin!`);
       }
       
-      // Kategori eşleştirmesi olan ürünleri filtrele
-      const validProducts = extractedProducts.filter(productData => {
-        if (!productData.categoryId || productData.categoryId === 0) {
-          console.log(`⏭️ Skipping product "${productData.name}" - category "${productData.category}" not mapped`);
-          console.log(`   🔍 Debug: categoryId=${productData.categoryId}, category field value="${productData.category}"`);
-          console.log(`   📝 Available category mappings: ${categoryMappings.map(m => `"${m.xmlCategoryName}"`).slice(0, 3).join(', ')}${categoryMappings.length > 3 ? '...' : ''}`);
-          skippedCount++;
-          return false;
-        }
-        console.log(`✅ Will import: "${productData.name}" - category "${productData.category}" → ID: ${productData.categoryId}`);
-        return true;
-      });
+      // Artık sadece eşleştirilen kategorilerden ürünler extract edildiği için tüm ürünler geçerli
+      const validProducts = extractedProducts;
 
       console.log(`🚀 HIZLI BATCH IMPORT başlatılıyor: ${validProducts.length} geçerli ürün bulundu`);
 
