@@ -1,17 +1,6 @@
 {
   "logs": [
     {
-      "type": "database_settings_updated",
-      "title": "Veritabanı ayarları güncellendi",
-      "description": "109.71.252.34:3306 veritabanı bağlantısı yapılandırıldı",
-      "entityType": "settings",
-      "id": "f3a2265f-807f-4d76-9aa3-fcef27e21171",
-      "createdAt": "2025-08-31T13:40:20.044Z",
-      "oldValue": null,
-      "newValue": null,
-      "entityId": null
-    },
-    {
       "type": "xml_synced",
       "title": "XML kaynağı güncellendi",
       "description": "enginithalat - 0 ürün işlendi",
@@ -1097,6 +1086,17 @@
       "entityType": "xml_source",
       "id": "f7403f95-5a7c-4a4a-9f5e-719d0f5072bf",
       "createdAt": "2025-09-01T13:45:18.149Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "8c191fad-87cc-4f78-bbc7-c50dd663ddba",
+      "createdAt": "2025-09-01T13:46:21.458Z",
       "oldValue": null,
       "newValue": null
     }
