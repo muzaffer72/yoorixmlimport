@@ -717,11 +717,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const fieldMapping = (xmlSource.fieldMapping as Record<string, string>) || {};
         
         let debugCount = 0;
-        const traverse = (obj: any) => {
+        // Debug XML structure for first few objects
+        let objectCount = 0;
+        
+        const traverse = (obj: any, depth = 0) => {
           if (typeof obj === "object" && obj !== null) {
             if (Array.isArray(obj)) {
-              obj.forEach(item => traverse(item));
+              obj.forEach(item => traverse(item, depth + 1));
             } else {
+              objectCount++;
+              
+              // Debug first 5 objects to understand XML structure
+              if (objectCount <= 5) {
+                console.log(`\n🔍 === XML OBJECT DEBUG #${objectCount} (depth: ${depth}) ===`);
+                console.log(`📋 Keys: [${Object.keys(obj).join(', ')}]`);
+                console.log(`🎯 categoryTag setting: "${xmlSource.categoryTag}"`);
+                console.log(`📝 fieldMapping: ${JSON.stringify(xmlSource.fieldMapping)}`);
+              }
               // Check if this looks like a product object
               let hasRequiredFields = false;
               
@@ -731,27 +743,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const categoryFields = xmlSource.categoryTag.split('.');
                 let categoryValue = obj;
                 
-                // Only debug first 1 product to avoid log overflow
-                if (debugCount < 1) {
-                  console.log(`🔍 Debug category extraction #${debugCount + 1} for object keys: [${Object.keys(obj).join(', ')}]`);
-                  console.log(`🔍 Looking for categoryTag: ${xmlSource.categoryTag} (split: [${categoryFields.join(', ')}])`);
+                // Debug first 5 products to understand category structure
+                if (debugCount < 5) {
+                  console.log(`\n🔍 === KATEGORİ DEBUG #${debugCount + 1} ===`);
+                  console.log(`📋 Object keys: [${Object.keys(obj).slice(0, 15).join(', ')}${Object.keys(obj).length > 15 ? '...' : ''}]`);
+                  console.log(`🎯 Looking for categoryTag: "${xmlSource.categoryTag}"`);
+                  console.log(`🔄 Path: [${categoryFields.join(' → ')}]`);
                 }
                 
                 for (const field of categoryFields) {
                   if (categoryValue && typeof categoryValue === 'object' && field in categoryValue) {
-                    if (debugCount < 1) console.log(`  ✅ Found field "${field}", value:`, categoryValue[field]);
+                    if (debugCount < 5) console.log(`  ✅ Found field "${field}", value:`, categoryValue[field]);
                     categoryValue = categoryValue[field];
                   } else {
-                    if (debugCount < 1) console.log(`  ❌ Field "${field}" not found in object`);
+                    if (debugCount < 5) console.log(`  ❌ Field "${field}" not found in object`);
                     categoryValue = null;
                     break;
                   }
                 }
                 if (categoryValue && typeof categoryValue === 'string') {
                   categoryName = categoryValue;
-                  if (debugCount < 1) console.log(`🎯 Extracted category: "${categoryName}"`);
+                  if (debugCount < 5) console.log(`🎯 Final extracted category: "${categoryName}"`);
                 } else {
-                  if (debugCount < 1) console.log(`⚠️ No valid category found, final value:`, categoryValue, typeof categoryValue);
+                  if (debugCount < 5) console.log(`⚠️ No valid category found, final value:`, categoryValue, typeof categoryValue);
                 }
               }
               
@@ -761,12 +775,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 // Kategori eşleştirmesi var - kesinlikle işle
                 targetCategoryId = categoryMappingMap.get(categoryName);
                 hasRequiredFields = true;
+                if (debugCount < 3) {
+                  console.log(`✅ KATEGORI EŞLEŞTİ: "${categoryName}" → ID: ${targetCategoryId}`);
+                }
               } else if (xmlSource.useDefaultCategory && xmlSource.defaultCategoryId) {
                 // Eşleştirme yok ama varsayılan kategori kullan seçeneği aktif
                 targetCategoryId = xmlSource.defaultCategoryId;
                 hasRequiredFields = true;
+                if (debugCount < 3) {
+                  console.log(`🔄 VARSAYILAN KATEGORİ KULLANILIYOR: ID: ${targetCategoryId}`);
+                }
               } else {
-                // Eşleştirme yok - ürünü hiç extract etme (performans optimizasyonu)
+                // Eşleştirme yok - debug et ve atla
+                if (debugCount < 10) {
+                  console.log(`❌ KATEGORİ EŞLEŞMEDİ: "${categoryName}" (${typeof categoryName})`);
+                  console.log(`   📋 Mevcut eşleştirmeler:`, Array.from(categoryMappingMap.keys()).slice(0, 5));
+                  console.log(`   🔍 XML kategori alanı (${xmlSource.categoryTag}):`, categoryName);
+                  debugCount++;
+                }
                 hasRequiredFields = false;
                 return; // Skip this product
               }
