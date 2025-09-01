@@ -717,50 +717,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const fieldMapping = (xmlSource.fieldMapping as Record<string, string>) || {};
         
         let debugCount = 0;
-        // Debug XML structure for first few objects
-        let objectCount = 0;
-        
-        const traverse = (obj: any, depth = 0) => {
+        const traverse = (obj: any) => {
           if (typeof obj === "object" && obj !== null) {
             if (Array.isArray(obj)) {
-              obj.forEach(item => traverse(item, depth + 1));
+              obj.forEach(item => traverse(item));
             } else {
-              objectCount++;
               
-              // Debug first 5 objects to understand XML structure  
-              if (objectCount <= 5) {
-                console.log(`\n🔍 === XML OBJECT DEBUG #${objectCount} (depth: ${depth}) ===`);
-                console.log(`📋 Object keys: [${Object.keys(obj).join(', ')}]`);
-                console.log(`🎯 categoryTag setting: "${xmlSource.categoryTag}" (type: ${typeof xmlSource.categoryTag})`);
-                console.log(`📝 fieldMapping: ${JSON.stringify(xmlSource.fieldMapping)}`);
-                
-                // Eğer categoryTag tanımlıysa onu bulabilir miyiz kontrol et
-                if (xmlSource.categoryTag) {
-                  const categoryFields = xmlSource.categoryTag.split('.');
-                  let testValue = obj;
-                  let pathResult = [];
-                  
-                  for (const field of categoryFields) {
-                    if (testValue && typeof testValue === 'object' && field in testValue) {
-                      testValue = testValue[field];
-                      pathResult.push(`✅ ${field}: ${testValue}`);
-                    } else {
-                      pathResult.push(`❌ ${field}: NOT_FOUND`);
-                      break;
-                    }
-                  }
-                  console.log(`🔍 Category path test: ${pathResult.join(' → ')}`);
-                }
-                
-                // Ürünün tüm alanlarını göster
-                console.log(`📝 Sample values:`, {
-                  urun_id: obj.urun_id,
-                  adi: obj.adi,
-                  kategori: obj.kategori || 'NOT_FOUND',
-                  category: obj.category || 'NOT_FOUND',
-                  kategori_adi: obj.kategori_adi || 'NOT_FOUND'
-                });
-              }
               // Check if this looks like a product object
               let hasRequiredFields = false;
               
@@ -770,29 +732,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const categoryFields = xmlSource.categoryTag.split('.');
                 let categoryValue = obj;
                 
-                // Debug first 5 products to understand category structure
-                if (debugCount < 5) {
-                  console.log(`\n🔍 === KATEGORİ DEBUG #${debugCount + 1} ===`);
-                  console.log(`📋 Object keys: [${Object.keys(obj).slice(0, 15).join(', ')}${Object.keys(obj).length > 15 ? '...' : ''}]`);
-                  console.log(`🎯 Looking for categoryTag: "${xmlSource.categoryTag}"`);
-                  console.log(`🔄 Path: [${categoryFields.join(' → ')}]`);
-                }
                 
                 for (const field of categoryFields) {
                   if (categoryValue && typeof categoryValue === 'object' && field in categoryValue) {
-                    if (debugCount < 5) console.log(`  ✅ Found field "${field}", value:`, categoryValue[field]);
                     categoryValue = categoryValue[field];
                   } else {
-                    if (debugCount < 5) console.log(`  ❌ Field "${field}" not found in object`);
                     categoryValue = null;
                     break;
                   }
                 }
                 if (categoryValue && typeof categoryValue === 'string') {
                   categoryName = categoryValue;
-                  if (debugCount < 5) console.log(`🎯 Final extracted category: "${categoryName}"`);
                 } else {
-                  if (debugCount < 5) console.log(`⚠️ No valid category found, final value:`, categoryValue, typeof categoryValue);
                 }
               }
               
@@ -802,24 +753,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 // Kategori eşleştirmesi var - kesinlikle işle
                 targetCategoryId = categoryMappingMap.get(categoryName);
                 hasRequiredFields = true;
-                if (debugCount < 3) {
-                  console.log(`✅ KATEGORI EŞLEŞTİ: "${categoryName}" → ID: ${targetCategoryId}`);
-                }
               } else if (xmlSource.useDefaultCategory && xmlSource.defaultCategoryId) {
                 // Eşleştirme yok ama varsayılan kategori kullan seçeneği aktif
                 targetCategoryId = xmlSource.defaultCategoryId;
                 hasRequiredFields = true;
-                if (debugCount < 3) {
-                  console.log(`🔄 VARSAYILAN KATEGORİ KULLANILIYOR: ID: ${targetCategoryId}`);
-                }
               } else {
-                // Eşleştirme yok - debug et ve atla
-                if (debugCount < 10) {
-                  console.log(`❌ KATEGORİ EŞLEŞMEDİ: "${categoryName}" (${typeof categoryName})`);
-                  console.log(`   📋 Mevcut eşleştirmeler:`, Array.from(categoryMappingMap.keys()).slice(0, 5));
-                  console.log(`   🔍 XML kategori alanı (${xmlSource.categoryTag}):`, categoryName);
-                  debugCount++;
-                }
                 hasRequiredFields = false;
                 return; // Skip this product
               }

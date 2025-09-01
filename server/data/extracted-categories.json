@@ -9679,6 +9679,1151 @@
       "xmlSourceId": "f81cd679-2ed5-4ee8-9dfa-16231c03f093",
       "name": "Şemsiye",
       "createdAt": "2025-09-01T23:14:38.644Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Acil Durum Kitleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Aksesuar ve Kozmetik",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Aksesuarlar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Alez",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Anahtarlık",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Anne Çocuk",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Araç Dışı Aksusuar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Araç içi Organizerler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Araç İçi Aksesuar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Araç İçi Telefon Tutucular",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Araç Şarj Cihazı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Askılar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Asma Kilit",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Avizeler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Ayak Tırnak Bakım",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Ayakkabı Bakımı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Ayakkabılık Ve Raf",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Aydınlatma Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Açacaklar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Baharat Seti",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Bahçe Sulama",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Bakım Çantası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Bant",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Banyo Aksesuarları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Banyo Askıları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Banyo Lif Kese",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Banyo Setleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Banyo Wc",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Barbekü & Mangallar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Bardak Kupa",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Baston",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Battal Boy Çarşaf Takımı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Bayan Bileklik",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Bayan Yüzük ve Kombinler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Beslenme Kabı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Biblolar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Bisiklet Motosiklet",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Boya Malzemeleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Broş",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Bulaşık Yardımcıları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Buzdolabı Düzenleyici",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Buzluk",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Bıçaklar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Cam silme aparatı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Cilt Masaj Aletleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Cımbızlar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Damacana Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Dantel",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Dekorasyon",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Dekoratif Ledler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Dekoratif Şerit",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Depolama Düzenleme Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Dikiş Makinesi Aksesuarı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Dikiş Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Dil Temizleyici",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Diğer Oda Aksesuarları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Duvar Dekorasyon Ürünü",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Duvar Masa Saatleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Duvar Süsü",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Düğme",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "El Feneri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "El Tırnak Bakım",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "El İşi Malzemeleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Elektrik Ekipmanları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Elektrikli Ev Aletleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Ense Fırça ve Ayna",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Epilasyon Ağda",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Erkek Bileklik",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Erkek Bileklik Kombin",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Erkek Kolye",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Erkek Küpe",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Erkek Yüzük",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Ev Gereçleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Evcil Hayvan Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Fermuar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Fırın Tepsi",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Giyim",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Gözlük",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Güneş Gözlüğü Aksusuar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "HalHal",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Hava Nemlendiriciler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Havlu",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Haşere İlaçları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Hediye ve Promosyon",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Hobi Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Hortum ve Sulama",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Hurçlar ve Yıkama Filesi",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Hırdavat",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kablo Düzenleyici",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kahve Takımları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kamp Lambası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kapı Önü Paspası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kaş Kirpik",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kaşıklar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kaşıklık ve Bıçaklıklar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kedi Fırça ve Tarağı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kedi Oyuncağı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kedi Tasması",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kedi Tuvaleti",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kesme Tahtaları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kevgir ve Süzgeç",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kişisel Bakım",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Klozet Fırçaları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Klozet Kapakları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kolye",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kolye Küpe Bijuteri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kuaför Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kumbara",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kurdele",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Köpek Kıyafeti",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Köpek Oyuncağı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Köpek Tasması",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kül Tablası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Küpe",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kırtasiye",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Kırtasiye Malzemeleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Lambaderler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Lastik Bakım Ürünü",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Lavabo Açıcı ve Tıkaçlar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Lavabo Bataryası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Limon Narenciye Sıkacağı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Makas",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Makyaj Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Mangal Aksesuarları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Masa Lambası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Masaj Aletleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Matkap Ucu",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Mumlar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Mutfak Düzenleyici",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Mutfak Ekipmanları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Mutfak Maşası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Mutfak Mobilyası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Mutfak Çakmakları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Müzik Kutusu",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Olta Misinası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Oto Aksesuar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Oto Anahtarlık",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Oto Bakım",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Oto Branda",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Oto Temizlik Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Outdoor Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Oyun Takımları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Oyuncak",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Paspas",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Pense ve Anahtarlar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Penuar ve Yelek",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Perde ve Kornişler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Petshop",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Piercing",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Piknik Outdoor",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Pişirme",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Plastik ev gereçleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Ponpon",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Pratik Ev Eşyaları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Pratik Mutfak Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Pratik Temizlik Gereci",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Püskürtücü Sprey Şişe",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Röfle Perma Bİgudi",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Sabunluk",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Saklama Kapları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Saklama Kutusu",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Saksı ve Çiçek Bakımı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Salıncak Hamak",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Saç Boyama",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Saç Sakal Bakımı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Sağlık Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Sera ve Sera Ekipmanları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Seyahat Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Silikon Tabancası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Sosluk",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Soyacak Rende",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Spor Malzemeleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Su ve Mama Kapları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Sunum Tabakları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Sürahi",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Tabanlık",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Tarak ve Makaslar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Taraklar Erkek Bayan",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Tek Kişilik Çarşaf Takımı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Temizlik Bezi",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Temizlik Gereçleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Tencere Tava",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Termoslar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Tesettür Bone",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Testereler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Toka",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Tornavida",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Trafik Yol Yardım",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Tuvalet Kağıtlığı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Törpü ve Eğe",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Tıraş Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Tığ",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Vücut Bakımı",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Yaka İğnesi",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Yapay Çiçekler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Yapışkanlı Folyo",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Yastık",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Yağdanlık",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Yüz Maskesi",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Yüz Saç Bakım",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Yılbaşı Süsü",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Zeka Oyunları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "köpek",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "köpek Fırça Tarak",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "telefon",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çalışma Masası",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çamaşır Yardımcıları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çatal Kaşık Bıçak Seti",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çay Kahve Yardımcıları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çerçeveler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çeşitli Ürünler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çift Kişilik Nevresim",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çift Kişilik Yatak Örtüleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çift Taraflı Yapıştırıcılar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çocuk Bebek Güvenlik",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çocuk Bebek Malzemeleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çocuk Matara Bardak",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çocuk Çantaları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çöp Kovaları",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Çırpıcılar",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Örgü İpi",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "İlaç Saklama Kutusu",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "İlginç Hediyeler",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "İzolasyon Yalıtım",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "İğne",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "İşyeri Ofis Ürünleri",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Şahmeran",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Şarj Aleti",
+      "createdAt": "2025-09-01T23:52:09.558Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "name": "Şemsiye",
+      "createdAt": "2025-09-01T23:52:09.558Z"
     }
   ]
 }
