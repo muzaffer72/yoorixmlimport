@@ -923,6 +923,61 @@
       "createdAt": "2025-09-01T13:17:19.169Z",
       "oldValue": null,
       "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "9d13f783-3113-4f39-b50d-11a1f3d52bde",
+      "createdAt": "2025-09-01T13:22:13.919Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 12 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "552aafc2-2379-40e1-b8ee-87484cb14f92",
+      "createdAt": "2025-09-01T13:22:36.838Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "TUMKATEGORIVAR - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "entityType": "xml_source",
+      "id": "c281c753-6f4c-4dcd-99be-223a719c8500",
+      "createdAt": "2025-09-01T13:22:57.107Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "TUMKATEGORI - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "95795109-8874-46af-9e0b-e394c5cf4df0",
+      "entityType": "xml_source",
+      "id": "942cf398-b56e-458a-9b38-4f7fa62c2274",
+      "createdAt": "2025-09-01T13:23:31.247Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "enginithalat - 0 yeni ürün eklendi, 0 ürün güncellendi, 17 ürün atlandı",
+      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "entityType": "xml_source",
+      "id": "b9f8f7d7-866a-4194-b3cb-19cdd81b4e34",
+      "createdAt": "2025-09-01T13:24:14.658Z",
+      "oldValue": null,
+      "newValue": null
     }
   ]
 }
