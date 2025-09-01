@@ -5,6 +5,11 @@ import { drizzle } from 'drizzle-orm/mysql2';
 let importConnection: mysql.Pool | null = null;
 let importDb: any = null;
 
+// Export for other modules
+export function getImportConnection() {
+  return importConnection;
+}
+
 export async function connectToImportDatabase(settings: {
   host: string;
   port: number;
@@ -12,6 +17,12 @@ export async function connectToImportDatabase(settings: {
   username: string;
   password: string;
 }) {
+
+  // Zaten bağlı ise tekrar bağlanma
+  if (importConnection) {
+    console.log('✅ MySQL import bağlantısı zaten mevcut, yeniden bağlanılmıyor.');
+    return;
+  }
 
   try {
     console.log(`=== MySQL Bağlantı Denemesi ===`);

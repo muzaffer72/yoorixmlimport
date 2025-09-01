@@ -6,7 +6,7 @@ import { z } from "zod";
 import * as xml2js from "xml2js";
 import { ObjectStorageService } from "./objectStorage";
 import { GeminiService } from "./geminiService";
-import { getLocalCategories, connectToImportDatabase, importProductToMySQL, batchImportProductsToMySQL, checkProductTableStructure, deleteAllProductsFromMySQL, deleteProductsByXmlSource } from "./mysql-import";
+import { getLocalCategories, connectToImportDatabase, importProductToMySQL, batchImportProductsToMySQL, checkProductTableStructure, deleteAllProductsFromMySQL, deleteProductsByXmlSource, getImportConnection } from "./mysql-import";
 
 // Global import state management
 let isImportInProgress = false;
@@ -1300,16 +1300,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`🗑️ ${xmlSourceId} XML kaynağına ait ürünler siliniyor...`);
       
-      // Database ayarlarını kontrol et
-      const dbSettings = await pageStorage.getDatabaseSettings();
-      if (!dbSettings.host) {
+      // Import veritabanı bağlantısını kontrol et
+      if (!getImportConnection()) {
         return res.status(400).json({ 
-          message: "MySQL veritabanı ayarları yapılmamış. Lütfen önce ayarları tamamlayın." 
+          message: "MySQL veritabanı bağlantısı bulunamadı. Lütfen önce bir XML import işlemi yapın." 
         });
       }
-
-      // Import veritabanına bağlan
-      await connectToImportDatabase();
       
       const result = await deleteProductsByXmlSource(xmlSourceId);
       
