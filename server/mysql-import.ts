@@ -302,13 +302,16 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                LEFT JOIN product_languages pl ON p.id = pl.product_id
                LEFT JOIN product_stocks ps ON p.id = ps.product_id
                SET 
-                 p.price = ?, p.current_stock = ?, p.colors = ?, p.attribute_sets = ?, p.updated_at = NOW(),
+                 p.name = ?, p.price = ?, p.unit = ?, p.current_stock = ?, p.colors = ?, p.attribute_sets = ?,
+                 p.short_description = ?, p.description = ?, p.thumbnail = ?, p.images = ?,
+                 p.video_provider = ?, p.video_url = ?, p.updated_at = NOW(),
                  pl.name = ?, pl.short_description = ?, pl.description = ?,
                  pl.tags = ?, pl.meta_title = ?, pl.meta_description = ?,
                  ps.price = ?, ps.current_stock = ?
                WHERE p.id = ?`,
               [
-                product.price || 0, product.stock || 0, '[]', '[]', // products (colors, attribute_sets boş arrays)
+                product.name || '', product.price || 0, product.unit || 'adet', product.stock || 0, '[]', '[]', // products
+                product.shortDescription || '', product.description || '', '{}', '[]', '', '', // products devamı
                 product.name || '', product.shortDescription || '', product.description || '', // product_languages
                 product.tags || '', product.metaTitle || product.name || '', product.metaDescription || '',
                 product.price || 0, product.stock || 0, // product_stocks
@@ -337,18 +340,21 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
             // 1. Products tablosuna ekle
             const [productResult] = await importConnection.execute(
               `INSERT INTO products (
-                brand_id, category_id, user_id, created_by, slug, price, 
+                brand_id, category_id, user_id, created_by, slug, name, price, unit,
                 purchase_cost, barcode, current_stock, minimum_order_quantity,
                 status, is_approved, is_catalog, external_link, is_refundable, 
-                cash_on_delivery, colors, attribute_sets, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+                cash_on_delivery, colors, attribute_sets, short_description, description,
+                thumbnail, images, video_provider, video_url, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
               [
                 product.brandId || 1, 
                 product.categoryId || 1, 
                 1, // user_id
                 1, // created_by
                 productSlug, 
+                product.name || '',
                 product.price || 0,
+                product.unit || 'adet',
                 (product.price || 0) * 0.7, // purchase_cost
                 product.sku || '', 
                 product.stock || 0, 
@@ -360,7 +366,13 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 product.isRefundable ? 1 : 0, 
                 product.cashOnDelivery ? 1 : 0,
                 '[]', // colors (boş JSON array)
-                '[]'  // attribute_sets (boş JSON array)
+                '[]', // attribute_sets (boş JSON array)
+                product.shortDescription || '', // short_description
+                product.description || '', // description
+                '{}', // thumbnail (boş JSON object)
+                '[]', // images (boş JSON array)
+                '', // video_provider
+                ''  // video_url
               ]
             );
             

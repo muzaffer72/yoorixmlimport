@@ -780,6 +780,17 @@
       "createdAt": "2025-09-01T12:15:13.096Z",
       "oldValue": null,
       "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 275 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "e8e30fd1-ab0b-45b6-9f18-3026ea6128eb",
+      "createdAt": "2025-09-01T12:27:47.413Z",
+      "oldValue": null,
+      "newValue": null
     }
   ]
 }
