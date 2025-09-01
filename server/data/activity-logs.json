@@ -1,28 +1,6 @@
 {
   "logs": [
     {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 17 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "0db7641f-c0ba-40ba-b300-68a67a7bde5c",
-      "createdAt": "2025-08-31T18:42:42.845Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_source_added",
-      "title": "Yeni XML kaynağı eklendi",
-      "description": "hercuma XML kaynağı sisteme eklendi",
-      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
-      "entityType": "xml_source",
-      "id": "6b6b92fd-4fcb-4871-9900-ea0288e3cc2c",
-      "createdAt": "2025-08-31T19:23:46.789Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
       "type": "categories_extracted",
       "title": "Kategoriler çıkarıldı",
       "description": "229 kategori XML'den çıkarıldı",
@@ -1097,6 +1075,28 @@
       "entityType": "xml_source",
       "id": "871707dd-e16b-47f9-8426-907866da5d5d",
       "createdAt": "2025-09-01T20:58:53.940Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 12348 ürün atlandı",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "0735f4b2-0053-436f-a58f-04030a255362",
+      "createdAt": "2025-09-01T21:06:28.090Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13113 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "0c903c90-a000-44a7-99e9-095039efe361",
+      "createdAt": "2025-09-01T21:12:54.493Z",
       "oldValue": null,
       "newValue": null
     }

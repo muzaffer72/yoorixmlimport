@@ -323,6 +323,7 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
   let skippedCount = 0;
 
   console.log(`🚀 BATCH IMPORT başlatılıyor: ${products.length} ürün, ${batchSize}'li gruplar halinde`);
+  console.log(`🔍 Debug: batchSize = ${batchSize}, xmlSourceId = ${xmlSourceId}`);
 
   // Ürünleri batch'lere böl
   for (let i = 0; i < products.length; i += batchSize) {
