@@ -3,50 +3,6 @@
     {
       "type": "xml_synced",
       "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "5205128c-133a-4b10-858f-a346e66ec9b3",
-      "createdAt": "2025-08-31T17:31:15.335Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "aaab55b2-2d77-493a-a66f-1cce0fd1ef67",
-      "createdAt": "2025-08-31T17:32:19.792Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "afba3e65-dd41-441d-ac16-d56e5a476441",
-      "createdAt": "2025-08-31T17:32:38.303Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "b5f8366e-8fc1-49be-a5c1-37e1dce8ca89",
-      "createdAt": "2025-08-31T17:32:46.638Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
       "description": "enginithalat - 17 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
       "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
       "entityType": "xml_source",
@@ -1097,6 +1053,50 @@
       "entityType": "import",
       "id": "179c6830-b88d-4814-85b9-c44fdfc60cc8",
       "createdAt": "2025-09-01T19:37:07.649Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "system_setting_updated",
+      "title": "Sistem ayarı güncellendi",
+      "description": "image_storage_path ayarı güncellendi: /home/hercuma.com/public_html/public/images",
+      "entityId": "image_storage_path",
+      "entityType": "system_setting",
+      "id": "68caf5fd-5ec2-4914-a1f9-95eb4f0ea8b1",
+      "createdAt": "2025-09-01T20:31:31.960Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "system_setting_updated",
+      "title": "Sistem ayarı güncellendi",
+      "description": "image_storage_path ayarı güncellendi: /home/hercuma.com/public_html/public/",
+      "entityId": "image_storage_path",
+      "entityType": "system_setting",
+      "id": "0dfc0b70-a5c9-4592-b5b6-30dcf1961c2f",
+      "createdAt": "2025-09-01T20:31:37.824Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "system_setting_updated",
+      "title": "Sistem ayarı güncellendi",
+      "description": "image_storage_path ayarı güncellendi: /home/hercuma.com/public_html/",
+      "entityId": "image_storage_path",
+      "entityType": "system_setting",
+      "id": "321cef6e-c58f-4aba-8992-24ad46994157",
+      "createdAt": "2025-09-01T20:31:42.737Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "system_setting_updated",
+      "title": "Sistem ayarı güncellendi",
+      "description": "image_storage_path ayarı güncellendi: /home/hercuma.com/public_html/public/images",
+      "entityId": "image_storage_path",
+      "entityType": "system_setting",
+      "id": "01cd4164-5e89-4631-a225-6ddd647cfb2d",
+      "createdAt": "2025-09-01T20:31:47.113Z",
       "oldValue": null,
       "newValue": null
     }
