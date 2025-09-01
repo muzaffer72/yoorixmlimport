@@ -343,10 +343,22 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 cash_on_delivery, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
               [
-                product.brandId || 1, product.categoryId || 1, 1, 1, productSlug, product.price,
-                product.price * 0.7, product.sku || '', product.stock || 0, product.minimumOrderQuantity || 1,
-                'published', 1, product.isCatalog ? 1 : 0, product.externalLink || '',
-                product.isRefundable ? 1 : 0, product.cashOnDelivery ? 1 : 0
+                product.brandId || 1, 
+                product.categoryId || 1, 
+                1, // user_id
+                1, // created_by
+                productSlug, 
+                product.price || 0,
+                (product.price || 0) * 0.7, // purchase_cost
+                product.sku || '', 
+                product.stock || 0, 
+                product.minimumOrderQuantity || 1,
+                'published', 
+                1, // is_approved
+                product.isCatalog ? 1 : 0, 
+                product.externalLink || '',
+                product.isRefundable ? 1 : 0, 
+                product.cashOnDelivery ? 1 : 0
               ]
             );
             
@@ -356,21 +368,34 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
             await importConnection.execute(
               `INSERT INTO product_languages (
                 product_id, lang, name, short_description, description, 
-                tags, meta_title, meta_description
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                tags, meta_title, meta_description, unit
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
-                productId, 'tr', product.name, product.shortDescription || '',
-                product.description || '', product.tags || '', product.metaTitle || product.name,
-                product.metaDescription || ''
+                productId, 
+                'tr', 
+                product.name || '', 
+                product.shortDescription || '',
+                product.description || '', 
+                product.tags || '', 
+                product.metaTitle || product.name || '',
+                product.metaDescription || '',
+                product.unit || 'adet'
               ]
             );
 
             // 3. Product_stocks tablosuna ekle
             await importConnection.execute(
               `INSERT INTO product_stocks (
-                product_id, track_stock, current_stock, price, sku
-              ) VALUES (?, ?, ?, ?, ?)`,
-              [productId, 1, product.stock || 0, product.price, product.sku || '']
+                product_id, name, sku, price, current_stock, image
+              ) VALUES (?, ?, ?, ?, ?, ?)`,
+              [
+                productId, 
+                '', // name (boş)
+                product.sku || '', 
+                product.price || 0, 
+                product.stock || 0, 
+                '[]' // image (boş array string)
+              ]
             );
 
             addedCount++;
