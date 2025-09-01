@@ -318,7 +318,21 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
             updatedCount++;
           } else {
             // YENİ EKLEME - Multi-table insert with single transaction
-            const productSlug = product.name.toLowerCase().replace(/[^a-z0-9çğııöşü]+/g, '-') + '-' + Date.now();
+            const createUrlSafeSlug = (text: string): string => {
+              return text
+                .toLowerCase()
+                .replace(/ç/g, 'c')
+                .replace(/ğ/g, 'g') 
+                .replace(/ı/g, 'i')
+                .replace(/ö/g, 'o')
+                .replace(/ş/g, 's')
+                .replace(/ü/g, 'u')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .substring(0, 50); // Max 50 karakter
+            };
+            
+            const productSlug = createUrlSafeSlug(product.name) + '-' + Date.now();
             
             // 1. Products tablosuna ekle
             const [productResult] = await importConnection.execute(
