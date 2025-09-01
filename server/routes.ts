@@ -747,19 +747,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
               
-              // Check if category is mapped or use default
+              // Category mapping - sadece kategori ID'si ata, filtreleme import sırasında yapılacak
               let targetCategoryId = null;
               if (categoryName && categoryMappingMap.has(categoryName)) {
-                // Kategori eşleştirmesi var - kesinlikle işle
+                // Kategori eşleştirmesi var
                 targetCategoryId = categoryMappingMap.get(categoryName);
-                hasRequiredFields = true;
               } else if (xmlSource.useDefaultCategory && xmlSource.defaultCategoryId) {
-                // Eşleştirme yok ama varsayılan kategori kullan seçeneği aktif
+                // Varsayılan kategori kullan
                 targetCategoryId = xmlSource.defaultCategoryId;
+              }
+              // categoryId null olsa bile ürünü extract et - import sırasında filtrelenecek
+              
+              // Check if this looks like a product object (basic fields check)
+              const hasBasicFields = obj.adi || obj.name || fieldMapping?.name;
+              if (hasBasicFields) {
                 hasRequiredFields = true;
-              } else {
-                hasRequiredFields = false;
-                return; // Skip this product
               }
               
               // Extract all products - filtering will happen later during import
@@ -1059,17 +1061,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let addedCount = 0;
       let updatedCount = 0;
       
-      // Artık sadece eşleştirilen kategorilerden ürünler extract edildiği için hepsi geçerli
-      potentialImports = extractedProducts.length;
+      // Potential imports hesapla (validProducts filtrelemesi öncesi)
+      if (xmlSource.useDefaultCategory && xmlSource.defaultCategoryId) {
+        potentialImports = extractedProducts.length; // Varsayılan kategori varsa hepsi
+      } else {
+        // Varsayılan kategori yoksa sadece eşleştirilen kategoriler
+        potentialImports = extractedProducts.filter(p => p.categoryId && p.categoryId !== 0).length;
+      }
       
-      console.log(`🎯 Import Öngörüsü: ${extractedProducts.length} ürün eşleştirilmiş kategorilerden extract edildi`);
+      console.log(`🎯 Import Öngörüsü: ${extractedProducts.length} ürün extract edildi, ${potentialImports} ürün import edilecek`);
       
       if (potentialImports === 0) {
         console.log(`⚠️ Hiç ürün import edilemeyecek - kategori eşleştirmelerini kontrol edin!`);
       }
       
-      // Artık sadece eşleştirilen kategorilerden ürünler extract edildiği için tüm ürünler geçerli
-      const validProducts = extractedProducts;
+      // Filtreleme mantığı: Varsayılan kategori yoksa sadece eşleştirilen kategoriler
+      const validProducts = extractedProducts.filter(productData => {
+        // Eğer varsayılan kategori kullanılıyorsa tüm ürünleri kabul et
+        if (xmlSource.useDefaultCategory && xmlSource.defaultCategoryId) {
+          return true;
+        }
+        
+        // Varsayılan kategori yoksa sadece eşleştirilen kategorileri kabul et
+        if (!productData.categoryId || productData.categoryId === 0) {
+          return false; // Eşleştirme yok - atla
+        }
+        
+        return true; // Eşleştirme var - kabul et
+      });
 
       console.log(`🚀 HIZLI BATCH IMPORT başlatılıyor: ${validProducts.length} geçerli ürün bulundu`);
 
