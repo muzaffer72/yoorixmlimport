@@ -1,0 +1,99 @@
+media
+
+CREATE TABLE `media` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(250) DEFAULT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `storage` varchar(30) NOT NULL DEFAULT 'local',
+  `type` varchar(30) DEFAULT NULL,
+  `extension` varchar(10) DEFAULT NULL,
+  `size` bigint(20) DEFAULT NULL,
+  `original_file` varchar(255) DEFAULT NULL,
+  `image_variants` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Tablo döküm verisi `media`
+--
+
+INSERT INTO `media` (`id`, `name`, `user_id`, `storage`, `type`, `extension`, `size`, `original_file`, `image_variants`, `created_at`, `updated_at`) VALUES
+(77, 'resim2', 1, 'local', 'image', 'jpg', 47042, 'images/20250902013849_original__media_224.jpg', '{\"image_40x40\":\"images\\/2025090201384940x40_media_56.jpg\",\"image_72x72\":\"images\\/2025090201384972x72_media_323.jpg\",\"image_190x230\":\"images\\/20250902013849190x230_media_282.jpg\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013849_original__media_224.jpg\"}', '2025-09-01 22:38:49', '2025-09-01 22:38:49'),
+(78, 'resim', 1, 'local', 'image', 'png', 2995, 'images/20250902013849_original__media_256.png', '{\"image_40x40\":\"images\\/2025090201384940x40_media_49.png\",\"image_72x72\":\"images\\/2025090201384972x72_media_214.png\",\"image_190x230\":\"images\\/20250902013849190x230_media_121.png\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013849_original__media_256.png\",\"image_210x205\":\"images\\/20250902042519210x205_media_374.png\",\"image_1200x630\":\"images\\/202509020335121200x630_media_86.png\"}', '2025-09-01 22:38:49', '2025-09-02 01:25:19'),
+(79, 'resim3', 1, 'local', 'image', 'png', 361979, 'images/20250902013942_original__media_485.png', '{\"image_40x40\":\"images\\/2025090201394240x40_media_374.png\",\"image_72x72\":\"images\\/2025090201394272x72_media_40.png\",\"image_190x230\":\"images\\/20250902013942190x230_media_217.png\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013942_original__media_485.png\"}', '2025-09-01 22:39:42', '2025-09-01 22:39:42');
+
+
+products tablomda aşağıdaki gibi hem yapısı hem demo ürün ekli.   `thumbnail`, `images`, burada dzin de dosya adı belirtiliyor.   `thumbnail_id`, `image_ids`, Burada media tablosunda ilgili resimlerin id leri.
+
+CREATE TABLE `products` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `brand_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `category_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL COMMENT 'if none or 1 then own else sellers',
+  `created_by` bigint(20) UNSIGNED NOT NULL,
+  `slug` varchar(255) NOT NULL,
+  `price` double DEFAULT NULL,
+  `special_discount` double DEFAULT NULL,
+  `special_discount_type` varchar(255) DEFAULT NULL,
+  `special_discount_start` datetime DEFAULT NULL,
+  `special_discount_end` datetime DEFAULT NULL,
+  `purchase_cost` double DEFAULT NULL,
+  `barcode` varchar(255) DEFAULT NULL,
+  `video_provider` varchar(255) DEFAULT NULL,
+  `video_url` varchar(255) DEFAULT NULL,
+  `colors` varchar(255) DEFAULT NULL,
+  `attribute_sets` varchar(255) DEFAULT NULL,
+  `vat_taxes` varchar(255) DEFAULT NULL,
+  `has_variant` tinyint(4) NOT NULL DEFAULT 0,
+  `selected_variants` mediumtext DEFAULT NULL,
+  `selected_variants_ids` mediumtext DEFAULT NULL,
+  `thumbnail` text DEFAULT NULL,
+  `images` text DEFAULT NULL,
+  `description_images` longtext DEFAULT NULL,
+  `thumbnail_id` varchar(255) DEFAULT NULL,
+  `image_ids` varchar(255) DEFAULT NULL,
+  `current_stock` int(11) NOT NULL,
+  `minimum_order_quantity` int(11) NOT NULL DEFAULT 1,
+  `stock_notification` tinyint(4) NOT NULL DEFAULT 0,
+  `low_stock_to_notify` int(11) DEFAULT NULL,
+  `stock_visibility` enum('hide_stock','visible_with_quantity','visible_with_text') NOT NULL DEFAULT 'hide_stock',
+  `total_sale` bigint(20) NOT NULL DEFAULT 0,
+  `status` enum('unpublished','published','trash') NOT NULL DEFAULT 'unpublished',
+  `is_approved` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'use for seller product approval purpose',
+  `is_catalog` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'if 1 can''t added to cart only view',
+  `external_link` varchar(255) DEFAULT NULL,
+  `is_featured` tinyint(4) NOT NULL DEFAULT 0,
+  `is_classified` tinyint(4) NOT NULL DEFAULT 0,
+  `is_wholesale` tinyint(4) NOT NULL DEFAULT 0,
+  `contact_info` text DEFAULT NULL,
+  `is_digital` tinyint(4) NOT NULL DEFAULT 0,
+  `is_refundable` tinyint(4) NOT NULL DEFAULT 0,
+  `todays_deal` tinyint(4) NOT NULL DEFAULT 0,
+  `rating` double DEFAULT 0,
+  `viewed` bigint(20) NOT NULL DEFAULT 0 COMMENT 'total views of the product',
+  `shipping_type` varchar(255) DEFAULT NULL,
+  `shipping_fee` double DEFAULT NULL,
+  `shipping_fee_depend_on_quantity` tinyint(4) NOT NULL DEFAULT 0,
+  `estimated_shipping_days` text DEFAULT NULL COMMENT 'estimated time of delivering the product',
+  `cash_on_delivery` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0 not available, 1 available',
+  `meta_image` text DEFAULT NULL,
+  `product_file` text DEFAULT NULL,
+  `product_file_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `meta_image_id` varchar(255) DEFAULT NULL,
+  `reward` double DEFAULT NULL,
+  `gift_idea` tinyint(1) NOT NULL DEFAULT 0,
+  `business_idea` tinyint(1) NOT NULL DEFAULT 0,
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `xmlkaynagi` uuid DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Tablo döküm verisi `products`
+--
+
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `user_id`, `created_by`, `slug`, `price`, `special_discount`, `special_discount_type`, `special_discount_start`, `special_discount_end`, `purchase_cost`, `barcode`, `video_provider`, `video_url`, `colors`, `attribute_sets`, `vat_taxes`, `has_variant`, `selected_variants`, `selected_variants_ids`, `thumbnail`, `images`, `description_images`, `thumbnail_id`, `image_ids`, `current_stock`, `minimum_order_quantity`, `stock_notification`, `low_stock_to_notify`, `stock_visibility`, `total_sale`, `status`, `is_approved`, `is_catalog`, `external_link`, `is_featured`, `is_classified`, `is_wholesale`, `contact_info`, `is_digital`, `is_refundable`, `todays_deal`, `rating`, `viewed`, `shipping_type`, `shipping_fee`, `shipping_fee_depend_on_quantity`, `estimated_shipping_days`, `cash_on_delivery`, `meta_image`, `product_file`, `product_file_id`, `meta_image_id`, `reward`, `gift_idea`, `business_idea`, `is_deleted`, `deleted_at`, `created_at`, `updated_at`, `xmlkaynagi`) VALUES
+(12, NULL, 477, 1, 1, 'alez-pamuklu-fitted-yatak-koruyucu-160-200-cm-1756765378717', 368.9, 0, NULL, NULL, NULL, 258.22999999999996, 'ty-PS11165', '', '', '[]', '[]', '', 0, NULL, NULL, '{\"image_40x40\":\"images\\/2025090201384940x40_media_49.png\",\"image_72x72\":\"images\\/2025090201384972x72_media_214.png\",\"image_190x230\":\"images\\/20250902013849190x230_media_121.png\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013849_original__media_256.png\",\"image_210x205\":\"images\\/20250902042519210x205_media_374.png\",\"image_1200x630\":\"images\\/202509020335121200x630_media_86.png\"}', '[{\"image_40x40\":\"images\\/2025090201384940x40_media_56.jpg\",\"image_72x72\":\"images\\/2025090201384972x72_media_323.jpg\",\"image_190x230\":\"images\\/20250902013849190x230_media_282.jpg\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013849_original__media_224.jpg\"},{\"image_40x40\":\"images\\/2025090201384940x40_media_49.png\",\"image_72x72\":\"images\\/2025090201384972x72_media_214.png\",\"image_190x230\":\"images\\/20250902013849190x230_media_121.png\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013849_original__media_256.png\",\"image_210x205\":\"images\\/20250902042519210x205_media_374.png\",\"image_1200x630\":\"images\\/202509020335121200x630_media_86.png\"},{\"image_40x40\":\"images\\/2025090201394240x40_media_374.png\",\"image_72x72\":\"images\\/2025090201394272x72_media_40.png\",\"image_190x230\":\"images\\/20250902013942190x230_media_217.png\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013942_original__media_485.png\"}]', '[]', '78', '77,78,79', 50, 1, 0, NULL, 'hide_stock', 0, 'published', 1, 0, NULL, 0, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL, 0, '0', 0, '{\"image_40x40\":\"images\\/2025090201384940x40_media_49.png\",\"image_72x72\":\"images\\/2025090201384972x72_media_214.png\",\"image_190x230\":\"images\\/20250902013849190x230_media_121.png\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013849_original__media_256.png\",\"image_210x205\":\"images\\/20250902042519210x205_media_374.png\",\"image_1200x630\":\"images\\/202509020335121200x630_media_86.png\"}', NULL, NULL, '78', NULL, 0, 0, 0, NULL, '2025-09-01 19:22:58', '2025-09-02 01:25:19', 'f286b968-5b0b-470b-b2fb-e05d8e1c2643');

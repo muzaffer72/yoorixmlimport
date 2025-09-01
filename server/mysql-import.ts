@@ -231,6 +231,46 @@ export async function processImageForLaravel(imageUrl: string, productId: number
   }
 }
 
+// Media tablosuna resim ekleme fonksiyonu
+export async function insertImageToMedia(imageUrl: string, imageIndex: number, imageObject: any): Promise<number | null> {
+  if (!importConnection) {
+    throw new Error('Import database not connected');
+  }
+
+  try {
+    // Dosya uzantısını URL'den al
+    const extension = imageUrl.split('.').pop()?.toLowerCase() || 'jpg';
+    
+    // Media tablosuna resim ekle
+    const [result] = await importConnection.execute(
+      `INSERT INTO media (
+        name, user_id, storage, type, extension, size, 
+        original_file, image_variants, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        `resim${imageIndex + 1}`, // name: resim1, resim2, resim3 vb.
+        1, // user_id
+        'local', // storage
+        'image', // type
+        extension, // extension
+        0, // size (şimdilik 0, gerçek boyutu hesaplanabilir)
+        imageObject.original_image, // original_file
+        JSON.stringify(imageObject), // image_variants (tüm boyutlar)
+        new Date(), // created_at
+        new Date()  // updated_at
+      ]
+    );
+
+    const mediaId = (result as any).insertId;
+    console.log(`📸 Media tablosuna resim eklendi: ID ${mediaId} - ${imageObject.original_image}`);
+    return mediaId;
+    
+  } catch (error) {
+    console.error(`❌ Media tablosuna resim ekleme hatası:`, error);
+    return null;
+  }
+}
+
 // Eski downloadImage fonksiyonu geriye dönük uyumluluk için
 export async function downloadImage(imageUrl: string, productId: number, imageIndex: number): Promise<string | null> {
   const imageObject = await processImageForLaravel(imageUrl, productId, imageIndex);
@@ -399,6 +439,42 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
             
             const productSlug = createUrlSafeSlug(product.name) + '-' + Date.now();
             
+            // RESİM İŞLEME - Media tablosuna ekle ve ID'leri al
+            let thumbnailData = '{}';
+            let imagesData = '[]';
+            let thumbnailId = null;
+            let imageIds = [];
+            
+            if (product.images && product.images.length > 0) {
+              console.log(`📸 ${product.images.length} resim işleniyor: ${product.name}`);
+              
+              const processedImages = [];
+              
+              for (let i = 0; i < product.images.length; i++) {
+                const imageObject = await processImageForLaravel(product.images[i], productId || 0, i);
+                if (imageObject) {
+                  // Media tablosuna resim ekle
+                  const mediaId = await insertImageToMedia(product.images[i], i, imageObject);
+                  if (mediaId) {
+                    processedImages.push(imageObject);
+                    imageIds.push(mediaId);
+                    
+                    // İlk resmi thumbnail olarak ayarla
+                    if (i === 0) {
+                      thumbnailData = JSON.stringify(imageObject);
+                      thumbnailId = mediaId;
+                    }
+                  }
+                }
+              }
+              
+              if (processedImages.length > 0) {
+                imagesData = JSON.stringify(processedImages);
+              }
+              
+              console.log(`📸 Resim işleme tamamlandı: ${processedImages.length}/${product.images.length} - Media IDs: [${imageIds.join(', ')}]`);
+            }
+            
             // 1. Products tablosuna ekle - ONLY VALID COLUMNS
             const [productResult] = await importConnection.execute(
               `INSERT INTO products (
@@ -406,8 +482,8 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                 purchase_cost, barcode, minimum_order_quantity,
                 status, is_approved, is_catalog, external_link, is_refundable, 
                 cash_on_delivery, colors, attribute_sets, 
-                thumbnail, images, video_provider, video_url, current_stock, xmlkaynagi, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                thumbnail, images, thumbnail_id, image_ids, video_provider, video_url, current_stock, xmlkaynagi, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 product.brandId || null, 
                 product.categoryId || null, 
@@ -426,8 +502,10 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                 product.cashOnDelivery ? 1 : 0,
                 '[]', // colors (boş JSON array)
                 '[]', // attribute_sets (boş JSON array)
-                '{}', // thumbnail (Laravel formatında)
-                '[]', // images (Laravel formatında)
+                thumbnailData, // thumbnail (Laravel formatında)
+                imagesData, // images (Laravel formatında)
+                thumbnailId, // thumbnail_id (media tablosundan ID)
+                imageIds.join(','), // image_ids (media tablosundan ID'ler, virgülle ayrılmış)
                 '', // video_provider
                 '', // video_url
                 product.stock || 0, // current_stock

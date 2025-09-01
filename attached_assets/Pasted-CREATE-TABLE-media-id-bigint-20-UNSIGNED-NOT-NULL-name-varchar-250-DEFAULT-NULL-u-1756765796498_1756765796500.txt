@@ -1,0 +1,22 @@
+CREATE TABLE `media` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(250) DEFAULT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `storage` varchar(30) NOT NULL DEFAULT 'local',
+  `type` varchar(30) DEFAULT NULL,
+  `extension` varchar(10) DEFAULT NULL,
+  `size` bigint(20) DEFAULT NULL,
+  `original_file` varchar(255) DEFAULT NULL,
+  `image_variants` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Tablo döküm verisi `media`
+--
+
+INSERT INTO `media` (`id`, `name`, `user_id`, `storage`, `type`, `extension`, `size`, `original_file`, `image_variants`, `created_at`, `updated_at`) VALUES
+(77, 'resim2', 1, 'local', 'image', 'jpg', 47042, 'images/20250902013849_original__media_224.jpg', '{\"image_40x40\":\"images\\/2025090201384940x40_media_56.jpg\",\"image_72x72\":\"images\\/2025090201384972x72_media_323.jpg\",\"image_190x230\":\"images\\/20250902013849190x230_media_282.jpg\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013849_original__media_224.jpg\"}', '2025-09-01 22:38:49', '2025-09-01 22:38:49'),
+(78, 'resim', 1, 'local', 'image', 'png', 2995, 'images/20250902013849_original__media_256.png', '{\"image_40x40\":\"images\\/2025090201384940x40_media_49.png\",\"image_72x72\":\"images\\/2025090201384972x72_media_214.png\",\"image_190x230\":\"images\\/20250902013849190x230_media_121.png\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013849_original__media_256.png\",\"image_210x205\":\"images\\/20250902042519210x205_media_374.png\",\"image_1200x630\":\"images\\/202509020335121200x630_media_86.png\"}', '2025-09-01 22:38:49', '2025-09-02 01:25:19'),
+(79, 'resim3', 1, 'local', 'image', 'png', 361979, 'images/20250902013942_original__media_485.png', '{\"image_40x40\":\"images\\/2025090201394240x40_media_374.png\",\"image_72x72\":\"images\\/2025090201394272x72_media_40.png\",\"image_190x230\":\"images\\/20250902013942190x230_media_217.png\",\"storage\":\"local\",\"original_image\":\"images\\/20250902013942_original__media_485.png\"}', '2025-09-01 22:39:42', '2025-09-01 22:39:42');
