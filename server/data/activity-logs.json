@@ -6,61 +6,6 @@
       "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
       "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
       "entityType": "xml_source",
-      "id": "71fe8695-5695-420a-b84c-2c6c4e51a038",
-      "createdAt": "2025-08-31T16:14:53.755Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "ecd63439-b8aa-4f8d-95aa-326ac7f62514",
-      "createdAt": "2025-08-31T16:17:36.167Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "a9c6f11d-e209-4b5b-b931-d315ffdb55f2",
-      "createdAt": "2025-08-31T16:19:41.017Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "da7b1fb7-a95a-4410-b73d-239d323b4021",
-      "createdAt": "2025-08-31T16:28:31.784Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "110d7554-d0cc-4808-a4d0-10f7260cc083",
-      "createdAt": "2025-08-31T16:48:18.288Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 0 ürün MySQL'e kaydedildi, 0 ürün kategori eşleşmesi olmadığı için atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
       "id": "218b8ec8-f5c6-4121-90ac-5806badc2b8a",
       "createdAt": "2025-08-31T16:49:11.808Z",
       "oldValue": null,
@@ -1097,6 +1042,61 @@
       "entityType": "xml_source",
       "id": "8098d96f-6f88-4b26-86a9-6fa0c792962c",
       "createdAt": "2025-09-01T14:02:28.837Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 16967 ürün atlandı",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "d8e30dd9-e603-43e4-847d-3d4a4b3f58fb",
+      "createdAt": "2025-09-01T14:06:53.695Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 12 yeni ürün eklendi, 0 ürün güncellendi, 13113 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "21d9e39a-3f91-4fcc-a2aa-b478a488df43",
+      "createdAt": "2025-09-01T14:07:29.609Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "enginithalat - 5 yeni ürün eklendi, 0 ürün güncellendi, 13120 ürün atlandı",
+      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
+      "entityType": "xml_source",
+      "id": "5ebc4165-87a1-431f-951c-655889bb27ba",
+      "createdAt": "2025-09-01T14:07:58.162Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "TUMKATEGORIVAR - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "102f4dc1-b890-494f-b773-9a808287c6b9",
+      "entityType": "xml_source",
+      "id": "de824a7e-5644-4d55-819c-82801ec67452",
+      "createdAt": "2025-09-01T14:08:33.185Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 16967 ürün atlandı",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "2665738a-8f10-4976-8651-cc26c6fc294f",
+      "createdAt": "2025-09-01T14:10:08.810Z",
       "oldValue": null,
       "newValue": null
     }
