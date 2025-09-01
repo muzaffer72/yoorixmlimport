@@ -165,7 +165,7 @@ export default function CategoryMapping() {
     createMappingMutation.mutate({
       xmlSourceId: selectedXmlSource,
       xmlCategoryName,
-      localCategoryId: parseInt(localCategoryId),
+      localCategoryId: localCategoryId, // String olarak gönder
     });
   };
 
@@ -481,7 +481,7 @@ export default function CategoryMapping() {
                             ) : (
                               filteredLocalCategories.map((category) => (
                                 <SelectItem key={category.id} value={String(category.id)}>
-                                  {category.title || category.name || "İsimsiz Kategori"}
+                                  {category.name || "İsimsiz Kategori"}
                                 </SelectItem>
                               ))
                             )}
@@ -562,7 +562,7 @@ export default function CategoryMapping() {
                             {mapping.xmlCategoryName}
                           </TableCell>
                           <TableCell>
-                            {localCategory?.title || localCategory?.name || `Kategori bulunamadı (ID: ${mapping.localCategoryId})`}
+                            {localCategory?.name || `Kategori bulunamadı (ID: ${mapping.localCategoryId})`}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {new Date(mapping.createdAt || "").toLocaleDateString('tr-TR')}
