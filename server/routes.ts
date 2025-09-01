@@ -712,6 +712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const products: any[] = [];
         const fieldMapping = (xmlSource.fieldMapping as Record<string, string>) || {};
         
+        let debugCount = 0;
         const traverse = (obj: any) => {
           if (typeof obj === "object" && obj !== null) {
             if (Array.isArray(obj)) {
@@ -725,24 +726,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (xmlSource.categoryTag) {
                 const categoryFields = xmlSource.categoryTag.split('.');
                 let categoryValue = obj;
-                console.log(`🔍 Debug category extraction for object keys: [${Object.keys(obj).join(', ')}]`);
-                console.log(`🔍 Looking for categoryTag: ${xmlSource.categoryTag} (split: [${categoryFields.join(', ')}])`);
+                
+                // Only debug first 3 products to avoid log overflow
+                if (debugCount < 3) {
+                  console.log(`🔍 Debug category extraction #${debugCount + 1} for object keys: [${Object.keys(obj).join(', ')}]`);
+                  console.log(`🔍 Looking for categoryTag: ${xmlSource.categoryTag} (split: [${categoryFields.join(', ')}])`);
+                }
                 
                 for (const field of categoryFields) {
                   if (categoryValue && typeof categoryValue === 'object' && field in categoryValue) {
-                    console.log(`  ✅ Found field "${field}", value:`, categoryValue[field]);
+                    if (debugCount < 3) console.log(`  ✅ Found field "${field}", value:`, categoryValue[field]);
                     categoryValue = categoryValue[field];
                   } else {
-                    console.log(`  ❌ Field "${field}" not found in object`);
+                    if (debugCount < 3) console.log(`  ❌ Field "${field}" not found in object`);
                     categoryValue = null;
                     break;
                   }
                 }
                 if (categoryValue && typeof categoryValue === 'string') {
                   categoryName = categoryValue;
-                  console.log(`🎯 Extracted category: "${categoryName}"`);
+                  if (debugCount < 3) console.log(`🎯 Extracted category: "${categoryName}"`);
                 } else {
-                  console.log(`⚠️ No valid category found, final value:`, categoryValue, typeof categoryValue);
+                  if (debugCount < 3) console.log(`⚠️ No valid category found, final value:`, categoryValue, typeof categoryValue);
                 }
               }
               
@@ -855,6 +860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 // Artık sadece temel kontrol (isim var mı?)
                 if (productData.name && productData.name !== "Ürün Adı Belirtilmemiş") {
                   products.push(productData);
+                  debugCount++; // Increment debug counter after adding product
                   console.log(`✅ ÜRÜN EKLENDİ: ${productData.name} - ${productData.price} TL`);
                 } else {
                   console.log(`❌ ÜRÜN REDDEDİLDİ: İsim eksik veya varsayılan`);
