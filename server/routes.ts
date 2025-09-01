@@ -875,11 +875,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         };
         
+        console.log(`\n🚨 === CRITICAL DEBUG START ===`);
         console.log(`📋 ADIM 5/8: Ürünler XML'den çıkarılıyor...`);
         console.log(`   └─ Field mapping ayarları:`, Object.keys(fieldMapping));
         console.log(`   └─ Field mapping values:`, fieldMapping);
         console.log(`   └─ Category tag: ${xmlSource.categoryTag}`);
         console.log(`   └─ XML ana anahtarlar: [${Object.keys(data).join(', ')}]`);
+        console.log(`🚨 === CRITICAL DEBUG END ===\n`);
         
         // Özel olarak Urunler kontrol et
         if (data.Urunler) {
