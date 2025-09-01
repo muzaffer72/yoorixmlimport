@@ -978,6 +978,28 @@
       "createdAt": "2025-09-01T13:24:14.658Z",
       "oldValue": null,
       "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "f6557df9-d860-4d02-9e7b-b033edb61c3e",
+      "createdAt": "2025-09-01T13:24:35.929Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 12 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "ebcaed24-3a16-41ee-beaf-4667082c49da",
+      "createdAt": "2025-09-01T13:24:59.443Z",
+      "oldValue": null,
+      "newValue": null
     }
   ]
 }

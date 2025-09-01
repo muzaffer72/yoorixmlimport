@@ -535,22 +535,24 @@ export async function importProductToMySQL(product: {
     
     const [productResult] = await importConnection.execute(
       `INSERT INTO products (
-        brand_id, category_id, user_id, created_by, slug, price, 
+        brand_id, category_id, user_id, created_by, slug, name, unit, price, 
         special_discount, special_discount_type, special_discount_start, special_discount_end,
         purchase_cost, barcode, video_provider, video_url, colors, attribute_sets, 
         vat_taxes, has_variant, selected_variants, selected_variants_ids, 
         thumbnail, images, description_images, current_stock, minimum_order_quantity,
         stock_visibility, status, is_approved, is_catalog, external_link, 
         is_featured, is_classified, is_wholesale, contact_info, is_digital, 
-        is_refundable, todays_deal, rating, viewed, shipping_type, 
+        is_refundable, todays_deal, rating, viewed, shipping_type, shipping_fee,
         cash_on_delivery, meta_image, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
         product.brandId || null, // brand_id
         product.categoryId || null, // category_id  
         1, // user_id (varsayılan admin)
         1, // created_by (varsayılan admin)
         productSlug, // slug (benzersiz)
+        product.name || '', // name
+        product.unit || 'adet', // unit
         product.price, // price
         0, // special_discount
         'flat', // special_discount_type
@@ -586,6 +588,7 @@ export async function importProductToMySQL(product: {
         0, // rating
         0, // viewed
         'free', // shipping_type
+        0, // shipping_fee
         product.cashOnDelivery ? 1 : 0, // cash_on_delivery
         '', // meta_image
       ]
