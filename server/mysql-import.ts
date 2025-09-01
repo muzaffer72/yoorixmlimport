@@ -383,6 +383,55 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
   return { addedCount, updatedCount, skippedCount };
 }
 
+// TÜM ÜRÜNLERİ SİL - 3 Tabloyu temizle
+export async function deleteAllProductsFromMySQL() {
+  if (!importConnection) {
+    throw new Error('Import database not connected');
+  }
+
+  try {
+    console.log(`🗑️ TÜM ÜRÜNLER SİLİNİYOR - 3 tablo temizleniyor...`);
+    
+    // Transaction başlat
+    await importConnection.execute('START TRANSACTION');
+
+    // 1. PRODUCT_STOCKS tablosunu temizle
+    const [stocksResult] = await importConnection.execute('DELETE FROM product_stocks');
+    console.log(`✅ PRODUCT_STOCKS tablosu temizlendi: ${(stocksResult as any).affectedRows} kayıt silindi`);
+
+    // 2. PRODUCT_LANGUAGES tablosunu temizle  
+    const [languagesResult] = await importConnection.execute('DELETE FROM product_languages');
+    console.log(`✅ PRODUCT_LANGUAGES tablosu temizlendi: ${(languagesResult as any).affectedRows} kayıt silindi`);
+
+    // 3. PRODUCTS tablosunu temizle
+    const [productsResult] = await importConnection.execute('DELETE FROM products');
+    console.log(`✅ PRODUCTS tablosu temizlendi: ${(productsResult as any).affectedRows} kayıt silindi`);
+
+    // Auto-increment ID'leri sıfırla
+    await importConnection.execute('ALTER TABLE products AUTO_INCREMENT = 1');
+    await importConnection.execute('ALTER TABLE product_languages AUTO_INCREMENT = 1');
+    await importConnection.execute('ALTER TABLE product_stocks AUTO_INCREMENT = 1');
+
+    // Transaction commit
+    await importConnection.execute('COMMIT');
+    
+    console.log(`🎉 TÜM ÜRÜNLER BAŞARIYLA SİLİNDİ! Auto-increment ID'ler sıfırlandı.`);
+    
+    return {
+      success: true,
+      deletedProducts: (productsResult as any).affectedRows,
+      deletedLanguages: (languagesResult as any).affectedRows,
+      deletedStocks: (stocksResult as any).affectedRows
+    };
+
+  } catch (error) {
+    // Transaction rollback
+    await importConnection.execute('ROLLBACK');
+    console.error('❌ Ürün silme hatası, rollback yapıldı:', error);
+    throw error;
+  }
+}
+
 // TEK ÜRÜN IMPORT (geriye dönük uyumluluk için)
 export async function importProductToMySQL(product: {
   name: string;

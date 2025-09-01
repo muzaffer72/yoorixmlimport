@@ -6,7 +6,7 @@ import { z } from "zod";
 import * as xml2js from "xml2js";
 import { ObjectStorageService } from "./objectStorage";
 import { GeminiService } from "./geminiService";
-import { getLocalCategories, connectToImportDatabase, importProductToMySQL, batchImportProductsToMySQL, checkProductTableStructure } from "./mysql-import";
+import { getLocalCategories, connectToImportDatabase, importProductToMySQL, batchImportProductsToMySQL, checkProductTableStructure, deleteAllProductsFromMySQL } from "./mysql-import";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -1152,6 +1152,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "error",
         code: error.code,
         suggestions: suggestions
+      });
+    }
+  });
+
+  // TÜM ÜRÜNLERİ SİL endpoint
+  app.delete("/api/products/delete-all", async (req, res) => {
+    try {
+      console.log("🗑️ TÜM ÜRÜNLER SİLME isteği alındı...");
+
+      // Database ayarlarını kontrol et
+      const dbSettings = await pageStorage.getDatabaseSettings();
+      if (!dbSettings) {
+        return res.status(400).json({ 
+          message: "Veritabanı ayarları bulunamadı. Önce veritabanı ayarlarını yapılandırın.",
+          error: "DB_SETTINGS_NOT_FOUND"
+        });
+      }
+
+      // Database bağlantısını yap
+      await connectToImportDatabase({
+        host: dbSettings.host,
+        port: dbSettings.port,
+        database: dbSettings.database,
+        username: dbSettings.username,
+        password: dbSettings.password
+      });
+
+      // Tüm ürünleri sil
+      const deleteResult = await deleteAllProductsFromMySQL();
+
+      // Activity log oluştur
+      await pageStorage.createActivityLog({
+        type: "products_deleted",
+        title: "Tüm ürünler silindi",
+        description: `${deleteResult.deletedProducts} ürün, ${deleteResult.deletedLanguages} dil verisi, ${deleteResult.deletedStocks} stok verisi silindi. Auto-increment ID'ler sıfırlandı.`,
+        entityId: null,
+        entityType: "products"
+      });
+
+      res.json({
+        message: "Tüm ürünler başarıyla silindi!",
+        success: true,
+        deletedProducts: deleteResult.deletedProducts,
+        deletedLanguages: deleteResult.deletedLanguages,
+        deletedStocks: deleteResult.deletedStocks
+      });
+
+    } catch (error: any) {
+      console.error("❌ Tüm ürün silme hatası:", error);
+      
+      res.status(500).json({
+        message: "Ürün silme işlemi başarısız",
+        error: error.message,
+        success: false
       });
     }
   });
