@@ -49,7 +49,11 @@ export default function CategoryMapping() {
 
   const { data: categories = [], isError: categoriesError, error: categoriesErrorData } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
-    retry: false
+    retry: false,
+    onSuccess: (data) => {
+      console.log('🏷️ Categories loaded:', data.length, 'items');
+      console.log('📋 Sample categories:', data.slice(0, 3));
+    }
   });
 
   const { data: mappings = [], isLoading: mappingsLoading } = useQuery<CategoryMappingType[]>({
