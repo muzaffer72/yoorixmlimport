@@ -232,11 +232,11 @@ async function updateExistingProduct(productId: number, product: any) {
        WHERE product_id = ?`,
       [
         product.name,
-        product.shortDescription || '',
-        product.description || '',
-        product.tags || '',
+        product.shortDescription || null,
+        product.description || null,
+        product.tags || null,
         product.metaTitle || product.name,
-        product.metaDescription || '',
+        product.metaDescription || null,
         productId
       ]
     );
@@ -310,10 +310,10 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                  ps.price = ?, ps.current_stock = ?
                WHERE p.id = ?`,
               [
-                product.name || '', product.price || 0, product.unit || 'adet', product.stock || 0, '[]', '[]', // products
-                product.shortDescription || '', product.description || '', '{}', '[]', '', '', // products devamı
-                product.name || '', product.shortDescription || '', product.description || '', // product_languages
-                product.tags || '', product.metaTitle || product.name || '', product.metaDescription || '',
+                product.name || null, product.price || 0, product.unit || 'adet', product.stock || 0, '[]', '[]', // products
+                product.shortDescription || null, product.description || null, '{}', '[]', '', '', // products devamı
+                product.name || null, product.shortDescription || null, product.description || null, // product_languages
+                product.tags || null, product.metaTitle || product.name || null, product.metaDescription || null,
                 product.price || 0, product.stock || 0, // product_stocks
                 existingProduct.id
               ]
@@ -352,23 +352,23 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 1, // user_id
                 1, // created_by
                 productSlug, 
-                product.name || '',
+                product.name || null,
                 product.price || 0,
                 product.unit || 'adet',
                 (product.price || 0) * 0.7, // purchase_cost
-                product.sku || '', 
+                product.sku || null, 
                 product.stock || 0, 
                 product.minimumOrderQuantity || 1,
                 'published', 
                 1, // is_approved
                 product.isCatalog ? 1 : 0, 
-                product.externalLink || '',
+                product.externalLink || null,
                 product.isRefundable ? 1 : 0, 
                 product.cashOnDelivery ? 1 : 0,
                 '[]', // colors (boş JSON array)
                 '[]', // attribute_sets (boş JSON array)
-                product.shortDescription || '', // short_description
-                product.description || '', // description
+                product.shortDescription || null, // short_description
+                product.description || null, // description
                 '{}', // thumbnail (boş JSON object)
                 '[]', // images (boş JSON array)
                 '', // video_provider
@@ -387,12 +387,12 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
               [
                 productId, 
                 'tr', 
-                product.name || '', 
-                product.shortDescription || '',
-                product.description || '', 
-                product.tags || '', 
-                product.metaTitle || product.name || '',
-                product.metaDescription || '',
+                product.name || null, 
+                product.shortDescription || null,
+                product.description || null, 
+                product.tags || null, 
+                product.metaTitle || product.name || null,
+                product.metaDescription || null,
                 product.unit || 'adet'
               ]
             );
@@ -404,8 +404,8 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
               ) VALUES (?, ?, ?, ?, ?, ?)`,
               [
                 productId, 
-                '', // name (boş)
-                product.sku || '', 
+                null, // name (null)
+                product.sku || null, 
                 product.price || 0, 
                 product.stock || 0, 
                 '[]' // image (boş array string)
