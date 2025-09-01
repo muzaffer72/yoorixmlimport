@@ -727,27 +727,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const categoryFields = xmlSource.categoryTag.split('.');
                 let categoryValue = obj;
                 
-                // Only debug first 3 products to avoid log overflow
-                if (debugCount < 3) {
+                // Only debug first 1 product to avoid log overflow
+                if (debugCount < 1) {
                   console.log(`🔍 Debug category extraction #${debugCount + 1} for object keys: [${Object.keys(obj).join(', ')}]`);
                   console.log(`🔍 Looking for categoryTag: ${xmlSource.categoryTag} (split: [${categoryFields.join(', ')}])`);
                 }
                 
                 for (const field of categoryFields) {
                   if (categoryValue && typeof categoryValue === 'object' && field in categoryValue) {
-                    if (debugCount < 3) console.log(`  ✅ Found field "${field}", value:`, categoryValue[field]);
+                    if (debugCount < 1) console.log(`  ✅ Found field "${field}", value:`, categoryValue[field]);
                     categoryValue = categoryValue[field];
                   } else {
-                    if (debugCount < 3) console.log(`  ❌ Field "${field}" not found in object`);
+                    if (debugCount < 1) console.log(`  ❌ Field "${field}" not found in object`);
                     categoryValue = null;
                     break;
                   }
                 }
                 if (categoryValue && typeof categoryValue === 'string') {
                   categoryName = categoryValue;
-                  if (debugCount < 3) console.log(`🎯 Extracted category: "${categoryName}"`);
+                  if (debugCount < 1) console.log(`🎯 Extracted category: "${categoryName}"`);
                 } else {
-                  if (debugCount < 3) console.log(`⚠️ No valid category found, final value:`, categoryValue, typeof categoryValue);
+                  if (debugCount < 1) console.log(`⚠️ No valid category found, final value:`, categoryValue, typeof categoryValue);
                 }
               }
               

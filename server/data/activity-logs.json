@@ -5,39 +5,6 @@
       "title": "Gemini ayarları güncellendi",
       "description": "Gemini AI ayarları başarıyla güncellendi",
       "entityType": "settings",
-      "id": "fad7f8e7-5f4f-4321-9f10-9614277912c1",
-      "createdAt": "2025-08-31T12:36:51.966Z",
-      "oldValue": null,
-      "newValue": null,
-      "entityId": null
-    },
-    {
-      "type": "database_settings_updated",
-      "title": "Veritabanı ayarları güncellendi",
-      "description": "localhost:3306 veritabanı bağlantısı yapılandırıldı",
-      "entityType": "settings",
-      "id": "673a2207-2cc8-412d-8c9d-4fc051710f7e",
-      "createdAt": "2025-08-31T12:37:21.168Z",
-      "oldValue": null,
-      "newValue": null,
-      "entityId": null
-    },
-    {
-      "type": "settings_updated",
-      "title": "Gemini ayarları güncellendi",
-      "description": "Gemini AI ayarları başarıyla güncellendi",
-      "entityType": "settings",
-      "id": "d25a8144-f1b6-4a52-abc6-c64bab9a02ea",
-      "createdAt": "2025-08-31T12:45:11.907Z",
-      "oldValue": null,
-      "newValue": null,
-      "entityId": null
-    },
-    {
-      "type": "settings_updated",
-      "title": "Gemini ayarları güncellendi",
-      "description": "Gemini AI ayarları başarıyla güncellendi",
-      "entityType": "settings",
       "id": "2d588500-4e81-404f-90d5-e4275efba693",
       "createdAt": "2025-08-31T12:46:41.784Z",
       "oldValue": null,
@@ -1097,6 +1064,39 @@
       "entityType": "xml_source",
       "id": "9b01cc06-4ddd-4366-ab63-b1f04a48d060",
       "createdAt": "2025-09-01T13:39:57.273Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "products_deleted",
+      "title": "Tüm ürünler silindi",
+      "description": "0 ürün, 0 dil verisi, 0 stok verisi silindi. Auto-increment ID'ler sıfırlandı.",
+      "entityId": null,
+      "entityType": "products",
+      "id": "0133da50-3fe3-427b-bf39-0a9cab6a89c3",
+      "createdAt": "2025-09-01T13:40:59.598Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "8c33ddb4-1e90-4794-8f3f-af24b445b444",
+      "createdAt": "2025-09-01T13:41:21.380Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "TUMKATEGORI - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "95795109-8874-46af-9e0b-e394c5cf4df0",
+      "entityType": "xml_source",
+      "id": "bab9a368-e6ad-4684-83db-a2e25150a275",
+      "createdAt": "2025-09-01T13:41:39.304Z",
       "oldValue": null,
       "newValue": null
     }
