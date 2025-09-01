@@ -1848,20 +1848,20 @@
       "url": "https://hercuma.com/urunler.xml",
       "status": "active",
       "fieldMapping": {
-        "name": "Urunler.Urun.adi",
-        "price": "Urunler.Urun.fiyat",
-        "short_description": "Urunler.Urun.aciklama",
-        "description": "Urunler.Urun.aciklama",
-        "currentStock": "Urunler.Urun.adet",
-        "sku": "Urunler.Urun.kod",
-        "barcode": "Urunler.Urun.barkod",
-        "thumbnail": "Urunler.Urun.resim",
-        "image1": "Urunler.Urun.resim2",
-        "image2": "Urunler.Urun.resim3"
+        "name": "adi",
+        "price": "fiyat",
+        "short_description": "aciklama",
+        "description": "aciklama",
+        "currentStock": "adet",
+        "sku": "kod",
+        "barcode": "barkod",
+        "thumbnail": "resim",
+        "image1": "resim2",
+        "image2": "resim3"
       },
       "categoryTag": "Urunler.Urun.kategori_son",
       "useDefaultCategory": false,
-      "defaultCategoryId": "",
+      "defaultCategoryId": null,
       "extractedCategories": [
         "Acil Durum Kitleri",
         "Aksesuar ve Kozmetik",
@@ -2098,7 +2098,7 @@
       "profitMarginFixed": "0",
       "id": "f81cd679-2ed5-4ee8-9dfa-16231c03f093",
       "createdAt": "2025-09-01T23:14:35.153Z",
-      "updatedAt": "2025-09-01T23:14:38.646Z",
+      "updatedAt": "2025-09-01T23:33:11.036Z",
       "productCount": 0,
       "lastFetch": null
     }
