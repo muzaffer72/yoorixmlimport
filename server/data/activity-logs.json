@@ -5,28 +5,6 @@
       "title": "Gemini ayarları güncellendi",
       "description": "Gemini AI ayarları başarıyla güncellendi",
       "entityType": "settings",
-      "id": "64cda47b-da30-4f1e-b7c9-f4d4ba4c1a95",
-      "createdAt": "2025-08-31T12:19:25.701Z",
-      "oldValue": null,
-      "newValue": null,
-      "entityId": null
-    },
-    {
-      "type": "settings_updated",
-      "title": "Gemini ayarları güncellendi",
-      "description": "Gemini AI ayarları başarıyla güncellendi",
-      "entityType": "settings",
-      "id": "69006ac9-10dc-4b0d-8836-5314078ec496",
-      "createdAt": "2025-08-31T12:19:29.504Z",
-      "oldValue": null,
-      "newValue": null,
-      "entityId": null
-    },
-    {
-      "type": "settings_updated",
-      "title": "Gemini ayarları güncellendi",
-      "description": "Gemini AI ayarları başarıyla güncellendi",
-      "entityType": "settings",
       "id": "5efdac96-2b02-48af-950d-7656687499ff",
       "createdAt": "2025-08-31T12:19:48.213Z",
       "oldValue": null,
@@ -1097,6 +1075,28 @@
       "entityType": "xml_source",
       "id": "7bbbbba3-36da-44fc-9fdf-a78601a92d4c",
       "createdAt": "2025-09-01T13:30:59.345Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 16966 ürün atlandı",
+      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
+      "entityType": "xml_source",
+      "id": "976f23aa-50e9-406c-9289-3db28b3cd8c5",
+      "createdAt": "2025-09-01T13:34:20.829Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "3842bea6-9a55-4f78-98ae-97038c297092",
+      "createdAt": "2025-09-01T13:34:44.310Z",
       "oldValue": null,
       "newValue": null
     }
