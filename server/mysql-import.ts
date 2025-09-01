@@ -354,7 +354,7 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 status, is_approved, is_catalog, external_link, is_refundable, 
                 cash_on_delivery, colors, attribute_sets, short_description, description,
                 thumbnail, images, video_provider, video_url, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 product.brandId || 1, 
                 product.categoryId || 1, 
@@ -381,7 +381,9 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 '{}', // thumbnail (boş JSON object)
                 '[]', // images (boş JSON array)
                 '', // video_provider
-                ''  // video_url
+                '', // video_url
+                new Date(), // created_at 
+                new Date()  // updated_at
               ]
             );
             
