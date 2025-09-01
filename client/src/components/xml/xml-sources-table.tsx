@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { XmlSource } from "@shared/schema";
-import { Edit, Play, Trash2, Save } from "lucide-react";
+import { Edit, Play, Trash2, Save, FlaskConical } from "lucide-react";
 
 interface XmlSourcesTableProps {
   xmlSources: XmlSource[];
@@ -344,53 +344,59 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="edit-profit-type">Kar Marjı Tipi</Label>
-                <select
-                  id="edit-profit-type"
-                  value={editForm.profitMarginType}
-                  onChange={(e) => setEditForm({ ...editForm, profitMarginType: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  data-testid="select-edit-profit-type"
-                >
-                  <option value="none">Kar Marjı Yok</option>
-                  <option value="percent">Yüzde (%)</option>
-                  <option value="fixed">Sabit Tutar</option>
-                </select>
+            <div className="p-4 border rounded-lg bg-green-50/50 dark:bg-green-900/10">
+              <div className="flex items-center gap-2 mb-4">
+                <FlaskConical className="h-5 w-5 text-green-600" />
+                <Label className="text-base font-medium text-green-700 dark:text-green-400">Kar Oranı Ayarları</Label>
               </div>
               
-              {editForm.profitMarginType === "percent" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="edit-profit-percent">Kar Yüzdesi (%)</Label>
+                  <Label className="text-sm font-medium">Kar Oranı Türü</Label>
+                  <select
+                    value={editForm.profitMarginType}
+                    onChange={(e) => setEditForm({ ...editForm, profitMarginType: e.target.value })}
+                    className="w-full p-2 border border-gray-300 rounded-md mt-2"
+                    data-testid="select-edit-profit-type"
+                  >
+                    <option value="none">Kar Oranı Yok</option>
+                    <option value="percent">Yüzde Oranı (%)</option>
+                    <option value="fixed">Sabit Tutar (TL)</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium">
+                    {editForm.profitMarginType === "percent" ? "Kar Yüzdesi" : 
+                     editForm.profitMarginType === "fixed" ? "Sabit Kar Tutarı (TL)" : "Kar Değeri"}
+                  </Label>
                   <Input
-                    id="edit-profit-percent"
                     type="number"
                     min="0"
-                    max="500"
-                    value={editForm.profitMarginPercent}
-                    onChange={(e) => setEditForm({ ...editForm, profitMarginPercent: parseFloat(e.target.value) || 0 })}
-                    placeholder="örn: 25"
-                    data-testid="input-edit-profit-percent"
+                    max={editForm.profitMarginType === "percent" ? "500" : undefined}
+                    step={editForm.profitMarginType === "fixed" ? "0.01" : "1"}
+                    value={editForm.profitMarginType === "percent" ? editForm.profitMarginPercent : 
+                           editForm.profitMarginType === "fixed" ? editForm.profitMarginFixed : 0}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value) || 0;
+                      if (editForm.profitMarginType === "percent") {
+                        setEditForm({ ...editForm, profitMarginPercent: value });
+                      } else if (editForm.profitMarginType === "fixed") {
+                        setEditForm({ ...editForm, profitMarginFixed: value });
+                      }
+                    }}
+                    placeholder={editForm.profitMarginType === "percent" ? "örn: 25" : "örn: 10.50"}
+                    disabled={editForm.profitMarginType === "none"}
+                    className="mt-2"
+                    data-testid={`input-edit-profit-${editForm.profitMarginType}`}
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {editForm.profitMarginType === "percent" && "0-500% arası kar yüzdesi"}
+                    {editForm.profitMarginType === "fixed" && "Sabit TL cinsinden kar tutarı"}
+                    {editForm.profitMarginType === "none" && "Kar oranı uygulanmayacak"}
+                  </p>
                 </div>
-              )}
-              
-              {editForm.profitMarginType === "fixed" && (
-                <div>
-                  <Label htmlFor="edit-profit-fixed">Sabit Kar Tutarı (TL)</Label>
-                  <Input
-                    id="edit-profit-fixed"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={editForm.profitMarginFixed}
-                    onChange={(e) => setEditForm({ ...editForm, profitMarginFixed: parseFloat(e.target.value) || 0 })}
-                    placeholder="örn: 10.50"
-                    data-testid="input-edit-profit-fixed"
-                  />
-                </div>
-              )}
+              </div>
             </div>
             
             <div className="border-t pt-4">
