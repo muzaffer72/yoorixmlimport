@@ -3,28 +3,6 @@
     {
       "type": "xml_synced",
       "title": "XML kaynağı güncellendi",
-      "description": "hercuma - 0 yeni ürün eklendi, 275 ürün güncellendi, 0 ürün atlandı",
-      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
-      "entityType": "xml_source",
-      "id": "ca19e424-1ad4-46c4-a084-093edae2bcc2",
-      "createdAt": "2025-09-01T12:14:15.100Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "products_deleted",
-      "title": "Tüm ürünler silindi",
-      "description": "275 ürün, 275 dil verisi, 0 stok verisi silindi. Auto-increment ID'ler sıfırlandı.",
-      "entityId": null,
-      "entityType": "products",
-      "id": "f6768d56-3464-4a86-9414-9414bda8cec4",
-      "createdAt": "2025-09-01T12:14:34.598Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
       "description": "enginithalat - 0 yeni ürün eklendi, 0 ürün güncellendi, 17 ürün atlandı",
       "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
       "entityType": "xml_source",
@@ -1097,6 +1075,28 @@
       "entityType": "xml_source",
       "id": "d1bcc439-04e3-4e29-9a20-ce307af87f69",
       "createdAt": "2025-09-01T23:21:46.840Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "7fd6b64f-65ec-4e4e-bc8d-b0e5dc416525",
+      "createdAt": "2025-09-01T23:25:03.889Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "aa3c6b86-75b7-4589-a630-d897732b7172",
+      "createdAt": "2025-09-01T23:26:05.771Z",
       "oldValue": null,
       "newValue": null
     }
