@@ -1297,7 +1297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'XML source ID is required' });
       }
       
-      console.log(`🗑️ ${xmlSourceId} XML kaynağına ait ürünler siliniyor...`);
+      console.log(`🆕 YENİ ENDPOINT: ${xmlSourceId} XML kaynağına ait ürünler siliniyor...`);
       
       // Database ayarlarını al
       const dbSettings = await pageStorage.getDatabaseSettings();

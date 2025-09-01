@@ -1,0 +1,110 @@
+Found 3848 categories from MySQL category_languages table
+9:42:36 PM [express] GET /api/categories 200 in 2055ms :: [{"id":368,"name":"Aksesuar","title":"Akse…
+🗑️ f286b968-5b0b-470b-b2fb-e05d8e1c2643 XML kaynağına ait ürünler siliniyor...
+🗑️ f286b968-5b0b-470b-b2fb-e05d8e1c2643 XML kaynağına ait tüm ürünler siliniyor...
+📁 Resim klasörü: /images
+🔍 f286b968-5b0b-470b-b2fb-e05d8e1c2643 XML kaynağına ait resim adları toplanıyor...
+📸 Toplam 8 benzersiz resim dosyası bulundu.
+🗑️ 8 resim dosyası silinecek...
+⚠️ Dosya bulunamadı (zaten silinmiş): 20250902013849_original__media_256.png
+⚠️ Dosya bulunamadı (zaten silinmiş): 2025090201384940x40_media_49.png
+⚠️ Dosya bulunamadı (zaten silinmiş): 2025090201384972x72_media_214.png
+⚠️ Dosya bulunamadı (zaten silinmiş): 20250902013849190x230_media_121.png
+⚠️ Dosya bulunamadı (zaten silinmiş): 20250902013849_original__media_224.jpg
+⚠️ Dosya bulunamadı (zaten silinmiş): 2025090201384940x40_media_56.jpg
+⚠️ Dosya bulunamadı (zaten silinmiş): 2025090201384972x72_media_323.jpg
+⚠️ Dosya bulunamadı (zaten silinmiş): 20250902013849190x230_media_282.jpg
+🎉 0/8 resim dosyası başarıyla silindi.
+📦 12 ürün bulundu, siliniyor...
+✅ PRODUCT_STOCKS temizlendi: 12 kayıt
+✅ PRODUCT_LANGUAGES temizlendi: 12 kayıt
+❌ XML source ürün silme hatası, rollback yapıldı: Error: Table 'herc_umanet.images' doesn't exist
+    at PromisePool.execute (/home/runner/workspace/node_modules/mysql2/lib/promise/pool.js:54:22)
+    at deleteProductsByXmlSource (/home/runner/workspace/server/mysql-import.ts:952:51)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:1310:22) {
+  code: 'ER_NO_SUCH_TABLE',
+  errno: 1146,
+  sql: "DELETE FROM images WHERE imageable_type = 'App\\\\Models\\\\Product' AND imageable_id IN (?,?,?,?,?,?,?,?,?,?,?,?)",
+  sqlState: '42S02',
+  sqlMessage: "Table 'herc_umanet.images' doesn't exist"
+}
+XML source delete error: Error: Table 'herc_umanet.images' doesn't exist
+    at PromisePool.execute (/home/runner/workspace/node_modules/mysql2/lib/promise/pool.js:54:22)
+    at deleteProductsByXmlSource (/home/runner/workspace/server/mysql-import.ts:952:51)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:1310:22) {
+  code: 'ER_NO_SUCH_TABLE',
+  errno: 1146,
+  sql: "DELETE FROM images WHERE imageable_type = 'App\\\\Models\\\\Product' AND imageable_id IN (?,?,?,?,?,?,?,?,?,?,?,?)",
+  sqlState: '42S02',
+  sqlMessage: "Table 'herc_umanet.images' doesn't exist"
+}
+9:42:41 PM [express] DELETE /api/products/delete-by-xml-source/f286b968-5b0b-470b-b2fb-e05d8e1c2643 …
+9:43:09 PM [express] GET /api/xml-sources 200 in 2ms :: [{"name":"Collezium","url":"https://colezium…
+Connecting to MySQL for categories...
+✅ MySQL import bağlantısı zaten mevcut, yeniden bağlanılmıyor.
+🔍 Fetching categories from category_languages table...
+Tables check result: [
+  {
+    'Tables_in_herc_umanet (category_languages)': 'category_languages'
+  }
+]
+Table structure: [
+  {
+    Field: 'id',
+    Type: 'bigint(20) unsigned',
+    Null: 'NO',
+    Key: 'PRI',
+    Default: null,
+    Extra: 'auto_increment'
+  },
+  {
+    Field: 'category_id',
+    Type: 'bigint(20)',
+    Null: 'NO',
+    Key: 'MUL',
+    Default: null,
+    Extra: ''
+  },
+  {
+    Field: 'lang',
+    Type: 'varchar(10)',
+    Null: 'NO',
+    Key: '',
+    Default: 'en',
+    Extra: ''
+  },
+  {
+    Field: 'title',
+    Type: 'varchar(255)',
+    Null: 'YES',
+    Key: '',
+    Default: null,
+    Extra: ''
+  },
+  {
+    Field: 'meta_title',
+    Type: 'varchar(255)',
+    Null: 'YES',
+    Key: '',
+    Default: null,
+    Extra: ''
+  },
+  {
+    Field: 'meta_description',
+    Type: 'text',
+    Null: 'YES',
+    Key: '',
+    Default: null,
+    Extra: ''
+  },
+  {
+    Field: 'created_at',
+    Type: 'timestamp',
+    Null: 'YES',
+    Key: '',
+    Default: null,
+    Extra: ''
+  },
+  {
