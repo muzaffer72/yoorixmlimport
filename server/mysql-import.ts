@@ -302,13 +302,13 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                LEFT JOIN product_languages pl ON p.id = pl.product_id
                LEFT JOIN product_stocks ps ON p.id = ps.product_id
                SET 
-                 p.price = ?, p.current_stock = ?, p.colors = ?, p.updated_at = NOW(),
+                 p.price = ?, p.current_stock = ?, p.colors = ?, p.attribute_sets = ?, p.updated_at = NOW(),
                  pl.name = ?, pl.short_description = ?, pl.description = ?,
                  pl.tags = ?, pl.meta_title = ?, pl.meta_description = ?,
                  ps.price = ?, ps.current_stock = ?
                WHERE p.id = ?`,
               [
-                product.price || 0, product.stock || 0, '[]', // products (colors boş array)
+                product.price || 0, product.stock || 0, '[]', '[]', // products (colors, attribute_sets boş arrays)
                 product.name || '', product.shortDescription || '', product.description || '', // product_languages
                 product.tags || '', product.metaTitle || product.name || '', product.metaDescription || '',
                 product.price || 0, product.stock || 0, // product_stocks
@@ -340,8 +340,8 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 brand_id, category_id, user_id, created_by, slug, price, 
                 purchase_cost, barcode, current_stock, minimum_order_quantity,
                 status, is_approved, is_catalog, external_link, is_refundable, 
-                cash_on_delivery, colors, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+                cash_on_delivery, colors, attribute_sets, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
               [
                 product.brandId || 1, 
                 product.categoryId || 1, 
@@ -359,7 +359,8 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
                 product.externalLink || '',
                 product.isRefundable ? 1 : 0, 
                 product.cashOnDelivery ? 1 : 0,
-                '[]' // colors (boş JSON array)
+                '[]', // colors (boş JSON array)
+                '[]'  // attribute_sets (boş JSON array)
               ]
             );
             
