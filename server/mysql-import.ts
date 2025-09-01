@@ -394,7 +394,7 @@ export async function batchImportProductsToMySQL(products: any[], xmlSourceId: s
                 purchase_cost, barcode, minimum_order_quantity,
                 status, is_approved, is_catalog, external_link, is_refundable, 
                 cash_on_delivery, colors, attribute_sets, 
-                thumbnail, images, video_provider, video_url, current_stock, xml_source_id, created_at, updated_at
+                thumbnail, images, video_provider, video_url, current_stock, xmlkaynagi, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 product.brandId || null, 
@@ -592,7 +592,7 @@ export async function importProductToMySQL(product: {
         stock_visibility, status, is_approved, is_catalog, external_link, 
         is_featured, is_classified, is_wholesale, contact_info, is_digital, 
         is_refundable, todays_deal, rating, viewed, shipping_type, shipping_fee,
-        cash_on_delivery, meta_image, xml_source_id, created_at, updated_at
+        cash_on_delivery, meta_image, xmlkaynagi, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
         product.brandId || null, // brand_id
@@ -770,7 +770,7 @@ async function collectImageNamesForXmlSource(xmlSourceId: string): Promise<strin
     
     // XML source'a ait ürünlerin thumbnail ve images verilerini al
     const [rows] = await importConnection.execute(
-      `SELECT id, thumbnail, images FROM products WHERE xml_source_id = ?`,
+      `SELECT id, thumbnail, images FROM products WHERE xmlkaynagi = ?`,
       [xmlSourceId]
     );
     
@@ -899,7 +899,7 @@ export async function deleteProductsByXmlSource(xmlSourceId: string) {
     
     // 2. XML source'a ait ürün ID'lerini al
     const [productRows] = await importConnection.execute(
-      `SELECT id FROM products WHERE xml_source_id = ?`,
+      `SELECT id FROM products WHERE xmlkaynagi = ?`,
       [xmlSourceId]
     );
     
@@ -945,7 +945,7 @@ export async function deleteProductsByXmlSource(xmlSourceId: string) {
     
     // 4. Ana PRODUCTS tablosunu temizle
     const [productsResult] = await importConnection.execute(
-      `DELETE FROM products WHERE xml_source_id = ?`,
+      `DELETE FROM products WHERE xmlkaynagi = ?`,
       [xmlSourceId]
     );
     console.log(`✅ PRODUCTS tablosu temizlendi: ${(productsResult as any).affectedRows} kayıt`);
