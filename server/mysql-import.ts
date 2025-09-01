@@ -273,6 +273,15 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
   let skippedCount = 0;
 
   console.log(`🚀 BATCH IMPORT başlatılıyor: ${products.length} ürün, ${batchSize}'li gruplar halinde`);
+  
+  // TABLE STRUCTURE DEBUG - Console başında göster
+  console.log(`\n🚨 === TABLE STRUCTURE DEBUG ===`);
+  const [describeResult] = await importConnection.execute('DESCRIBE products');
+  console.log(`📊 Products table has ${(describeResult as any[]).length} columns:`);
+  (describeResult as any[]).forEach((col, index) => {
+    console.log(`  ${index + 1}. ${col.Field} (${col.Type})`);
+  });
+  console.log(`🚨 === END TABLE DEBUG ===\n`);
 
   // Ürünleri batch'lere böl
   for (let i = 0; i < products.length; i += batchSize) {
@@ -338,10 +347,6 @@ export async function batchImportProductsToMySQL(products: any[], batchSize = 10
             const productSlug = createUrlSafeSlug(product.name) + '-' + Date.now();
             
             // 1. Products tablosuna ekle
-            console.log(`🔍 INSERTING INTO PRODUCTS - Column count check`);
-            const [describeResult] = await importConnection.execute('DESCRIBE products');
-            console.log(`📊 Products table has ${(describeResult as any[]).length} columns:`, (describeResult as any[]).map(col => col.Field));
-            
             const [productResult] = await importConnection.execute(
               `INSERT INTO products (
                 brand_id, category_id, user_id, created_by, slug, name, price, unit,
