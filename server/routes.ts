@@ -835,7 +835,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 let descValue = extractValue(fieldMapping?.description);
                 let skuValue = extractValue(fieldMapping?.sku);
                 let barcodeValue = extractValue(fieldMapping?.barcode);
-                let stockValue = extractValue(fieldMapping?.currentStock);
+                let stockValue = extractValue(fieldMapping?.current_stock);
                 let unitValue = extractValue(fieldMapping?.unit);
                 
                 // FALLBACK STRATEGY - Try common field names if mapping fails
@@ -845,8 +845,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (!priceValue) {
                   priceValue = obj.fiyat || obj.price || obj.fiyati || obj.amount || obj.tutar;
                 }
-                if (!stockValue) {
-                  stockValue = obj.stok || obj.stock || obj.miktar || obj.quantity || obj.adet;
+                if (!stockValue || stockValue === null || stockValue === undefined || stockValue === '') {
+                  stockValue = obj.stok || obj.stock || obj.miktar || obj.quantity || obj.adet || obj.current_stock || obj.currentStock;
+                  if (debugCount < 3) {
+                    console.log(`📦 Stock fallback activated. Found: ${stockValue} from object keys`);
+                  }
                 }
                 if (!skuValue) {
                   skuValue = obj.sku || obj.kod || obj.code || obj.urun_kodu || obj.product_code;
@@ -858,6 +861,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   console.log(`📝 Field Mappings:`, {
                     name: fieldMapping?.name,
                     price: fieldMapping?.price,
+                    current_stock: fieldMapping?.current_stock,
                     category: xmlSource.categoryTag,
                     allMappings: Object.keys(fieldMapping || {})
                   });
@@ -866,10 +870,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   console.log(`✅ Raw Extracted Values:`, {
                     name: `"${nameValue}" (type: ${typeof nameValue})`,
                     price: `"${priceValue}" (type: ${typeof priceValue})`,
+                    stock: `"${stockValue}" (type: ${typeof stockValue})`,
                     category: `"${categoryName}" (type: ${typeof categoryName})`,
                     targetCategoryId,
                     hasValidName: !!(nameValue && nameValue !== "Ürün Adı Belirtilmemiş"),
                     hasValidCategory: !!targetCategoryId
+                  });
+                  console.log(`🔍 Stock Field Testing:`, {
+                    stockMapping: fieldMapping?.current_stock,
+                    extractedStockValue: stockValue,
+                    fallbackStock: obj.stok || obj.stock || obj.miktar || obj.quantity || obj.adet || 'NOT_FOUND',
+                    stockAfterParsing: parseInt(stockValue as string) || 0
                   });
                   console.log(`🔍 Path Testing for name="${fieldMapping?.name}":`, {
                     currentObjectValue: obj[fieldMapping?.name?.split('.')[0] || ''] || 'NOT_FOUND',
