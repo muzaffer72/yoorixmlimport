@@ -1,61 +1,6 @@
 {
   "logs": [
     {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "TUMKATEGORIVAR - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
-      "entityId": "102f4dc1-b890-494f-b773-9a808287c6b9",
-      "entityType": "xml_source",
-      "id": "a7da96b3-e85f-4ded-b0d0-4c6d908c2de7",
-      "createdAt": "2025-08-31T19:50:39.145Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "TUMKATEGORIVAR - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
-      "entityId": "102f4dc1-b890-494f-b773-9a808287c6b9",
-      "entityType": "xml_source",
-      "id": "9745d4e8-976b-423e-8153-b1bccd877079",
-      "createdAt": "2025-08-31T19:51:01.456Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
-      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
-      "entityType": "xml_source",
-      "id": "7cd38382-4200-43ef-aa4f-21ae242ec5df",
-      "createdAt": "2025-08-31T20:12:08.856Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "enginithalat - 17 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
-      "entityId": "846f7e0f-5d3c-49df-901c-7d020fcbf869",
-      "entityType": "xml_source",
-      "id": "7120aa13-797f-4d65-8c65-35e3f7efc9b9",
-      "createdAt": "2025-08-31T20:13:06.599Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 0 ürün atlandı",
-      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
-      "entityType": "xml_source",
-      "id": "70bfa5d5-58e9-48c8-b6b9-1148468ff7b8",
-      "createdAt": "2025-08-31T20:13:29.836Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
       "type": "products_deleted",
       "title": "Tüm ürünler silindi",
       "description": "2457 ürün, 2457 dil verisi, 2456 stok verisi silindi. Auto-increment ID'ler sıfırlandı.",
@@ -1097,6 +1042,61 @@
       "entityType": "xml_source",
       "id": "5b2cefd2-e2a9-472d-a342-7003049a37b4",
       "createdAt": "2025-09-01T22:58:51.572Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_source_added",
+      "title": "Yeni XML kaynağı eklendi",
+      "description": "hercuma XML kaynağı sisteme eklendi",
+      "entityId": "f81cd679-2ed5-4ee8-9dfa-16231c03f093",
+      "entityType": "xml_source",
+      "id": "a63fec6b-2813-4d3f-b44c-1fa715393d04",
+      "createdAt": "2025-09-01T23:14:35.154Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "categories_extracted",
+      "title": "Kategoriler çıkarıldı",
+      "description": "229 kategori XML'den çıkarıldı",
+      "entityId": "f81cd679-2ed5-4ee8-9dfa-16231c03f093",
+      "entityType": "xml_source",
+      "id": "6518d1f2-c478-47f8-a170-c678386a2414",
+      "createdAt": "2025-09-01T23:14:38.647Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "f81cd679-2ed5-4ee8-9dfa-16231c03f093",
+      "entityType": "xml_source",
+      "id": "bb20751d-a7f6-41b8-87fc-28558e16b56f",
+      "createdAt": "2025-09-01T23:17:01.123Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "TUMKATEGORI - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "95795109-8874-46af-9e0b-e394c5cf4df0",
+      "entityType": "xml_source",
+      "id": "063656f3-162d-4165-8073-ee0966fe4e0b",
+      "createdAt": "2025-09-01T23:18:25.356Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_synced",
+      "title": "XML kaynağı güncellendi",
+      "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
+      "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
+      "entityType": "xml_source",
+      "id": "52c62e20-a36b-4f56-a371-2e8dd5fa023d",
+      "createdAt": "2025-09-01T23:18:59.258Z",
       "oldValue": null,
       "newValue": null
     }

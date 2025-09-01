@@ -408,7 +408,10 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
       // Transaction başlat
       await importConnection.execute('START TRANSACTION');
 
-      for (const product of batch) {
+      for (let j = 0; j < batch.length; j++) {
+        const product = batch[j];
+        const productIndex = i + j; // Toplam ürün indeksi
+        
         try {
           // SKU kontrolü - mevcut ürün var mı?
           let existingProduct = null;
