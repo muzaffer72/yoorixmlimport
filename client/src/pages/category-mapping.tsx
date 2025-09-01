@@ -168,6 +168,11 @@ export default function CategoryMapping() {
   });
 
   const handleAddMapping = () => {
+    console.log('🎯 handleAddMapping called with:');
+    console.log('selectedXmlSource:', selectedXmlSource);
+    console.log('xmlCategoryName:', xmlCategoryName);
+    console.log('localCategoryId:', localCategoryId, 'type:', typeof localCategoryId);
+    
     if (!selectedXmlSource || !xmlCategoryName || !localCategoryId) {
       toast({
         title: "Eksik Bilgi",
@@ -481,8 +486,11 @@ export default function CategoryMapping() {
                           data-testid="input-search-local-category"
                         />
                         <Select 
-                          value={localCategoryId} 
-                          onValueChange={setLocalCategoryId}
+                          value={localCategoryId || ""} 
+                          onValueChange={(value) => {
+                            console.log('🎯 Category selected:', value);
+                            setLocalCategoryId(value);
+                          }}
                           disabled={categoriesError}
                         >
                           <SelectTrigger data-testid="select-local-category">
