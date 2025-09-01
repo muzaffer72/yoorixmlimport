@@ -41,8 +41,9 @@ export async function connectToImportDatabase(settings: {
       user: settings.username,
       password: settings.password,
       database: settings.database,
-      connectTimeout: 10000,
-      ssl: false
+      connectTimeout: 60000,
+      ssl: false,
+      charset: 'utf8mb4'
     });
     
     console.log('Direct connection successful, testing query...');
@@ -59,12 +60,13 @@ export async function connectToImportDatabase(settings: {
       password: settings.password,
       database: settings.database,
       waitForConnections: true,
-      connectionLimit: 5,
+      connectionLimit: 3,
       queueLimit: 0,
-      acquireTimeout: 15000,
-      timeout: 15000,
+      acquireTimeout: 60000,
+      timeout: 60000,
       ssl: false,
-      connectTimeout: 10000
+      connectTimeout: 60000,
+      charset: 'utf8mb4'
     });
 
     // Pool test
@@ -466,10 +468,13 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
             let thumbnailId = null;
             let imageIds = [];
             
-            console.log(`🔍 Ürün resim debug: ${product.name}`);
-            console.log(`📸 product.images:`, product.images);
-            console.log(`📸 product.images type:`, typeof product.images);
-            console.log(`📸 product.images length:`, product.images?.length);
+            // Resim debug - sadece ilk ürün için log çıkar
+            if (batchIndex === 0) {
+              console.log(`🔍 Resim debug (ilk ürün): ${product.name}`);
+              console.log(`📸 product.images:`, product.images);
+              console.log(`📸 product.images type:`, typeof product.images);
+              console.log(`📸 product.images length:`, product.images?.length);
+            }
             
             if (product.images && product.images.length > 0) {
               console.log(`📸 ${product.images.length} resim işleniyor: ${product.name}`);

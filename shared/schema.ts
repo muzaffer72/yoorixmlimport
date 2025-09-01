@@ -184,7 +184,13 @@ export type SystemSettings = typeof systemSettings.$inferSelect;
 export type InsertSystemSettings = typeof systemSettings.$inferInsert;
 
 // Zod schemas
-export const insertXmlSourceSchema = createInsertSchema(xmlSources);
+export const insertXmlSourceSchema = createInsertSchema(xmlSources).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastFetch: true,
+  productCount: true
+});
 export const insertActivityLogSchema = createInsertSchema(activityLogs);
 export const insertCronjobSchema = createInsertSchema(cronjobs);
 export const insertProductSchema = createInsertSchema(products);
