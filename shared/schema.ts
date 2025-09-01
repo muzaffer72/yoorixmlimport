@@ -15,6 +15,9 @@ export const xmlSources = mysqlTable("xml_sources", {
   useDefaultCategory: boolean("use_default_category").default(false),
   defaultCategoryId: varchar("default_category_id", { length: 36 }),
   extractedCategories: json("extracted_categories"), // Store extracted XML categories
+  profitMarginType: varchar("profit_margin_type", { length: 20 }).default("none"), // none, percent, fixed
+  profitMarginPercent: decimal("profit_margin_percent", { precision: 5, scale: 2 }).default("0.00"),
+  profitMarginFixed: decimal("profit_margin_fixed", { precision: 10, scale: 2 }).default("0.00"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

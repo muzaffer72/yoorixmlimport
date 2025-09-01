@@ -56,7 +56,17 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
   const queryClient = useQueryClient();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingSource, setEditingSource] = useState<XmlSource | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", url: "" });
+  const [editForm, setEditForm] = useState({ 
+    name: "", 
+    url: "",
+    categoryTag: "",
+    fieldMapping: {},
+    useDefaultCategory: false,
+    defaultCategoryId: null,
+    profitMarginType: "none",
+    profitMarginPercent: 0,
+    profitMarginFixed: 0
+  });
 
   const deleteXmlSourceMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -110,7 +120,7 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
   };
 
   const updateXmlSourceMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name: string; url: string } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
       const response = await apiRequest("PUT", `/api/xml-sources/${id}`, data);
       return response.json();
     },
@@ -135,7 +145,17 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
 
   const handleEdit = (source: XmlSource) => {
     setEditingSource(source);
-    setEditForm({ name: source.name, url: source.url });
+    setEditForm({ 
+      name: source.name, 
+      url: source.url,
+      categoryTag: source.categoryTag || "",
+      fieldMapping: source.fieldMapping || {},
+      useDefaultCategory: source.useDefaultCategory || false,
+      defaultCategoryId: source.defaultCategoryId || null,
+      profitMarginType: (source as any).profitMarginType || "none",
+      profitMarginPercent: (source as any).profitMarginPercent || 0,
+      profitMarginFixed: (source as any).profitMarginFixed || 0
+    });
     setIsEditModalOpen(true);
   };
 
@@ -144,11 +164,26 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
     if (!editForm.name.trim() || !editForm.url.trim()) {
       toast({
         title: "Hata",
-        description: "Lütfen tüm alanları doldurun",
+        description: "Kaynak adı ve URL gereklidir",
         variant: "destructive",
       });
       return;
     }
+    
+    // Field mapping JSON validation
+    try {
+      if (typeof editForm.fieldMapping === 'string') {
+        JSON.parse(editForm.fieldMapping);
+      }
+    } catch {
+      toast({
+        title: "Hata",
+        description: "Field mapping geçerli JSON formatında olmalıdır",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     updateXmlSourceMutation.mutate({
       id: editingSource.id,
       data: editForm
@@ -257,7 +292,7 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
           <DialogHeader>
             <DialogTitle>XML Kaynağını Düzenle</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto">
             <div>
               <Label htmlFor="edit-name">Kaynak Adı</Label>
               <Input
@@ -277,6 +312,98 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
                 placeholder="XML kaynağı URL'si"
                 data-testid="input-edit-url"
               />
+            </div>
+            
+            <div>
+              <Label htmlFor="edit-category-tag">Kategori Tag</Label>
+              <Input
+                id="edit-category-tag"
+                value={editForm.categoryTag}
+                onChange={(e) => setEditForm({ ...editForm, categoryTag: e.target.value })}
+                placeholder="örn: kategori_son, category, product.category"
+                data-testid="input-edit-category-tag"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="edit-field-mapping">Field Mapping (JSON)</Label>
+              <textarea
+                id="edit-field-mapping"
+                className="w-full min-h-[120px] p-3 border border-gray-300 rounded-md font-mono text-sm"
+                value={JSON.stringify(editForm.fieldMapping, null, 2)}
+                onChange={(e) => {
+                  try {
+                    const parsed = JSON.parse(e.target.value);
+                    setEditForm({ ...editForm, fieldMapping: parsed });
+                  } catch {
+                    // Invalid JSON - keep typing
+                  }
+                }}
+                placeholder='{"name": "adi", "price": "fiyat", "description": "aciklama"}'
+                data-testid="textarea-edit-field-mapping"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-profit-type">Kar Marjı Tipi</Label>
+                <select
+                  id="edit-profit-type"
+                  value={editForm.profitMarginType}
+                  onChange={(e) => setEditForm({ ...editForm, profitMarginType: e.target.value })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  data-testid="select-edit-profit-type"
+                >
+                  <option value="none">Kar Marjı Yok</option>
+                  <option value="percent">Yüzde (%)</option>
+                  <option value="fixed">Sabit Tutar</option>
+                </select>
+              </div>
+              
+              {editForm.profitMarginType === "percent" && (
+                <div>
+                  <Label htmlFor="edit-profit-percent">Kar Yüzdesi (%)</Label>
+                  <Input
+                    id="edit-profit-percent"
+                    type="number"
+                    min="0"
+                    max="500"
+                    value={editForm.profitMarginPercent}
+                    onChange={(e) => setEditForm({ ...editForm, profitMarginPercent: parseFloat(e.target.value) || 0 })}
+                    placeholder="örn: 25"
+                    data-testid="input-edit-profit-percent"
+                  />
+                </div>
+              )}
+              
+              {editForm.profitMarginType === "fixed" && (
+                <div>
+                  <Label htmlFor="edit-profit-fixed">Sabit Kar Tutarı (TL)</Label>
+                  <Input
+                    id="edit-profit-fixed"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editForm.profitMarginFixed}
+                    onChange={(e) => setEditForm({ ...editForm, profitMarginFixed: parseFloat(e.target.value) || 0 })}
+                    placeholder="örn: 10.50"
+                    data-testid="input-edit-profit-fixed"
+                  />
+                </div>
+              )}
+            </div>
+            
+            <div className="border-t pt-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="edit-use-default-category"
+                  checked={editForm.useDefaultCategory}
+                  onChange={(e) => setEditForm({ ...editForm, useDefaultCategory: e.target.checked })}
+                  data-testid="checkbox-edit-use-default-category"
+                />
+                <Label htmlFor="edit-use-default-category">Default kategori kullan (eşleştirme olmadığında)</Label>
+              </div>
             </div>
             <div className="flex justify-end space-x-2">
               <Button
