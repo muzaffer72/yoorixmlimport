@@ -877,6 +877,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         console.log(`📋 ADIM 5/8: Ürünler XML'den çıkarılıyor...`);
         console.log(`   └─ Field mapping ayarları:`, Object.keys(fieldMapping));
+        console.log(`   └─ Field mapping values:`, fieldMapping);
         console.log(`   └─ Category tag: ${xmlSource.categoryTag}`);
         console.log(`   └─ XML ana anahtarlar: [${Object.keys(data).join(', ')}]`);
         
@@ -889,6 +890,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`   └─ Urunler Array formatında`);
             if (data.Urunler.length > 0) {
               console.log(`   └─ İlk eleman keys: [${Object.keys(data.Urunler[0] || {}).join(', ')}]`);
+              console.log(`   └─ İlk eleman sample:`, JSON.stringify(data.Urunler[0], null, 2).substring(0, 500));
             }
           } else {
             console.log(`   └─ Urunler Object formatında: [${Object.keys(data.Urunler).join(', ')}]`);
