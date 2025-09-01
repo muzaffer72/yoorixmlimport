@@ -770,24 +770,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Extract all products - filtering will happen later during import
               if (hasRequiredFields) {
-                // ROBUST FIELD MAPPING - Supports deep object navigation
+                // ROBUST FIELD MAPPING - Supports deep object navigation from XML root
                 const extractValue = (mapping: string | undefined) => {
                   if (!mapping) return null;
                   
                   // Support both direct and nested field mapping
-                  // Examples: "adi", "details.name", "product.title"
+                  // Examples: "adi", "details.name", "products.product.name"
                   const fields = mapping.split('.');
+                  
+                  // Try from current object first (for immediate properties)
                   let value = obj;
+                  let pathWorked = true;
                   
                   for (const field of fields) {
                     if (value && typeof value === 'object' && field in value) {
                       value = value[field];
                     } else {
-                      return null; // Field not found in hierarchy
+                      pathWorked = false;
+                      break;
                     }
                   }
                   
-                  return value;
+                  if (pathWorked && value !== null && value !== undefined) {
+                    return value;
+                  }
+                  
+                  // If path from current object failed, try from XML root for absolute paths like "products.product.name"
+                  if (fields.length > 1) {
+                    value = data; // Start from XML root
+                    pathWorked = true;
+                    
+                    for (const field of fields) {
+                      if (value && typeof value === 'object' && field in value) {
+                        value = value[field];
+                      } else {
+                        pathWorked = false;
+                        break;
+                      }
+                    }
+                    
+                    if (pathWorked && value !== null && value !== undefined) {
+                      return value;
+                    }
+                  }
+                  
+                  return null; // Path not found in both current object and XML root
                 };
                 
                 // Extract image URLs
@@ -828,8 +855,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 // ENHANCED DEBUG - Show first 3 extractions with detailed info
                 if (debugCount < 3) {
                   console.log(`\n🔍 === EXTRACTION DEBUG #${debugCount + 1} ===`);
-                  console.log(`📝 Field Mappings: name="${fieldMapping?.name}", price="${fieldMapping?.price}", category="${xmlSource.categoryTag}"`);
-                  console.log(`📦 Object Keys: [${Object.keys(obj).slice(0, 10).join(', ')}${Object.keys(obj).length > 10 ? '...' : ''}]`);
+                  console.log(`📝 Field Mappings:`, {
+                    name: fieldMapping?.name,
+                    price: fieldMapping?.price,
+                    category: xmlSource.categoryTag,
+                    allMappings: Object.keys(fieldMapping || {})
+                  });
+                  console.log(`📦 Current Object Keys: [${Object.keys(obj).slice(0, 10).join(', ')}${Object.keys(obj).length > 10 ? '...' : ''}]`);
+                  console.log(`🌍 XML Root Keys: [${Object.keys(data).join(', ')}]`);
                   console.log(`✅ Raw Extracted Values:`, {
                     name: `"${nameValue}" (type: ${typeof nameValue})`,
                     price: `"${priceValue}" (type: ${typeof priceValue})`,
@@ -837,6 +870,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     targetCategoryId,
                     hasValidName: !!(nameValue && nameValue !== "Ürün Adı Belirtilmemiş"),
                     hasValidCategory: !!targetCategoryId
+                  });
+                  console.log(`🔍 Path Testing for name="${fieldMapping?.name}":`, {
+                    currentObjectValue: obj[fieldMapping?.name?.split('.')[0] || ''] || 'NOT_FOUND',
+                    xmlRootValue: data[fieldMapping?.name?.split('.')[0] || ''] || 'NOT_FOUND'
                   });
                   console.log(`🔍 === END EXTRACTION DEBUG ===\n`);
                 }
