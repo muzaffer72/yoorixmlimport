@@ -469,7 +469,7 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
             let imageIds = [];
             
             // Resim debug - sadece ilk ürün için log çıkar
-            if (batchIndex === 0) {
+            if (productIndex === 0) {
               console.log(`🔍 Resim debug (ilk ürün): ${product.name}`);
               console.log(`📸 product.images:`, product.images);
               console.log(`📸 product.images type:`, typeof product.images);

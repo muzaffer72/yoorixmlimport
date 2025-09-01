@@ -1,0 +1,26 @@
+ Skipping product "Araç İçi & Dışı Çift Lensli WiFi Kamera – 1080P HD,Gece Görüşlü, G-Sensörlü DVR Dashcam" - category "undefined" not mapped
+⏭️ Skipping product "Süper Parlak LED Su Altı Dalış Feneri – Taşınabilir, Su Geçirmez ve Darbeye Dayanıklı El Feneri" - category "undefined" not mapped
+⏭️ Skipping product "5 Parça Pratik Parmak Koruyucu 1 Parça Baş Parmak Bıçaklı Eldiven Sebze Meyve Soyucu Kesme Ayıklayıcı Silikon Set" - category "undefined" not mapped
+🚀 HIZLI BATCH IMPORT başlatılıyor: 12 geçerli ürün bulundu
+🚀 BATCH IMPORT başlatılıyor: 12 ürün, 50'li gruplar halinde
+🔍 Debug: batchSize = 50, xmlSourceId = f286b968-5b0b-470b-b2fb-e05d8e1c2643
+📦 Batch 1/1: 12 ürün işleniyor...
+10:58:50 PM [express] GET /api/products/import-status 304 in 1ms :: {"isImportInProgress":true,"shoul…
+❌ Ürün işleme hatası (Alez Kapitone Dört Köşe Lastik Yatak Koruyucu 160*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Kapitone Fitted Yatak Koruyucu 100*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Kapitone Fitted Yatak Koruyucu 160*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Pamuklu Dört Köşe Lastik Yatak Koruyucu 100*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Pamuklu Fitted Yatak Koruyucu 100*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Micro Dört Köşe Lastik Yatak Koruyucu 100*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Micro Fitted Yatak Koruyucu 100*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Kapitone Dört Köşe Lastik Yatak Koruyucu 160*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Micro Dört Köşe Lastik Yatak Koruyucu 160*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Micro Fitted Yatak Koruyucu 160*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Pamuklu Dört Köşe Lastik Yatak Koruyucu 160*200 cm): batchIndex is not defined
+❌ Ürün işleme hatası (Alez Pamuklu Fitted Yatak Koruyucu 160*200 cm): batchIndex is not defined
+10:58:51 PM [express] GET /api/products/import-status 304 in 1ms :: {"isImportInProgress":true,"shoul…
+✅ Batch tamamlandı: 12 ürün işlendi
+🎉 BATCH IMPORT tamamlandı! Eklenen: 0, Güncellenen: 0, Atlanan: 12
+📊 Import Summary: 0 eklendi, 0 güncellendi, 13125 atlandı (kategori eşleşmesi yok)
+10:58:51 PM [express] POST /api/products/import-from-xml 200 in 8985ms :: {"message":"XML import başa…
+10:59:08 PM [express] GET /api/xml-sources 200 in 2ms :: [{"name":"Collezium","url":"https://colezium…
