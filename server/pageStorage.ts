@@ -767,6 +767,43 @@ export class PageStorage {
   async getCategoriesForSource(xmlSourceId: string): Promise<string[]> {
     return await this.getExtractedCategoriesForSource(xmlSourceId);
   }
+
+  // System Settings Management
+  async getSystemSettings(): Promise<Record<string, any>> {
+    const data = this.loadJsonFile('system-settings.json', { 
+      settings: {
+        image_storage_path: '/home/hercuma.com/public_html/public/images'
+      }
+    });
+    return data.settings;
+  }
+
+  async updateSystemSetting(key: string, value: string): Promise<void> {
+    const data = this.loadJsonFile('system-settings.json', { 
+      settings: {
+        image_storage_path: '/home/hercuma.com/public_html/public/images'
+      }
+    });
+    
+    data.settings[key] = value;
+    data.updatedAt = new Date().toISOString();
+    
+    this.saveJsonFile('system-settings.json', data);
+    
+    // Log activity
+    await this.createActivityLog({
+      type: "system_setting_updated",
+      title: "Sistem ayarı güncellendi",
+      description: `${key} ayarı güncellendi: ${value}`,
+      entityId: key,
+      entityType: "system_setting"
+    });
+  }
+
+  async getImageStoragePath(): Promise<string> {
+    const settings = await this.getSystemSettings();
+    return settings.image_storage_path || '/home/hercuma.com/public_html/public/images';
+  }
 }
 
 // Singleton instance

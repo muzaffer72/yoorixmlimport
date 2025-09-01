@@ -156,6 +156,7 @@ export async function processImageForLaravel(imageUrl: string, productId: number
     const sharp = (await import('sharp')).default;
     const fs = await import('fs/promises');
     const path = await import('path');
+    const { pageStorage } = await import('./pageStorage');
 
     // Resmi indir
     const response = await fetch(imageUrl);
@@ -170,7 +171,10 @@ export async function processImageForLaravel(imageUrl: string, productId: number
     
     // Laravel image boyutları (ürün resimleri için)
     const imageSizes = ['40x40', '72x72', '190x230'];
-    const baseDirectory = '/home/hercuma.com/public_html/public/images/';
+    
+    // Ayarlardan resim klasörü yolunu al
+    const baseDirectory = await pageStorage.getImageStoragePath();
+    console.log(`📁 Using image storage path: ${baseDirectory}`);
     
     // Dizin oluştur
     await fs.mkdir(baseDirectory, { recursive: true });

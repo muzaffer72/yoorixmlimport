@@ -50,6 +50,15 @@ export const cronjobs = mysqlTable("cronjobs", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const systemSettings = mysqlTable("system_settings", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  value: text("value").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const products = mysqlTable("products", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   name: text("name").notNull(),
@@ -171,6 +180,9 @@ export type InsertDatabaseSettings = typeof databaseSettings.$inferInsert;
 
 export type CategoryLanguage = typeof categoriesLanguages.$inferSelect;
 
+export type SystemSettings = typeof systemSettings.$inferSelect;
+export type InsertSystemSettings = typeof systemSettings.$inferInsert;
+
 // Zod schemas
 export const insertXmlSourceSchema = createInsertSchema(xmlSources);
 export const insertActivityLogSchema = createInsertSchema(activityLogs);
@@ -185,3 +197,4 @@ export const insertCategoryMappingSchema = createInsertSchema(categoryMappings).
 });
 export const insertGeminiSettingsSchema = createInsertSchema(geminiSettings);
 export const insertDatabaseSettingsSchema = createInsertSchema(databaseSettings);
+export const insertSystemSettingsSchema = createInsertSchema(systemSettings);

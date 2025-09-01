@@ -1542,6 +1542,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // System Settings endpoints
+  app.get("/api/system-settings", async (req, res) => {
+    try {
+      const settings = await pageStorage.getSystemSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch system settings" });
+    }
+  });
+
+  app.put("/api/system-settings/:key", async (req, res) => {
+    try {
+      const { key } = req.params;
+      const { value } = req.body;
+      
+      if (!key || !value) {
+        return res.status(400).json({ message: "Key and value are required" });
+      }
+      
+      await pageStorage.updateSystemSetting(key, value);
+      res.json({ message: "System setting updated successfully", key, value });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update system setting" });
+    }
+  });
+
   // AI-powered category mapping
   app.post("/api/category-mappings/ai-map", async (req, res) => {
     try {

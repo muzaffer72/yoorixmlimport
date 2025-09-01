@@ -89,6 +89,10 @@ export default function SettingsPage() {
     queryKey: ["/api/gemini-settings"],
   });
 
+  const { data: systemSettingsData } = useQuery({
+    queryKey: ["/api/system-settings"],
+  });
+
   // API'den gelen tek objeyi dizi formatına çevir
   const geminiSettings = geminiSettingsData ? [
     {
@@ -308,6 +312,28 @@ export default function SettingsPage() {
       toast({
         title: "Hata",
         description: "Gemini ayarı güncellenirken hata oluştu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // System Settings Mutation
+  const updateSystemSettingMutation = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      const response = await apiRequest("PUT", `/api/system-settings/${key}`, { value });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Sistem ayarı başarıyla güncellendi",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/system-settings"] });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Sistem ayarı güncellenirken hata oluştu",
         variant: "destructive",
       });
     },
@@ -817,6 +843,64 @@ export default function SettingsPage() {
                 </TableBody>
               </Table>
             )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* System Settings Section */}
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-6 w-6" />
+              Sistem Ayarları
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="image-storage-path" className="text-base font-medium">
+                Resim Kayıt Klasörü
+              </Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Ürün resimlerinin kaydedileceği sunucu klasör yolu
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  id="image-storage-path"
+                  type="text"
+                  placeholder="/home/hercuma.com/public_html/public/images"
+                  value={systemSettingsData?.image_storage_path || '/home/hercuma.com/public_html/public/images'}
+                  onChange={(e) => {
+                    const newPath = e.target.value;
+                    if (newPath !== systemSettingsData?.image_storage_path) {
+                      updateSystemSettingMutation.mutate({
+                        key: 'image_storage_path',
+                        value: newPath
+                      });
+                    }
+                  }}
+                  data-testid="input-image-storage-path"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const defaultPath = '/home/hercuma.com/public_html/public/images';
+                    updateSystemSettingMutation.mutate({
+                      key: 'image_storage_path',
+                      value: defaultPath
+                    });
+                  }}
+                  disabled={updateSystemSettingMutation.isPending}
+                  data-testid="button-reset-default-path"
+                >
+                  Varsayılan
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Mevcut: {systemSettingsData?.image_storage_path || '/home/hercuma.com/public_html/public/images'}
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
