@@ -200,15 +200,16 @@ Lütfen şu JSON formatında yanıt ver:
 `;
 
     try {
-      const response = await this.client.models.generateContent({
+      const model = this.client.getGenerativeModel({ 
         model: modelName,
-        contents: prompt,
-        config: {
+        generationConfig: {
           responseMimeType: "application/json"
         }
       });
-
-      let responseText = response.text || "{}";
+      
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      let responseText = response.text() || "{}";
       
       // JSON temizleme - bazen Gemini ekstra karakterler ekliyor
       responseText = responseText.trim();
@@ -225,18 +226,18 @@ Lütfen şu JSON formatında yanıt ver:
       responseText = responseText.replace(/\r/g, '\\r');
       responseText = responseText.replace(/\t/g, '\\t');
       
-      let result;
+      let result_parsed;
       try {
-        result = JSON.parse(responseText);
+        result_parsed = JSON.parse(responseText);
       } catch (parseError) {
         console.error("JSON parse error, attempting to fix:", parseError);
         // Son çare: JSON'u manuel olarak düzelt
         responseText = responseText.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
-        result = JSON.parse(responseText);
+        result_parsed = JSON.parse(responseText);
       }
       
       // Sonuçları dönüştür
-      const mappings = (result.mappings || []).slice(0, 50).map((mapping: any) => {
+      const mappings = (result_parsed.mappings || []).slice(0, 50).map((mapping: any) => {
         const suggestedCategory = mapping.suggestedCategoryId 
           ? localCategories.find(cat => cat.id === mapping.suggestedCategoryId) || null
           : null;
@@ -266,12 +267,12 @@ Lütfen şu JSON formatında yanıt ver:
     }
 
     try {
-      const response = await this.client.models.generateContent({
-        model: modelName,
-        contents: prompt
-      });
-
-      return response.text || "";
+      const model = this.client.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      return text || "";
     } catch (error: any) {
       console.error("Gemini generateText error:", error);
       throw new Error("Metin üretimi sırasında hata oluştu: " + error.message);

@@ -171,35 +171,63 @@ export async function processImageForLaravel(imageUrl: string, productId: number
     const path = await import('path');
     const { pageStorage } = await import('./pageStorage');
 
-    // Resmi indir
-    const response = await fetch(imageUrl);
+    // Timeout ile resim indirme (8 saniye timeout - daha uzun)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    
+    const response = await fetch(imageUrl, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Cache-Control': 'no-cache'
+      }
+    });
+    clearTimeout(timeoutId);
+    
     if (!response.ok) {
-      console.error(`❌ Failed to download image: ${imageUrl}`);
+      console.error(`❌ Failed to download image: ${imageUrl} (${response.status})`);
+      return null;
+    }
+
+    // Content-Length kontrolü - çok büyük dosyaları reddet (5MB üzeri)
+    const contentLength = response.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > 5 * 1024 * 1024) {
+      console.warn(`⚠️ Image too large, skipping: ${imageUrl} (${Math.round(parseInt(contentLength) / 1024 / 1024)}MB)`);
       return null;
     }
 
     const buffer = Buffer.from(await response.arrayBuffer());
-    const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14); // YYYYMMDDHHmmss
+    const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
     const randomId = Math.floor(Math.random() * 1000);
     
     // Laravel image boyutları (ürün resimleri için)
     const imageSizes = ['40x40', '72x72', '190x230'];
     
-    // Ayarlardan resim klasörü yolunu al
+    // Ayarlardan resim klasörü yolunu al (cache için)
     const baseDirectory = await pageStorage.getImageStoragePath();
-    console.log(`📁 Using image storage path: ${baseDirectory}`);
     
-    // Dizin oluştur
+    // Dizin oluştur (sadece bir kez)
     await fs.mkdir(baseDirectory, { recursive: true });
     
-    // Original image
-    const originalFileName = `${timestamp}_original__media_${randomId}.png`;
-    const originalPath = path.join(baseDirectory, originalFileName);
+    // Sharp instance oluştur (optimize edilmiş)
+    const sharpInstance = sharp(buffer, {
+      failOnError: false,
+      limitInputPixels: 268402689 // ~16k x 16k max
+    });
+
+    // Metadata al (resim formatını optimize etmek için)
+    const metadata = await sharpInstance.metadata();
+    const isWebP = metadata.format === 'webp';
+    const isPng = metadata.format === 'png';
+    const format = isPng ? 'png' : 'jpeg'; // WebP yerine jpeg kullan (daha hızlı)
+    const extension = isPng ? 'png' : 'jpg';
+    const quality = isPng ? 90 : 85; // JPEG için biraz daha düşük kalite
     
-    // Original'i kaydet
-    await sharp(buffer)
-      .png({ quality: 90 })
-      .toFile(originalPath);
+    // Original image
+    const originalFileName = `${timestamp}_original__media_${randomId}.${extension}`;
+    const originalPath = path.join(baseDirectory, originalFileName);
     
     // Resim JSON objesi oluştur (Laravel formatında)
     const imageObject: any = {
@@ -207,28 +235,64 @@ export async function processImageForLaravel(imageUrl: string, productId: number
       original_image: `images/${originalFileName}`
     };
     
-    // Farklı boyutlarda resimler oluştur
+    // Paralel işleme: Original + tüm boyutları aynı anda işle
+    const promises = [];
+    
+    // Original'i ekle
+    if (format === 'png') {
+      promises.push(
+        sharpInstance.clone()
+          .png({ quality: quality, compressionLevel: 6, progressive: true })
+          .toFile(originalPath)
+      );
+    } else {
+      promises.push(
+        sharpInstance.clone()
+          .jpeg({ quality: quality, progressive: true, mozjpeg: true })
+          .toFile(originalPath)
+      );
+    }
+    
+    // Farklı boyutlarda resimler oluştur (paralel)
     for (const size of imageSizes) {
       const [width, height] = size.split('x').map(Number);
-      const sizedFileName = `${timestamp}${size}_media_${randomId}.png`;
+      const sizedFileName = `${timestamp}${size}_media_${randomId}.${extension}`;
       const sizedPath = path.join(baseDirectory, sizedFileName);
       
-      await sharp(buffer)
-        .resize(width, height, { 
-          fit: 'cover', 
-          position: 'center' 
-        })
-        .png({ quality: 90 })
-        .toFile(sizedPath);
-      
+      const resizePromise = format === 'png' 
+        ? sharpInstance.clone()
+            .resize(width, height, { 
+              fit: 'cover', 
+              position: 'center',
+              kernel: 'lanczos3' // Daha hızlı kernel
+            })
+            .png({ quality: quality, compressionLevel: 6, progressive: true })
+            .toFile(sizedPath)
+        : sharpInstance.clone()
+            .resize(width, height, { 
+              fit: 'cover', 
+              position: 'center',
+              kernel: 'lanczos3'
+            })
+            .jpeg({ quality: quality, progressive: true, mozjpeg: true })
+            .toFile(sizedPath);
+            
+      promises.push(resizePromise);
       imageObject[`image_${size}`] = `images/${sizedFileName}`;
     }
     
-    console.log(`📸 Laravel-style image processed: ${originalFileName}`);
+    // Tüm işlemleri paralel çalıştır
+    await Promise.all(promises);
+    
+    console.log(`� Fast Laravel-style image processed: ${originalFileName} (${format.toUpperCase()})`);
     return imageObject;
     
   } catch (error) {
-    console.error(`❌ Error processing image ${imageUrl}:`, error);
+    if (error.name === 'AbortError') {
+      console.error(`⏰ Image download timeout: ${imageUrl}`);
+    } else {
+      console.error(`❌ Error processing image ${imageUrl}:`, error);
+    }
     return null;
   }
 }
@@ -554,7 +618,7 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
 
             // 4. RESİM İŞLEME - Product eklendikten sonra
             if (product.images && product.images.length > 0) {
-              console.log(`📸 ${product.images.length} resim işleniyor: ${product.name} (ID: ${productId})`);
+              console.log(`� ${product.images.length} resim paralel işleniyor: ${product.name} (ID: ${productId})`);
               
               let thumbnailData = '{}';
               let imagesData = '[]';
@@ -562,33 +626,57 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
               let imageIds = [];
               const processedImages = [];
               
-              for (let i = 0; i < product.images.length; i++) {
-                try {
-                  // Resmi indir ve işle
-                  const response = await fetch(product.images[i]);
-                  if (response.ok) {
-                    const imageBuffer = Buffer.from(await response.arrayBuffer());
-                    const imageObject = await processImageForLaravel(product.images[i], productId, i);
+              // Paralel resim işleme - maksimum 3 resim aynı anda
+              const concurrencyLimit = 3;
+              const results = [];
+              
+              for (let i = 0; i < product.images.length; i += concurrencyLimit) {
+                const batch = product.images.slice(i, i + concurrencyLimit);
+                const batchPromises = batch.map(async (imageUrl, batchIndex) => {
+                  const actualIndex = i + batchIndex;
+                  try {
+                    // Paralel olarak resmi işle (indirme + işleme tek seferde)
+                    const imageObject = await processImageForLaravel(imageUrl, productId, actualIndex);
                     
                     if (imageObject) {
-                      // Media tablosuna resim ekle (buffer ile birlikte)
-                      const mediaId = await insertImageToMedia(product.images[i], i, imageObject, imageBuffer);
+                      // Media tablosuna resim ekle
+                      const mediaId = await insertImageToMedia(imageUrl, actualIndex, imageObject);
                       if (mediaId) {
-                        processedImages.push(imageObject);
-                        imageIds.push(mediaId);
-                        
-                        // İlk resmi thumbnail olarak ayarla
-                        if (i === 0) {
-                          thumbnailData = JSON.stringify(imageObject);
-                          thumbnailId = mediaId;
-                        }
+                        return {
+                          index: actualIndex,
+                          imageObject,
+                          mediaId,
+                          success: true
+                        };
                       }
                     }
-                  } else {
-                    console.error(`❌ Resim indirilemedi: ${product.images[i]} - HTTP ${response.status}`);
+                    return { index: actualIndex, success: false };
+                  } catch (imageError: any) {
+                    console.error(`❌ Paralel resim işleme hatası: ${imageUrl}`, imageError?.message || imageError);
+                    return { index: actualIndex, success: false };
                   }
-                } catch (imageError: any) {
-                  console.error(`❌ Resim işleme hatası: ${product.images[i]}`, imageError?.message || imageError);
+                });
+                
+                // Bu batch'i bekle
+                const batchResults = await Promise.all(batchPromises);
+                results.push(...batchResults);
+                
+                console.log(`✅ Batch ${Math.floor(i/concurrencyLimit) + 1} tamamlandı (${batchResults.filter(r => r.success).length}/${batchResults.length} başarılı)`);
+              }
+              
+              // Başarılı sonuçları sırala ve işle
+              const successfulResults = results
+                .filter(result => result.success)
+                .sort((a, b) => a.index - b.index);
+              
+              for (const result of successfulResults) {
+                processedImages.push(result.imageObject);
+                imageIds.push(result.mediaId);
+                
+                // İlk resmi thumbnail olarak ayarla
+                if (result.index === 0) {
+                  thumbnailData = JSON.stringify(result.imageObject);
+                  thumbnailId = result.mediaId;
                 }
               }
               
@@ -826,33 +914,62 @@ export async function importProductToMySQL(product: {
     );
     console.log(`✅ Product stock data created`);
 
-    // 4. RESİMLERİ LARAVEL FORMATINDA İŞLE VE KAYDET
+    // 4. RESİMLERİ PARALEL OLARAK LARAVEL FORMATINDA İŞLE VE KAYDET
     let thumbnailObject = null;
     let imagesArray: any[] = [];
 
-    // Thumbnail'i Laravel formatında işle
+    // Thumbnail + diğer resimler paralel işleme
+    const imagePromises = [];
+    
+    // Thumbnail'i ekle
     if (product.thumbnail && product.thumbnail.trim() !== '') {
-      console.log(`📸 Processing thumbnail: ${product.thumbnail}`);
-      const processedThumbnail = await processImageForLaravel(product.thumbnail, productId, 0);
-      if (processedThumbnail) {
-        thumbnailObject = processedThumbnail;
-        console.log(`✅ Thumbnail processed successfully`);
-      }
+      console.log(`📸 Adding thumbnail to parallel processing: ${product.thumbnail}`);
+      imagePromises.push(
+        processImageForLaravel(product.thumbnail, productId, 0)
+          .then(result => ({ type: 'thumbnail', result, index: 0 }))
+          .catch(error => {
+            console.error(`❌ Thumbnail processing failed: ${product.thumbnail}`, error);
+            return { type: 'thumbnail', result: null, index: 0 };
+          })
+      );
     }
 
-    // Diğer resimleri Laravel formatında işle
+    // Diğer resimleri ekle
     if (product.images && product.images.length > 0) {
-      console.log(`📸 Processing ${product.images.length} additional images...`);
-      for (let i = 0; i < product.images.length; i++) {
-        const imageUrl = product.images[i];
+      console.log(`📸 Adding ${product.images.length} images to parallel processing...`);
+      product.images.forEach((imageUrl: string, i: number) => {
         if (imageUrl && imageUrl.trim() !== '') {
-          const processedImage = await processImageForLaravel(imageUrl, productId, i + 1);
-          if (processedImage) {
-            imagesArray.push(processedImage);
-            console.log(`✅ Image ${i + 1} processed successfully`);
+          imagePromises.push(
+            processImageForLaravel(imageUrl, productId, i + 1)
+              .then(result => ({ type: 'image', result, index: i }))
+              .catch(error => {
+                console.error(`❌ Image processing failed: ${imageUrl}`, error);
+                return { type: 'image', result: null, index: i };
+              })
+          );
+        }
+      });
+    }
+
+    // Tüm resimleri paralel işle
+    if (imagePromises.length > 0) {
+      console.log(`🚀 Processing ${imagePromises.length} images in parallel...`);
+      const results = await Promise.all(imagePromises);
+      
+      // Sonuçları işle
+      for (const { type, result, index } of results) {
+        if (result) {
+          if (type === 'thumbnail') {
+            thumbnailObject = result;
+            console.log(`✅ Thumbnail processed successfully`);
+          } else {
+            imagesArray.push(result);
+            console.log(`✅ Image ${index + 1} processed successfully`);
           }
         }
       }
+      
+      console.log(`🎯 Parallel image processing completed: ${thumbnailObject ? 1 : 0} thumbnail + ${imagesArray.length} images`);
     }
 
     // 5. İŞLENEN RESİMLERİ LARAVEL FORMATINDA VERİTABANINDA GÜNCELLE

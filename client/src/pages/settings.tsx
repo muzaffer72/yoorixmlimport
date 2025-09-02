@@ -53,7 +53,14 @@ export default function SettingsPage() {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [isTestingApiKey, setIsTestingApiKey] = useState(false);
   const [availableModels, setAvailableModels] = useState<{name: string, displayName: string}[]>([]);
-  const [editingGemini, setEditingGemini] = useState<{ id: string; name: string; apiKey: string; selectedModel: string } | null>(null);
+  const [editingGemini, setEditingGemini] = useState<{ 
+    id: string; 
+    name: string; 
+    apiKey: string; 
+    selectedModel: string;
+    useAiForShortDescription?: boolean;
+    useAiForFullDescription?: boolean;
+  } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -106,6 +113,8 @@ export default function SettingsPage() {
       selectedModel: geminiSettingsData.selected_model,
       isActive: geminiSettingsData.is_active,
       isConfigured: geminiSettingsData.is_configured,
+      useAiForShortDescription: geminiSettingsData.useAiForShortDescription || false,
+      useAiForFullDescription: geminiSettingsData.useAiForFullDescription || false,
     }
   ] : [];
 
@@ -410,12 +419,14 @@ export default function SettingsPage() {
     }
   };
 
-  const handleEditGemini = (setting: GeminiSettings) => {
+  const handleEditGemini = (setting: any) => {
     setEditingGemini({
       id: setting.id,
       name: setting.name,
       apiKey: setting.apiKey,
-      selectedModel: setting.selectedModel
+      selectedModel: setting.selectedModel,
+      useAiForShortDescription: setting.useAiForShortDescription || false,
+      useAiForFullDescription: setting.useAiForFullDescription || false
     });
   };
 
@@ -427,7 +438,9 @@ export default function SettingsPage() {
       data: {
         name: editingGemini.name,
         apiKey: editingGemini.apiKey,
-        selectedModel: editingGemini.selectedModel
+        selectedModel: editingGemini.selectedModel,
+        useAiForShortDescription: editingGemini.useAiForShortDescription || false,
+        useAiForFullDescription: editingGemini.useAiForFullDescription || false
       }
     });
   };
@@ -1014,6 +1027,42 @@ export default function SettingsPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="edit-useAiForShortDescription" 
+                    checked={editingGemini.useAiForShortDescription || false}
+                    onCheckedChange={(checked) => setEditingGemini({
+                      ...editingGemini,
+                      useAiForShortDescription: checked
+                    })}
+                  />
+                  <div>
+                    <Label htmlFor="edit-useAiForShortDescription">Kısa açıklama için AI kullan</Label>
+                    <p className="text-sm text-muted-foreground">
+                      XML'den gelen metinleri AI ile 200 karakterlik SEO uyumlu kısa açıklamaya dönüştürür
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="edit-useAiForFullDescription" 
+                    checked={editingGemini.useAiForFullDescription || false}
+                    onCheckedChange={(checked) => setEditingGemini({
+                      ...editingGemini,
+                      useAiForFullDescription: checked
+                    })}
+                  />
+                  <div>
+                    <Label htmlFor="edit-useAiForFullDescription">Tam açıklama için AI kullan</Label>
+                    <p className="text-sm text-muted-foreground">
+                      XML'den gelen metinleri AI ile HTML formatlı, SEO uyumlu ve özellik vurgulu açıklamaya dönüştürür
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
