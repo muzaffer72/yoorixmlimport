@@ -3,28 +3,6 @@
     {
       "type": "xml_synced",
       "title": "XML kaynağı güncellendi",
-      "description": "TUMKATEGORI - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
-      "entityId": "95795109-8874-46af-9e0b-e394c5cf4df0",
-      "entityType": "xml_source",
-      "id": "5b106578-fa42-4771-82ff-5bf3d762fb28",
-      "createdAt": "2025-09-01T13:28:20.221Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
-      "description": "Collezium - 0 yeni ürün eklendi, 0 ürün güncellendi, 16966 ürün atlandı",
-      "entityId": "7e0bf9ad-ff6a-420d-83ad-5af80701ed2a",
-      "entityType": "xml_source",
-      "id": "f34cf93f-e68c-4e8c-bc3f-be4a6f8100a4",
-      "createdAt": "2025-09-01T13:29:58.462Z",
-      "oldValue": null,
-      "newValue": null
-    },
-    {
-      "type": "xml_synced",
-      "title": "XML kaynağı güncellendi",
       "description": "hercuma - 0 yeni ürün eklendi, 0 ürün güncellendi, 13125 ürün atlandı",
       "entityId": "f286b968-5b0b-470b-b2fb-e05d8e1c2643",
       "entityType": "xml_source",
@@ -1097,6 +1075,28 @@
       "entityType": "xml_source",
       "id": "d546088e-97ac-4ba5-9968-78c8523322e8",
       "createdAt": "2025-09-02T00:10:02.380Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "xml_source_added",
+      "title": "Yeni XML kaynağı eklendi",
+      "description": "xmlsonyeni XML kaynağı sisteme eklendi",
+      "entityId": "0da392e2-d456-4325-87b6-0f7c9f879818",
+      "entityType": "xml_source",
+      "id": "be8baab9-1f69-4612-8da3-fe31d0a197bf",
+      "createdAt": "2025-09-02T00:17:11.160Z",
+      "oldValue": null,
+      "newValue": null
+    },
+    {
+      "type": "categories_extracted",
+      "title": "Kategoriler çıkarıldı",
+      "description": "229 kategori XML'den çıkarıldı",
+      "entityId": "0da392e2-d456-4325-87b6-0f7c9f879818",
+      "entityType": "xml_source",
+      "id": "2b6978ed-5dd0-4906-a67e-056ba704791e",
+      "createdAt": "2025-09-02T00:17:14.481Z",
       "oldValue": null,
       "newValue": null
     }

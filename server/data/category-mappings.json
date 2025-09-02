@@ -829,6 +829,16 @@
       "id": "4d0b5577-717a-4693-abe8-cbded36d1cbc",
       "createdAt": "2025-09-02T00:01:10.683Z",
       "updatedAt": "2025-09-02T00:01:10.683Z"
+    },
+    {
+      "xmlSourceId": "0da392e2-d456-4325-87b6-0f7c9f879818",
+      "xmlCategoryName": "Alez",
+      "localCategoryId": 477,
+      "confidence": "1.00",
+      "isManual": true,
+      "id": "61966016-3f41-4087-a3a0-9bd85b95a76a",
+      "createdAt": "2025-09-02T00:18:02.665Z",
+      "updatedAt": "2025-09-02T00:18:02.665Z"
     }
   ]
 }

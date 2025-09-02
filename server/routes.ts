@@ -183,12 +183,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await parser.parseStringPromise(xmlText);
       console.log("XML parsed successfully");
       
-      // Extract structure from XML using iterative approach to prevent stack overflow
+      // Extract field names from first product in Urunler.Urun structure
+      const extractProductFields = (rootObj: any): string[] => {
+        const fields = new Set<string>();
+        
+        // Doğrudan Urunler.Urun yapısına eriş
+        const productList = rootObj?.Urunler?.Urun;
+        if (!productList) {
+          console.log("No Urunler.Urun structure found, falling back to full structure");
+          // Fallback: Eğer Urunler.Urun yoksa eski mantığı kullan
+          return extractTagsIterative(rootObj);
+        }
+        
+        // İlk ürünü analiz et
+        const firstProduct = Array.isArray(productList) ? productList[0] : productList;
+        if (firstProduct && typeof firstProduct === 'object') {
+          // Sadece ilk seviye field'ları al (adi, fiyat, kod vs.)
+          for (const key in firstProduct) {
+            if (typeof firstProduct[key] !== 'object' || firstProduct[key] === null) {
+              // Basit değerler (string, number, null)
+              fields.add(key);
+            } else if (typeof firstProduct[key] === 'object' && !Array.isArray(firstProduct[key])) {
+              // İç objeler varsa onları da ekle (max 1 seviye)
+              for (const subKey in firstProduct[key]) {
+                fields.add(`${key}.${subKey}`);
+              }
+            }
+          }
+        }
+        
+        return Array.from(fields);
+      };
+      
+      // Fallback function for non-standard XML structures
       const extractTagsIterative = (rootObj: any): string[] => {
         const tags = new Set<string>();
         const queue: { obj: any, path: string, depth: number }[] = [{ obj: rootObj, path: "", depth: 0 }];
         const maxDepth = 6;
-        const maxTags = 500; // Limit total tags for performance
+        const maxTags = 500;
         
         while (queue.length > 0 && tags.size < maxTags) {
           const { obj, path, depth } = queue.shift()!;
@@ -198,14 +230,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           if (Array.isArray(obj)) {
-            // For arrays, only process first item to get structure
             if (obj.length > 0) {
               queue.push({ obj: obj[0], path, depth: depth + 1 });
             }
           } else {
-            // Process object properties
             let processedKeys = 0;
-            const maxKeysPerLevel = 50; // Limit keys per level
+            const maxKeysPerLevel = 50;
             
             for (const key in obj) {
               if (processedKeys >= maxKeysPerLevel) break;
@@ -213,7 +243,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const fullPath = path ? `${path}.${key}` : key;
               tags.add(fullPath);
               
-              // Add to queue for further processing
               if (depth < maxDepth && typeof obj[key] === "object" && obj[key] !== null) {
                 queue.push({ obj: obj[key], path: fullPath, depth: depth + 1 });
               }
@@ -226,9 +255,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return Array.from(tags);
       };
 
-      console.log("Extracting tags from XML structure...");
-      const tags = extractTagsIterative(result);
-      console.log("Found", tags.length, "tags");
+      console.log("Extracting product fields from XML structure...");
+      const tags = extractProductFields(result);
+      console.log("Found", tags.length, "product fields");
       
       res.json({ 
         message: "XML yapısı başarıyla alındı",
