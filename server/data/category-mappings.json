@@ -859,6 +859,26 @@
       "id": "6561db72-d773-4d6e-ade2-dbc3067c503f",
       "createdAt": "2025-09-02T00:27:34.195Z",
       "updatedAt": "2025-09-02T00:27:34.195Z"
+    },
+    {
+      "xmlSourceId": "09ead250-2d83-4b22-b9b6-2e01d67cf030",
+      "xmlCategoryName": "Banyo Setleri",
+      "localCategoryId": 1830,
+      "confidence": "1.00",
+      "isManual": true,
+      "id": "f3e3ef2f-5040-4243-aa6b-80cb485f7397",
+      "createdAt": "2025-09-02T21:03:55.597Z",
+      "updatedAt": "2025-09-02T21:03:55.597Z"
+    },
+    {
+      "xmlSourceId": "09ead250-2d83-4b22-b9b6-2e01d67cf030",
+      "xmlCategoryName": "Hırdavat",
+      "localCategoryId": 2520,
+      "confidence": "1.00",
+      "isManual": true,
+      "id": "aa070079-321f-4b23-bc5f-fdfd91f827d0",
+      "createdAt": "2025-09-02T21:04:09.312Z",
+      "updatedAt": "2025-09-02T21:04:09.312Z"
     }
   ]
 }
