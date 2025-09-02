@@ -839,6 +839,26 @@
       "id": "61966016-3f41-4087-a3a0-9bd85b95a76a",
       "createdAt": "2025-09-02T00:18:02.665Z",
       "updatedAt": "2025-09-02T00:18:02.665Z"
+    },
+    {
+      "xmlSourceId": "28eb1856-a0f6-4d21-9216-2832c2788ac5",
+      "xmlCategoryName": "Tek Kişilik Alez",
+      "localCategoryId": 477,
+      "confidence": "1.00",
+      "isManual": true,
+      "id": "1b33561e-97d9-43cc-8d51-29018608e784",
+      "createdAt": "2025-09-02T00:26:43.983Z",
+      "updatedAt": "2025-09-02T00:26:43.983Z"
+    },
+    {
+      "xmlSourceId": "28eb1856-a0f6-4d21-9216-2832c2788ac5",
+      "xmlCategoryName": "Bot",
+      "localCategoryId": 406,
+      "confidence": "1.00",
+      "isManual": true,
+      "id": "6561db72-d773-4d6e-ade2-dbc3067c503f",
+      "createdAt": "2025-09-02T00:27:34.195Z",
+      "updatedAt": "2025-09-02T00:27:34.195Z"
     }
   ]
 }
