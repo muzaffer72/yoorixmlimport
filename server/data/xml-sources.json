@@ -2117,8 +2117,8 @@
         "image1": "Urunler.Urun.resim2",
         "image2": "Urunler.Urun.resim3"
       },
-      "categoryTag": "Urunler.Urun.kategori_son",
-      "useDefaultCategory": true,
+      "categoryTag": "kategori_son",
+      "useDefaultCategory": false,
       "defaultCategoryId": "368",
       "extractedCategories": [
         "Acil Durum Kitleri",
@@ -2356,7 +2356,7 @@
       "profitMarginFixed": "0",
       "id": "ae365673-9d00-48d0-afba-958e067ff322",
       "createdAt": "2025-09-01T23:52:06.219Z",
-      "updatedAt": "2025-09-01T23:52:09.560Z",
+      "updatedAt": "2025-09-02T00:06:38.184Z",
       "productCount": 0,
       "lastFetch": null
     }

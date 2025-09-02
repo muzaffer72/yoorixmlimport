@@ -799,6 +799,36 @@
       "id": "a5ea18b7-4248-4ded-9823-216caa5c6ef5",
       "createdAt": "2025-09-01T23:15:29.717Z",
       "updatedAt": "2025-09-01T23:15:29.717Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "xmlCategoryName": "Alez",
+      "localCategoryId": 477,
+      "confidence": "1.00",
+      "isManual": true,
+      "id": "b23727d3-edc2-4e47-89a3-df007b2666f8",
+      "createdAt": "2025-09-02T00:00:39.750Z",
+      "updatedAt": "2025-09-02T00:00:39.750Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "xmlCategoryName": "Baharat Seti",
+      "localCategoryId": 2189,
+      "confidence": "1.00",
+      "isManual": true,
+      "id": "58603731-305b-4b0c-ac37-69841cb8fb8b",
+      "createdAt": "2025-09-02T00:00:50.580Z",
+      "updatedAt": "2025-09-02T00:00:50.580Z"
+    },
+    {
+      "xmlSourceId": "ae365673-9d00-48d0-afba-958e067ff322",
+      "xmlCategoryName": "Aksesuarlar",
+      "localCategoryId": 368,
+      "confidence": "1.00",
+      "isManual": true,
+      "id": "4d0b5577-717a-4693-abe8-cbded36d1cbc",
+      "createdAt": "2025-09-02T00:01:10.683Z",
+      "updatedAt": "2025-09-02T00:01:10.683Z"
     }
   ]
 }

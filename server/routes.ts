@@ -716,19 +716,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const products: any[] = [];
         const fieldMapping = (xmlSource.fieldMapping as Record<string, string>) || {};
         
+        console.log(`📋 ADIM 5/8: Ürünler XML'den çıkarılıyor...`);
+        
         let debugCount = 0;
-        const traverse = (obj: any) => {
+        // Doğrudan ürün listesine eriş (Preview ile aynı mantık)
+        const productList = data?.Urunler?.Urun;
+        if (!productList) {
+          console.log(`❌ XML'de Urunler.Urun yapısı bulunamadı`);
+          return products;
+        }
+        
+        const productArray = Array.isArray(productList) ? productList : [productList];
+        console.log(`✅ XML'de ${productArray.length} ürün bulundu`);
+        
+        productArray.forEach((obj, index) => {
           if (typeof obj === "object" && obj !== null) {
-            if (Array.isArray(obj)) {
-              obj.forEach(item => traverse(item));
-            } else {
               
               // Check if this looks like a product object
               let hasRequiredFields = false;
               
               // Check if we can extract a category
               let categoryName = null;
-              if (xmlSource.categoryTag) {
+              if (xmlSource.categoryTag && xmlSource.categoryTag.trim()) {
                 const categoryFields = xmlSource.categoryTag.split('.');
                 let categoryValue = obj;
                 
@@ -743,7 +752,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
                 if (categoryValue && typeof categoryValue === 'string') {
                   categoryName = categoryValue;
-                } else {
+                } 
+              } else {
+                // categoryTag boş - hep null olacak
+                if (debugCount < 1) {
+                  console.log(`ℹ️ categoryTag boş/tanımsız: "${xmlSource.categoryTag}" - tüm ürünler categoryName=null ile extract edilecek`);
                 }
               }
               
@@ -759,9 +772,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // categoryId null olsa bile ürünü extract et - import sırasında filtrelenecek
               
               // Check if this looks like a product object (basic fields check)
-              const hasBasicFields = obj.adi || obj.name || fieldMapping?.name;
+              const hasBasicFields = obj.adi || obj.name || obj.urun_id || Object.keys(obj).length > 3;
               if (hasBasicFields) {
                 hasRequiredFields = true;
+                if (debugCount < 1) {
+                  console.log(`✅ ÜRÜN OBJESİ BULUNDU: keys=[${Object.keys(obj).slice(0, 5).join(', ')}...]`);
+                  debugCount++;
+                }
               }
               
               // Extract all products - filtering will happen later during import
@@ -930,7 +947,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   isApproved: true
                 };
                 
-                console.log(`🔍 ÜRÜN VERİSİ HAZIRLANDI:`, productData);
+                console.log(`🔍 ÜRÜN VERİSİ HAZIRLANDI:`, {
+                  ...productData,
+                  categoryInfo: {
+                    categoryName,
+                    categoryId: targetCategoryId,
+                    xmlCategoryTag: xmlSource.categoryTag,
+                    extractedCategoryValue: categoryName
+                  },
+                  imageInfo: {
+                    thumbnailMapping: fieldMapping?.thumbnail,
+                    thumbnailExtracted: thumbnailUrl,
+                    imagesMappings: [fieldMapping?.image1, fieldMapping?.image2, fieldMapping?.image3].filter(Boolean),
+                    imagesExtracted: imageUrls
+                  }
+                });
                 
                 // Artık sadece temel kontrol (isim var mı?)
                 if (productData.name && productData.name !== "Ürün Adı Belirtilmemiş") {
@@ -942,50 +973,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
               
-              // Continue traversing
-              for (const key in obj) {
-                traverse(obj[key]);
-              }
-            }
           }
-        };
+        });
         
-        console.log(`\n🚨 === CRITICAL DEBUG START ===`);
-        console.log(`📋 ADIM 5/8: Ürünler XML'den çıkarılıyor...`);
-        console.log(`   └─ Field mapping ayarları:`, Object.keys(fieldMapping));
-        console.log(`   └─ Field mapping values:`, fieldMapping);
-        console.log(`   └─ Category tag: ${xmlSource.categoryTag}`);
-        console.log(`   └─ XML ana anahtarlar: [${Object.keys(data).join(', ')}]`);
-        console.log(`🚨 === CRITICAL DEBUG END ===\n`);
-        
-        // Özel olarak Urunler kontrol et
-        if (data.Urunler) {
-          console.log(`   └─ Urunler bulundu:`, typeof data.Urunler, Array.isArray(data.Urunler) ? `Array(${data.Urunler.length})` : 'Object');
-          
-          // XML yapısını detayına kadar incele
-          if (Array.isArray(data.Urunler)) {
-            console.log(`   └─ Urunler Array formatında`);
-            if (data.Urunler.length > 0) {
-              console.log(`   └─ İlk eleman keys: [${Object.keys(data.Urunler[0] || {}).join(', ')}]`);
-              console.log(`   └─ İlk eleman sample:`, JSON.stringify(data.Urunler[0], null, 2).substring(0, 500));
-            }
-          } else {
-            console.log(`   └─ Urunler Object formatında: [${Object.keys(data.Urunler).join(', ')}]`);
-            if (data.Urunler.Urun) {
-              const urunType = Array.isArray(data.Urunler.Urun) ? `Array(${data.Urunler.Urun.length})` : 'Object';
-              console.log(`   └─ Urunler.Urun bulundu: ${urunType}`);
-              if (Array.isArray(data.Urunler.Urun) && data.Urunler.Urun.length > 0) {
-                console.log(`   └─ İlk Urun keys: [${Object.keys(data.Urunler.Urun[0] || {}).join(', ')}]`);
-              }
-            }
-          }
-        } else {
-          console.log(`   └─ ⚠️  Urunler anahtarı bulunamadı!`);
-        }
-        
-        console.log(`   └─ Traverse başlatılıyor...`);
-        traverse(data);
-        console.log(`   └─ Traverse tamamlandı: ${products.length} ürün bulundu`);
+        console.log(`✅ ADIM 5 TAMAMLANDI: ${products.length} ürün çıkarıldı\n`);
         
         if (products.length > 0) {
           console.log(`   └─ İlk ürün örneği: ${products[0].name} - ${products[0].price} TL`);
