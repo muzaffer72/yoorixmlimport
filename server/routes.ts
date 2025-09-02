@@ -259,9 +259,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tags = extractProductFields(result);
       console.log("Found", tags.length, "product fields");
       
+      // İlk ürünün yapısını al
+      const productList = result?.Urunler?.Urun;
+      const firstProduct = Array.isArray(productList) ? productList[0] : productList;
+      
       res.json({ 
         message: "XML yapısı başarıyla alındı",
         tags: tags.sort(),
+        sampleStructure: firstProduct || {},
         sampleData: JSON.stringify(result, null, 2).substring(0, 1000) + "..."
       });
     } catch (error: any) {

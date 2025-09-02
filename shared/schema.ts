@@ -11,6 +11,7 @@ export const xmlSources = mysqlTable("xml_sources", {
   lastFetch: timestamp("last_fetch"),
   productCount: int("product_count").default(0),
   fieldMapping: json("field_mapping"), // JSON object for field mappings (product fields)
+  sampleStructure: json("sample_structure"), // First product structure from XML
   categoryTag: text("category_tag"), // XML tag name that contains category info
   useDefaultCategory: boolean("use_default_category").default(false),
   defaultCategoryId: varchar("default_category_id", { length: 36 }),

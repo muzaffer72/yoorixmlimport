@@ -38,6 +38,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
   const [profitMarginType, setProfitMarginType] = useState<string>("none");
   const [profitMarginPercent, setProfitMarginPercent] = useState<string>("0");
   const [profitMarginFixed, setProfitMarginFixed] = useState<string>("0");
+  const [sampleStructure, setSampleStructure] = useState<any>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -122,6 +123,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
     },
     onSuccess: (data) => {
       setXmlTags(data.tags);
+      setSampleStructure(data.sampleStructure || {});
       onXmlTagsReceived?.(data.tags); // Parent component'e gönder
       toast({
         title: "XML Yapısı Alındı",
@@ -141,6 +143,7 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
     const submitData = {
       ...data,
       fieldMapping: Object.keys(fieldMapping).length > 0 ? fieldMapping : undefined,
+      sampleStructure: Object.keys(sampleStructure).length > 0 ? sampleStructure : undefined,
       profitMarginType,
       profitMarginPercent: profitMarginType === "percent" ? parseFloat(profitMarginPercent) || 0 : 0,
       profitMarginFixed: profitMarginType === "fixed" ? parseFloat(profitMarginFixed) || 0 : 0,
@@ -357,11 +360,17 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
                         <SelectValue placeholder="Kategori bilgisini içeren XML etiketi seçin..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {xmlTags.map((tag) => (
-                          <SelectItem key={tag} value={tag}>
-                            {tag}
-                          </SelectItem>
-                        ))}
+                        {xmlTags.map((tag) => {
+                          // Akıllı etiket gösterimi: hem tam path hem kısa isim
+                          const shortName = tag.split('.').pop() || tag;
+                          const displayText = tag === shortName ? tag : `${shortName} (${tag})`;
+                          
+                          return (
+                            <SelectItem key={tag} value={tag}>
+                              {displayText}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </div>
@@ -463,11 +472,17 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="__empty__">-- Seçilmedi --</SelectItem>
-                              {xmlTags.map((tag) => (
-                                <SelectItem key={tag} value={tag}>
-                                  {tag}
-                                </SelectItem>
-                              ))}
+                              {xmlTags.map((tag) => {
+                                // Akıllı etiket gösterimi: hem tam path hem kısa isim
+                                const shortName = tag.split('.').pop() || tag;
+                                const displayText = tag === shortName ? tag : `${shortName} (${tag})`;
+                                
+                                return (
+                                  <SelectItem key={tag} value={tag}>
+                                    {displayText}
+                                  </SelectItem>
+                                );
+                              })}
                             </SelectContent>
                           </Select>
                         </div>
