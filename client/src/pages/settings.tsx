@@ -45,6 +45,8 @@ const geminiFormSchema = insertGeminiSettingsSchema.extend({
   name: z.string().min(1, "Ayar adı gerekli"),
   apiKey: z.string().min(1, "API anahtarı gerekli"),
   selectedModel: z.string().min(1, "Model seçimi gerekli"),
+  useAiForShortDescription: z.boolean().optional(),
+  useAiForFullDescription: z.boolean().optional(),
 });
 
 export default function SettingsPage() {
@@ -75,6 +77,8 @@ export default function SettingsPage() {
       apiKey: "",
       selectedModel: "",
       isActive: false,
+      useAiForShortDescription: false,
+      useAiForFullDescription: false,
     },
   });
 
@@ -231,8 +235,15 @@ export default function SettingsPage() {
   });
 
   const createGeminiSettingMutation = useMutation({
-    mutationFn: async (data: InsertGeminiSettings) => {
-      const response = await apiRequest("POST", "/api/gemini-settings", data);
+    mutationFn: async (data: z.infer<typeof geminiFormSchema>) => {
+      const response = await apiRequest("POST", "/api/gemini-settings", {
+        name: data.name,
+        apiKey: data.apiKey,
+        model: data.selectedModel,
+        useAiForShortDescription: data.useAiForShortDescription || false,
+        useAiForFullDescription: data.useAiForFullDescription || false,
+        isActive: data.isActive || false,
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -646,14 +657,46 @@ export default function SettingsPage() {
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  id="gemini-active" 
-                  data-testid="switch-gemini-active"
-                  checked={geminiForm.watch("isActive") || false}
-                  onCheckedChange={(checked) => geminiForm.setValue("isActive", checked)}
-                />
-                <Label htmlFor="gemini-active">Bu ayarı aktif yap</Label>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="gemini-active" 
+                    data-testid="switch-gemini-active"
+                    checked={geminiForm.watch("isActive") || false}
+                    onCheckedChange={(checked) => geminiForm.setValue("isActive", checked)}
+                  />
+                  <Label htmlFor="gemini-active">Bu ayarı aktif yap</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="useAiForShortDescription" 
+                    data-testid="switch-ai-short-description"
+                    checked={geminiForm.watch("useAiForShortDescription") || false}
+                    onCheckedChange={(checked) => geminiForm.setValue("useAiForShortDescription", checked)}
+                  />
+                  <div>
+                    <Label htmlFor="useAiForShortDescription">Kısa açıklama için AI kullan</Label>
+                    <p className="text-sm text-muted-foreground">
+                      XML'den gelen metinleri AI ile 200 karakterlik SEO uyumlu kısa açıklamaya dönüştürür
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="useAiForFullDescription" 
+                    data-testid="switch-ai-full-description"
+                    checked={geminiForm.watch("useAiForFullDescription") || false}
+                    onCheckedChange={(checked) => geminiForm.setValue("useAiForFullDescription", checked)}
+                  />
+                  <div>
+                    <Label htmlFor="useAiForFullDescription">Tam açıklama için AI kullan</Label>
+                    <p className="text-sm text-muted-foreground">
+                      XML'den gelen metinleri AI ile HTML formatlı, SEO uyumlu ve özellik vurgulu açıklamaya dönüştürür
+                    </p>
+                  </div>
+                </div>
               </div>
               
               <div className="flex space-x-4">

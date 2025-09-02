@@ -255,6 +255,120 @@ Lütfen şu JSON formatında yanıt ver:
       throw new Error("Yapay zeka eşleştirme sırasında hata oluştu: " + error.message);
     }
   }
+
+  // Metin üretimi için genel method
+  async generateText(
+    prompt: string,
+    modelName: string = "gemini-1.5-flash"
+  ): Promise<string> {
+    if (!this.client) {
+      throw new Error("Gemini API anahtarı ayarlanmamış");
+    }
+
+    try {
+      const response = await this.client.models.generateContent({
+        model: modelName,
+        contents: prompt
+      });
+
+      return response.text || "";
+    } catch (error: any) {
+      console.error("Gemini generateText error:", error);
+      throw new Error("Metin üretimi sırasında hata oluştu: " + error.message);
+    }
+  }
+
+  // Kısa açıklama için AI optimize et
+  async optimizeShortDescription(
+    productName: string,
+    originalDescription: string,
+    modelName: string = "gemini-1.5-flash"
+  ): Promise<string> {
+    if (!this.client) {
+      throw new Error("Gemini API anahtarı ayarlanmamış");
+    }
+
+    const prompt = `Sen bir e-ticaret metni uzmanısın. Aşağıdaki ürün için kısa açıklama optimize et:
+
+Ürün Adı: "${productName}"
+Orijinal Açıklama: "${originalDescription}"
+
+Göreverin:
+1. Maksimum 200 karakterlik kısa açıklama yaz
+2. SEO dostu ve çekici olsun
+3. Ürünün temel özelliklerini vurgula
+4. HTML tag kullanma
+5. Müşterilerin dikkatini çekecek şekilde yaz
+6. Türkçe dilbilgisi kurallarına uygun olsun
+7. Gereksiz kelimeler ekleme, sadece mevcut bilgileri optimize et
+
+Optimizasyon kuralları:
+- Ana özellikleri ön plana çıkar
+- Faydaları vurgula
+- Kısa ve net cümleler kullan
+- Aksiyon odaklı kelimeler ekle
+
+Optimize edilmiş kısa açıklama:`;
+
+    try {
+      const response = await this.generateText(prompt, modelName);
+      const optimized = response.trim();
+      
+      // 200 karakterden uzunsa kısalt
+      if (optimized.length > 200) {
+        return optimized.substring(0, 197) + "...";
+      }
+      
+      return optimized;
+    } catch (error: any) {
+      console.error("Short description optimization error:", error);
+      throw error;
+    }
+  }
+
+  // Tam açıklama için AI optimize et
+  async optimizeFullDescription(
+    productName: string,
+    originalDescription: string,
+    modelName: string = "gemini-1.5-flash"
+  ): Promise<string> {
+    if (!this.client) {
+      throw new Error("Gemini API anahtarı ayarlanmamış");
+    }
+
+    const prompt = `Sen bir e-ticaret içerik uzmanısın. Aşağıdaki ürün için tam açıklamayı optimize et:
+
+Ürün Adı: "${productName}"
+Orijinal Açıklama: "${originalDescription}"
+
+Göreverin:
+1. SEO dostu ve kapsamlı açıklama yaz
+2. Ürün özelliklerini detaylıca açıkla
+3. Kullanım alanlarını belirt
+4. Müşteri faydalarını vurgula
+5. HTML formatında düzenle (p, ul, li, strong, em etiketleri kullan)
+6. Başlıklar ve alt başlıklar ekle
+7. Gereksiz bilgi ekleme, mevcut bilgileri genişlet ve düzenle
+8. Türkçe dilbilgisi kurallarına uygun olsun
+
+Optimizasyon kuralları:
+- Özellikleri liste halinde sun
+- Faydaları vurgula
+- Teknik detayları açıkla
+- Kullanım senaryoları ekle
+- SEO anahtar kelimeler ekle
+- Okunabilir paragraflar oluştur
+
+Optimize edilmiş tam açıklama:`;
+
+    try {
+      const response = await this.generateText(prompt, modelName);
+      return response.trim();
+    } catch (error: any) {
+      console.error("Full description optimization error:", error);
+      throw error;
+    }
+  }
 }
 
 // Global instance

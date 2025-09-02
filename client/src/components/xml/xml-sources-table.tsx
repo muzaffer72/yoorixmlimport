@@ -234,7 +234,7 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
     <Card>
       <CardHeader>
         <CardTitle>Mevcut XML Kaynakları</CardTitle>
-        <p className="text-sm text-muted-foreground">Kayıtlı XML kaynaklarınızı yönetin</p>
+        <p className="text-sm text-muted-foreground">Kayıtlı XML kaynaklarınızı yönetin. Bilgi ürünler yükleniyor ekranında kalıyorsa  	selected_variants 	selected_variants_ids bu iki sütünün varsayılanını NULL yerine  [] olarak değiştirin.</p>
       </CardHeader>
       <CardContent>
         {xmlSources.length === 0 ? (

@@ -387,7 +387,14 @@ export class PageStorage {
   // Settings Management
   async getGeminiSettings(): Promise<any> {
     const data = this.loadJsonFile('settings.json', { 
-      gemini: { apiKey: "", selectedModel: "gemini-2.5-flash", isActive: false, isConfigured: false },
+      gemini: { 
+        apiKey: "", 
+        selectedModel: "gemini-2.5-flash", 
+        isActive: false, 
+        isConfigured: false,
+        useAiForShortDescription: false,
+        useAiForFullDescription: false
+      },
       database: { host: "", port: 3306, database: "", username: "", password: "", isActive: false }
     });
     
@@ -395,13 +402,25 @@ export class PageStorage {
       api_key: data.gemini.isConfigured ? '***API_KEY_SET***' : '',
       selected_model: data.gemini.selectedModel,
       is_active: data.gemini.isActive,
-      is_configured: data.gemini.isConfigured
+      is_configured: data.gemini.isConfigured,
+      useAiForShortDescription: data.gemini.useAiForShortDescription || false,
+      useAiForFullDescription: data.gemini.useAiForFullDescription || false
     };
   }
 
-  async updateGeminiSettings(apiKey: string, selectedModel: string): Promise<any> {
+  async updateGeminiSettings(apiKey: string, selectedModel: string, options: {
+    useAiForShortDescription?: boolean;
+    useAiForFullDescription?: boolean;
+  } = {}): Promise<any> {
     const data = this.loadJsonFile('settings.json', { 
-      gemini: { apiKey: "", selectedModel: "gemini-2.5-flash", isActive: false, isConfigured: false },
+      gemini: { 
+        apiKey: "", 
+        selectedModel: "gemini-2.5-flash", 
+        isActive: false, 
+        isConfigured: false,
+        useAiForShortDescription: false,
+        useAiForFullDescription: false
+      },
       database: { host: "", port: 3306, database: "", username: "", password: "", isActive: false }
     });
     
@@ -411,14 +430,22 @@ export class PageStorage {
         apiKey: "",
         selectedModel: selectedModel, // Model seçimini koru
         isActive: false,
-        isConfigured: false
+        isConfigured: false,
+        useAiForShortDescription: options.useAiForShortDescription !== undefined ? 
+          options.useAiForShortDescription : (data.gemini.useAiForShortDescription || false),
+        useAiForFullDescription: options.useAiForFullDescription !== undefined ? 
+          options.useAiForFullDescription : (data.gemini.useAiForFullDescription || false)
       };
     } else {
       data.gemini = {
         apiKey: apiKey,
         selectedModel: selectedModel,
         isActive: true,
-        isConfigured: true
+        isConfigured: true,
+        useAiForShortDescription: options.useAiForShortDescription !== undefined ? 
+          options.useAiForShortDescription : (data.gemini.useAiForShortDescription || false),
+        useAiForFullDescription: options.useAiForFullDescription !== undefined ? 
+          options.useAiForFullDescription : (data.gemini.useAiForFullDescription || false)
       };
     }
     
@@ -436,7 +463,9 @@ export class PageStorage {
       api_key: data.gemini.isConfigured ? '***API_KEY_SET***' : '',
       selected_model: selectedModel,
       is_active: data.gemini.isActive,
-      is_configured: data.gemini.isConfigured
+      is_configured: data.gemini.isConfigured,
+      useAiForShortDescription: data.gemini.useAiForShortDescription,
+      useAiForFullDescription: data.gemini.useAiForFullDescription
     };
   }
 

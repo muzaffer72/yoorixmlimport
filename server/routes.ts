@@ -852,10 +852,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 let nameValue = extractValue(fieldMapping?.name);
                 let priceValue = extractValue(fieldMapping?.price);
                 let descValue = extractValue(fieldMapping?.description);
+                let shortDescValue = extractValue(fieldMapping?.short_description);
                 let skuValue = extractValue(fieldMapping?.sku);
                 let barcodeValue = extractValue(fieldMapping?.barcode);
                 let stockValue = extractValue(fieldMapping?.current_stock);
                 let unitValue = extractValue(fieldMapping?.unit);
+                
+                // SPECIAL HANDLING - If both description fields use same XML field, use the value for both
+                if (fieldMapping?.description && fieldMapping?.short_description && 
+                    fieldMapping.description === fieldMapping.short_description && descValue && !shortDescValue) {
+                  console.log(`📝 SAME FIELD DETECTED: Both description fields use "${fieldMapping.description}"`);
+                  shortDescValue = descValue; // Use the same extracted value
+                }
                 
                 // FALLBACK STRATEGY - Try common field names if mapping fails
                 if (!nameValue) {
@@ -864,12 +872,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (!priceValue) {
                   priceValue = obj.fiyat || obj.price || obj.fiyati || obj.amount || obj.tutar;
                 }
+                
+                // DESCRIPTION FALLBACK - Try common description field names
+                if (!descValue) {
+                  descValue = obj.aciklama || obj.description || obj.detay || obj.details || obj.ozet || obj.summary;
+                }
+                if (!shortDescValue) {
+                  shortDescValue = obj.kisa_aciklama || obj.short_description || obj.kisaAciklama || obj.summary || obj.ozet;
+                }
+                
+                if (debugCount < 3) {
+                  console.log(`📝 DESCRIPTION FALLBACK RESULTS:`, {
+                    descMapping: fieldMapping?.description,
+                    shortDescMapping: fieldMapping?.short_description,
+                    descExtracted: descValue,
+                    shortDescExtracted: shortDescValue,
+                    availableDescFields: Object.keys(obj).filter(key => 
+                      key.toLowerCase().includes('aciklama') || 
+                      key.toLowerCase().includes('description') || 
+                      key.toLowerCase().includes('detay') ||
+                      key.toLowerCase().includes('ozet') ||
+                      key.toLowerCase().includes('summary')
+                    )
+                  });
+                }
+                
+                // STOCK VALUE CHECK - Field mapping should work, fallback only if necessary
+                if (debugCount < 3) {
+                  console.log(`📦 STOCK PROCESSING for product: ${nameValue}`);
+                  console.log(`📦 Stock field mapping: "${fieldMapping?.current_stock}"`);
+                  console.log(`📦 Extracted stock value: ${stockValue} (type: ${typeof stockValue})`);
+                }
+                
+                // Only use fallback if field mapping completely failed
                 if (!stockValue || stockValue === null || stockValue === undefined || stockValue === '') {
-                  stockValue = obj.stok || obj.stock || obj.miktar || obj.quantity || obj.adet || obj.current_stock || obj.currentStock;
-                  if (debugCount < 3) {
-                    console.log(`📦 Stock fallback activated. Found: ${stockValue} from object keys`);
+                  console.log(`⚠️ FIELD MAPPING FAILED - Stock field "${fieldMapping?.current_stock}" not found in XML`);
+                  console.log(`📦 Attempting fallback search...`);
+                  
+                  // Try most common Turkish stock fields only
+                  stockValue = obj.stok || obj.stock || obj.miktar || obj.quantity || obj.adet;
+                  
+                  if (stockValue) {
+                    console.log(`✅ Found stock via fallback: ${stockValue}`);
+                  } else {
+                    console.log(`❌ No stock found even with fallback. Available fields: ${Object.keys(obj).slice(0, 10).join(', ')}...`);
                   }
                 }
+                
                 if (!skuValue) {
                   skuValue = obj.sku || obj.kod || obj.code || obj.urun_kodu || obj.product_code;
                 }
@@ -880,30 +929,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   console.log(`📝 Field Mappings:`, {
                     name: fieldMapping?.name,
                     price: fieldMapping?.price,
+                    description: fieldMapping?.description,
+                    short_description: fieldMapping?.short_description,
                     current_stock: fieldMapping?.current_stock,
                     category: xmlSource.categoryTag,
                     allMappings: Object.keys(fieldMapping || {})
                   });
-                  console.log(`📦 Current Object Keys: [${Object.keys(obj).slice(0, 10).join(', ')}${Object.keys(obj).length > 10 ? '...' : ''}]`);
+                  console.log(`📦 Current Object Keys: [${Object.keys(obj).slice(0, 15).join(', ')}${Object.keys(obj).length > 15 ? '...' : ''}]`);
                   console.log(`🌍 XML Root Keys: [${Object.keys(data).join(', ')}]`);
                   console.log(`✅ Raw Extracted Values:`, {
                     name: `"${nameValue}" (type: ${typeof nameValue})`,
                     price: `"${priceValue}" (type: ${typeof priceValue})`,
+                    description: `"${descValue}" (type: ${typeof descValue})`,
+                    shortDescription: `"${shortDescValue}" (type: ${typeof shortDescValue})`,
                     stock: `"${stockValue}" (type: ${typeof stockValue})`,
                     category: `"${categoryName}" (type: ${typeof categoryName})`,
                     targetCategoryId,
                     hasValidName: !!(nameValue && nameValue !== "Ürün Adı Belirtilmemiş"),
                     hasValidCategory: !!targetCategoryId
                   });
-                  console.log(`🔍 Stock Field Testing:`, {
-                    stockMapping: fieldMapping?.current_stock,
-                    extractedStockValue: stockValue,
-                    fallbackStock: obj.stok || obj.stock || obj.miktar || obj.quantity || obj.adet || 'NOT_FOUND',
-                    stockAfterParsing: parseInt(stockValue as string) || 0
-                  });
-                  console.log(`🔍 Path Testing for name="${fieldMapping?.name}":`, {
-                    currentObjectValue: obj[fieldMapping?.name?.split('.')[0] || ''] || 'NOT_FOUND',
-                    xmlRootValue: data[fieldMapping?.name?.split('.')[0] || ''] || 'NOT_FOUND'
+                  console.log(`🔍 FIELD MAPPING VALIDATION:`, {
+                    stockFieldExists: fieldMapping?.current_stock ? 'YES' : 'NO',
+                    stockFieldValue: fieldMapping?.current_stock,
+                    objectHasStockField: obj[fieldMapping?.current_stock || ''] !== undefined ? 'YES' : 'NO',
+                    objectStockFieldValue: obj[fieldMapping?.current_stock || ''],
+                    extractValueResult: stockValue,
+                    isStockValid: !!(stockValue && stockValue !== null && stockValue !== undefined && stockValue !== '' && stockValue !== '0')
                   });
                   console.log(`🔍 === END EXTRACTION DEBUG ===\n`);
                 }
@@ -923,6 +974,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 // STRICT NAME VALIDATION - No dummy names allowed
                 const finalName = nameValue && String(nameValue).trim();
                 
+                // FINAL STOCK PROCESSING - Parse and validate stock value
+                let finalStockValue = 0;
+                if (stockValue !== null && stockValue !== undefined && stockValue !== '') {
+                  // Try to parse as integer first, then float
+                  const parsedInt = parseInt(stockValue as string);
+                  const parsedFloat = parseFloat(stockValue as string);
+                  
+                  if (!isNaN(parsedInt) && parsedInt > 0) {
+                    finalStockValue = parsedInt;
+                  } else if (!isNaN(parsedFloat) && parsedFloat > 0) {
+                    finalStockValue = Math.floor(parsedFloat); // Round down to integer
+                  }
+                }
+                
+                // If still 0, set default stock
+                if (finalStockValue <= 0) {
+                  finalStockValue = 1; // En az 1 stok ver, 0 yerine
+                }
+                
+                console.log(`📦 FINAL STOCK PROCESSING for ${nameValue}:`);
+                console.log(`   - Raw stock value: ${stockValue} (type: ${typeof stockValue})`);
+                console.log(`   - Parsed as int: ${parseInt(stockValue as string)} (isNaN: ${isNaN(parseInt(stockValue as string))})`);
+                console.log(`   - Parsed as float: ${parseFloat(stockValue as string)} (isNaN: ${isNaN(parseFloat(stockValue as string))})`);
+                console.log(`   - Final stock value: ${finalStockValue}`);
+                
+                // DESCRIPTION PROCESSING FUNCTIONS
+                const cleanHtmlTags = (text: string) => {
+                  if (!text || typeof text !== 'string') return '';
+                  return text.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').replace(/\s+/g, ' ').trim();
+                };
+                
+                const generateShortDescriptionWithAI = async (productName: string, fullDescription: string): Promise<string> => {
+                  try {
+                    // Gemini settings'i al
+                    const geminiSettings = await pageStorage.getGeminiSettings();
+                    if (!geminiSettings || !geminiSettings.api_key || !geminiSettings.useAiForShortDescription) {
+                      // AI kullanılmayacaksa fallback
+                      const cleaned = cleanHtmlTags(fullDescription);
+                      return cleaned.substring(0, 200).trim();
+                    }
+
+                    // Gemini service ile kısa açıklama optimize et
+                    const geminiService = new GeminiService(geminiSettings.api_key);
+                    const optimizedText = await geminiService.optimizeShortDescription(
+                      productName, 
+                      fullDescription, 
+                      geminiSettings.selected_model || "gemini-1.5-flash"
+                    );
+                    
+                    return optimizedText || cleanHtmlTags(fullDescription).substring(0, 200).trim();
+                    
+                  } catch (error) {
+                    console.log(`⚠️ AI short description failed for ${productName}, using fallback:`, error);
+                    // Fallback: Manuel kısaltma
+                    const cleaned = cleanHtmlTags(fullDescription);
+                    return cleaned.substring(0, 200).trim();
+                  }
+                };
+
+                const generateFullDescriptionWithAI = async (productName: string, originalDescription: string): Promise<string> => {
+                  try {
+                    // Gemini settings'i al
+                    const geminiSettings = await pageStorage.getGeminiSettings();
+                    if (!geminiSettings || !geminiSettings.api_key || !geminiSettings.useAiForFullDescription) {
+                      // AI kullanılmayacaksa orijinal metni döndür
+                      return originalDescription;
+                    }
+
+                    // Gemini service ile tam açıklama optimize et
+                    const geminiService = new GeminiService(geminiSettings.api_key);
+                    const optimizedText = await geminiService.optimizeFullDescription(
+                      productName, 
+                      originalDescription, 
+                      geminiSettings.selected_model || "gemini-1.5-flash"
+                    );
+                    
+                    return optimizedText || originalDescription;
+                    
+                  } catch (error) {
+                    console.log(`⚠️ AI full description failed for ${productName}, using original:`, error);
+                    // Fallback: Orijinal metin
+                    return originalDescription;
+                  }
+                };
+                
+                const processShortDescription = (text: string, productName: string = "") => {
+                  if (!text) return '';
+                  // Şimdilik sadece fallback - AI integration daha sonra eklenecek
+                  const cleaned = cleanHtmlTags(text);
+                  
+                  // Kelimeleri böl ve tam kelimelerde kes
+                  const words = cleaned.split(' ');
+                  let result = '';
+                  
+                  for (const word of words) {
+                    if (result.length + word.length + 1 <= 195) { // 5 karakter margin bırak
+                      result += (result ? ' ' : '') + word;
+                    } else {
+                      break;
+                    }
+                  }
+                  
+                  return result.trim() || cleaned.substring(0, 200).trim();
+                };
+                
+                const processDescription = (text: string, productName: string = "") => {
+                  if (!text) return '';
+                  // HTML temizlenmeden bırak (orijinal istek)
+                  return text;
+                };
+                
                 // Excel örneğinizdeki TAM veri yapısı  
                 const productData = {
                   name: finalName || `Ürün-${Date.now()}`, // XML'den gelen ad
@@ -934,7 +1096,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   sku: skuValue || `XML-${Date.now()}`,
                   tags: "xml,import,auto", // Excel örneğindeki format
                   slug: (nameValue || "demo-product").toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
-                  currentStock: parseInt(stockValue as string) || 100,
+                  currentStock: finalStockValue, // Processed and validated stock value
                   minimumOrderQuantity: 1,
                   videoProvider: "youtube", // Excel örneğindeki varsayılan
                   videoUrl: "https://www.youtube.com/c/SpaGreenCreative",
@@ -942,8 +1104,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   externalLink: "",
                   isRefundable: false, // Excel: "0"  
                   cashOnDelivery: false, // Excel: "0"
-                  shortDescription: descValue ? descValue.replace(/<[^>]*>/g, '').substring(0, 200) : nameValue || "Kısa açıklama mevcut değil",
-                  description: descValue || (obj['_'] && typeof obj['_'] === 'string') ? obj['_'] : `${nameValue} hakkında detaylı bilgi için iletişime geçiniz.`,
+                  shortDescription: shortDescValue ? 
+                    processShortDescription(shortDescValue, finalName || nameValue || "Ürün") : 
+                    (descValue ? processShortDescription(descValue, finalName || nameValue || "Ürün") : nameValue || "Kısa açıklama mevcut değil"),
+                  description: descValue ? processDescription(descValue, finalName || nameValue || "Ürün") : 
+                              (obj['_'] && typeof obj['_'] === 'string') ? processDescription(obj['_'], finalName || nameValue || "Ürün") : 
+                              `${nameValue} hakkında detaylı bilgi için iletişime geçiniz.`,
                   metaTitle: (nameValue || "Demo Product") + " - Meta Title",
                   metaDescription: "Demo meta description for " + (nameValue || "product"),
                   // Sistem alanları
@@ -954,12 +1120,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 };
                 
                 console.log(`🔍 ÜRÜN VERİSİ HAZIRLANDI:`, {
-                  ...productData,
+                  name: productData.name,
+                  price: productData.price,
+                  currentStock: productData.currentStock,
+                  sku: productData.sku,
+                  shortDescription: productData.shortDescription?.substring(0, 100) + '...',
+                  description: productData.description?.substring(0, 100) + '...',
                   categoryInfo: {
                     categoryName,
                     categoryId: targetCategoryId,
                     xmlCategoryTag: xmlSource.categoryTag,
                     extractedCategoryValue: categoryName
+                  },
+                  stockInfo: {
+                    rawStockValue: stockValue,
+                    finalStockValue: finalStockValue,
+                    stockMapping: fieldMapping?.current_stock,
+                    stockType: typeof stockValue
+                  },
+                  descriptionInfo: {
+                    shortDescMapping: fieldMapping?.short_description,
+                    descMapping: fieldMapping?.description,
+                    shortDescExtracted: shortDescValue,
+                    descExtracted: descValue,
+                    finalShortDesc: productData.shortDescription?.substring(0, 50) + '...',
+                    finalDesc: productData.description?.substring(0, 50) + '...'
                   },
                   imageInfo: {
                     thumbnailMapping: fieldMapping?.thumbnail,
@@ -973,7 +1158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (productData.name && productData.name !== "Ürün Adı Belirtilmemiş") {
                   products.push(productData);
                   debugCount++; // Increment debug counter after adding product
-                  console.log(`✅ ÜRÜN EKLENDİ: ${productData.name} - ${productData.price} TL`);
+                  console.log(`✅ ÜRÜN EKLENDİ: ${productData.name} - ${productData.price} TL - STOK: ${productData.currentStock}`);
                 } else {
                   console.log(`❌ ÜRÜN REDDEDİLDİ: İsim eksik veya varsayılan`);
                 }
@@ -1286,6 +1471,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fix NULL selected_variants fields in existing products
+  app.post("/api/products/fix-selected-variants", async (req, res) => {
+    try {
+      console.log(`🔧 Fixing NULL selected_variants and selected_variants_ids in existing products...`);
+      
+      const connection = getImportConnection();
+      if (!connection) {
+        return res.status(500).json({ message: "Database connection not available" });
+      }
+
+      // Update NULL values to empty JSON arrays
+      const [result] = await connection.execute(`
+        UPDATE products 
+        SET selected_variants = JSON_ARRAY(), selected_variants_ids = JSON_ARRAY() 
+        WHERE selected_variants IS NULL OR selected_variants_ids IS NULL
+      `);
+      
+      const affectedRows = (result as any).affectedRows;
+      console.log(`✅ Fixed ${affectedRows} products with NULL selected_variants fields`);
+      
+      res.json({ 
+        success: true, 
+        message: `Successfully fixed ${affectedRows} products`,
+        affectedRows 
+      });
+    } catch (error) {
+      console.error('❌ Error fixing selected_variants fields:', error);
+      res.status(500).json({ message: "Failed to fix selected_variants fields" });
+    }
+  });
+
   // XML source'a göre ürünleri sil
   app.delete("/api/products/delete-by-xml-source/:xmlSourceId", async (req, res) => {
     try {
@@ -1564,12 +1780,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/gemini-settings", async (req, res) => {
     try {
-      const data = insertGeminiSettingsSchema.parse(req.body);
-      const settings = await pageStorage.updateGeminiSettings(data.apiKey, data.model);
+      const data = req.body;
+      const settings = await pageStorage.updateGeminiSettings(data.apiKey, data.model || data.selectedModel, {
+        useAiForShortDescription: data.useAiForShortDescription || false,
+        useAiForFullDescription: data.useAiForFullDescription || false
+      });
       res.status(201).json(settings);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid data", errors: error.errors });
+      if (error instanceof Error && 'errors' in error) {
+        res.status(400).json({ message: "Invalid data", errors: (error as any).errors });
       } else {
         res.status(500).json({ message: "Failed to create Gemini settings" });
       }
@@ -1580,7 +1799,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const data = req.body;
-      const settings = await pageStorage.updateGeminiSettings(data.apiKey, data.selectedModel);
+      const settings = await pageStorage.updateGeminiSettings(data.apiKey, data.selectedModel || data.model, {
+        useAiForShortDescription: data.useAiForShortDescription || false,
+        useAiForFullDescription: data.useAiForFullDescription || false
+      });
       res.json(settings);
     } catch (error) {
       res.status(500).json({ message: "Failed to update Gemini settings" });
@@ -1592,7 +1814,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       // Mevcut ayarları al ve sadece API key'i temizle, model seçimini koru
       const currentSettings = await pageStorage.getGeminiSettings();
-      const settings = await pageStorage.updateGeminiSettings('', currentSettings.selected_model);
+      const settings = await pageStorage.updateGeminiSettings('', currentSettings.selected_model, {
+        useAiForShortDescription: currentSettings.useAiForShortDescription || false,
+        useAiForFullDescription: currentSettings.useAiForFullDescription || false
+      });
       const success = true;
       if (success) {
         res.json({ message: "Gemini ayarı başarıyla silindi" });

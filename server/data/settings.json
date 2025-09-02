@@ -3,7 +3,9 @@
     "apiKey": "",
     "selectedModel": "gemini-2.5-flash",
     "isActive": false,
-    "isConfigured": false
+    "isConfigured": false,
+    "useAiForShortDescription": false,
+    "useAiForFullDescription": false
   },
   "database": {
     "host": "109.71.252.34",

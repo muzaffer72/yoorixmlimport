@@ -336,12 +336,15 @@ async function updateExistingProduct(productId: number, product: any) {
     await importConnection.execute(
       `UPDATE products SET 
         price = ?, current_stock = ?, 
+        selected_variants = ?, selected_variants_ids = ?,
         video_provider = ?, video_url = ?,
         updated_at = NOW()
        WHERE id = ?`,
       [
         product.price,
-        product.stock || 0,
+        product.currentStock || 0,
+        JSON.stringify([]), // selected_variants (JSON array)
+        JSON.stringify([]), // selected_variants_ids (JSON array)
         product.videoProvider === "none" ? '' : (product.videoProvider || ''),
         product.videoProvider === "none" ? '' : (product.videoUrl || ''),
         productId
@@ -372,7 +375,7 @@ async function updateExistingProduct(productId: number, product: any) {
        WHERE product_id = ?`,
       [
         product.price,
-        product.stock || 0,
+        product.currentStock || 0,
         productId
       ]
     );
@@ -431,6 +434,7 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                LEFT JOIN product_stocks ps ON p.id = ps.product_id
                SET 
                  p.name = ?, p.price = ?, p.unit = ?, p.current_stock = ?, p.colors = ?, p.attribute_sets = ?,
+                 p.selected_variants = ?, p.selected_variants_ids = ?,
                  p.short_description = ?, p.description = ?, p.thumbnail = ?, p.images = ?,
                  p.video_provider = ?, p.video_url = ?, p.updated_at = NOW(),
                  pl.name = ?, pl.short_description = ?, pl.description = ?,
@@ -438,11 +442,12 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                  ps.price = ?, ps.current_stock = ?
                WHERE p.id = ?`,
               [
-                product.name || null, product.price || 0, product.unit || 'adet', product.stock || 0, '[]', '[]', // products
+                product.name || null, product.price || 0, product.unit || 'adet', product.currentStock || 0, '[]', '[]', // products
+                JSON.stringify([]), JSON.stringify([]), // selected_variants alanları
                 product.shortDescription || null, product.description || null, '{}', '[]', '', '', // products devamı
                 product.name || null, product.shortDescription || null, product.description || null, // product_languages
                 product.tags || null, product.metaTitle || product.name || null, product.metaDescription || null,
-                product.price || 0, product.stock || 0, // product_stocks
+                product.price || 0, product.currentStock || 0, // product_stocks
                 existingProduct.id
               ]
             );
@@ -479,9 +484,9 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                 brand_id, category_id, user_id, created_by, slug, price,
                 purchase_cost, barcode, minimum_order_quantity,
                 status, is_approved, is_catalog, external_link, is_refundable, 
-                cash_on_delivery, colors, attribute_sets, 
+                cash_on_delivery, colors, attribute_sets, selected_variants, selected_variants_ids,
                 thumbnail, images, video_provider, video_url, current_stock, xmlkaynagi
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 product.brandId || null, 
                 product.categoryId || null, 
@@ -500,11 +505,13 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                 product.cashOnDelivery ? 1 : 0,
                 '[]', // colors (boş JSON array)
                 '[]', // attribute_sets (boş JSON array)
+                JSON.stringify([]), // selected_variants (JSON array)
+                JSON.stringify([]), // selected_variants_ids (JSON array)
                 '{}', // thumbnail (boş, sonra güncellenecek)
                 '[]', // images (boş, sonra güncellenecek)
                 '', // video_provider
                 '', // video_url
-                product.stock || 0, // current_stock
+                product.currentStock || 0, // current_stock
                 xmlSourceId // xml_source_id
               ]
             );
@@ -539,7 +546,7 @@ export async function batchImportProductsToMySQL(products: any[], batchSize: num
                 productId, 
                 '', // name (empty string)
                 product.sku || null, 
-                product.stock || 0, // current_stock
+                product.currentStock || 0, // current_stock
                 product.price || 0, // price
                 '[]' // image (boş array string)
               ]
@@ -680,7 +687,7 @@ export async function importProductToMySQL(product: {
   description?: string;
   shortDescription?: string;
   sku?: string;
-  stock: number;
+  currentStock: number; // stock yerine currentStock kullan
   barcode?: string;
   unit?: string;
   thumbnail?: string;
@@ -752,12 +759,12 @@ export async function importProductToMySQL(product: {
         '[]', // attribute_sets (JSON)
         '', // vat_taxes
         0, // has_variant
-        '[]', // selected_variants (JSON)
-        '[]', // selected_variants_ids (JSON)
+        JSON.stringify([]), // selected_variants (JSON array)
+        JSON.stringify([]), // selected_variants_ids (JSON array)
         '{}', // thumbnail (JSON) - sonra güncellenecek
         '[]', // images (JSON) - sonra güncellenecek
         '[]', // description_images (JSON)
-        product.stock || 0, // current_stock
+        product.currentStock || 0, // current_stock
         product.minimumOrderQuantity || 1, // minimum_order_quantity
         'visible_with_quantity', // stock_visibility
         'published', // status
@@ -813,7 +820,7 @@ export async function importProductToMySQL(product: {
         '', // name (boş)
         product.sku || '',
         product.price,
-        product.stock || 0,
+        product.currentStock || 0,
         JSON.stringify([]) // image (şimdilik boş)
       ]
     );
