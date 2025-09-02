@@ -772,7 +772,7 @@ export class PageStorage {
   async getSystemSettings(): Promise<Record<string, any>> {
     const data = this.loadJsonFile('system-settings.json', { 
       settings: {
-        image_storage_path: '/home/hercuma.com/public_html/public/images'
+        image_storage_path: './public/images'
       }
     });
     return data.settings;
@@ -781,7 +781,7 @@ export class PageStorage {
   async updateSystemSetting(key: string, value: string): Promise<void> {
     const data = this.loadJsonFile('system-settings.json', { 
       settings: {
-        image_storage_path: '/home/hercuma.com/public_html/public/images'
+        image_storage_path: './public/images'
       }
     });
     
@@ -802,7 +802,8 @@ export class PageStorage {
 
   async getImageStoragePath(): Promise<string> {
     const settings = await this.getSystemSettings();
-    return settings.image_storage_path || '/home/hercuma.com/public_html/public/images';
+    // Replit ortamında çalışan güvenli path
+    return settings.image_storage_path || './public/images';
   }
 }
 

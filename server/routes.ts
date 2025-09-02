@@ -787,47 +787,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const extractValue = (mapping: string | undefined) => {
                   if (!mapping) return null;
                   
-                  // Support both direct and nested field mapping
-                  // Examples: "adi", "details.name", "products.product.name"
-                  const fields = mapping.split('.');
-                  
-                  // Try from current object first (for immediate properties)
-                  let value = obj;
-                  let pathWorked = true;
-                  
-                  for (const field of fields) {
-                    if (value && typeof value === 'object' && field in value) {
-                      value = value[field];
-                    } else {
-                      pathWorked = false;
-                      break;
-                    }
+                  // Artık Urunler.Urun seviyesindeki objedeyiz, 
+                  // "Urunler.Urun.adi" gibi path'lerde sadece son kısmı kullan
+                  let actualField = mapping;
+                  if (mapping.includes('Urunler.Urun.')) {
+                    actualField = mapping.split('Urunler.Urun.').pop() || mapping;
                   }
                   
-                  if (pathWorked && value !== null && value !== undefined) {
-                    return value;
+                  // Direct field access from current product object
+                  if (obj && typeof obj === 'object' && actualField in obj) {
+                    return obj[actualField];
                   }
                   
-                  // If path from current object failed, try from XML root for absolute paths like "products.product.name"
-                  if (fields.length > 1) {
-                    value = data; // Start from XML root
-                    pathWorked = true;
-                    
-                    for (const field of fields) {
-                      if (value && typeof value === 'object' && field in value) {
-                        value = value[field];
-                      } else {
-                        pathWorked = false;
-                        break;
-                      }
-                    }
-                    
-                    if (pathWorked && value !== null && value !== undefined) {
-                      return value;
-                    }
-                  }
-                  
-                  return null; // Path not found in both current object and XML root
+                  return null;
                 };
                 
                 // Extract image URLs
