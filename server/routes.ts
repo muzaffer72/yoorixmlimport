@@ -2258,15 +2258,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 // MySQL'den XML kaynağına göre mevcut ürünlerin SKU kodlarını al
 async function getExistingSKUsFromDB(xmlSourceId: string): Promise<Set<string>> {
   try {
-    const { getImportConnection } = await import('./mysql-import');
-    const connection = getImportConnection();
+    console.log(`📋 MySQL'den mevcut SKU kodları alınıyor (XML Source: ${xmlSourceId})`);
     
-    if (!connection) {
-      console.log(`⚠️  MySQL bağlantısı yok, boş SKU seti döndürülüyor`);
+    // Database ayarlarını sistem ayarlarından al
+    const dbSettings = await pageStorage.getDatabaseSettings();
+    if (!dbSettings || !dbSettings.host) {
+      console.log(`⚠️  MySQL ayarları yapılandırılmamış`);
       return new Set<string>();
     }
+
+    console.log(`   └─ MySQL Host: ${dbSettings.host}:${dbSettings.port}`);
+    console.log(`   └─ Database: ${dbSettings.database}`);
     
-    console.log(`📋 MySQL'den mevcut SKU kodları alınıyor (XML Source: ${xmlSourceId})`);
+    // MySQL bağlantısını kur
+    const { connectToImportDatabase, getImportConnection } = await import('./mysql-import');
+    await connectToImportDatabase(dbSettings);
+    
+    const connection = getImportConnection();
+    if (!connection) {
+      console.log(`⚠️  MySQL bağlantısı kurulamadı`);
+      return new Set<string>();
+    }
     
     // Gerçek MySQL query
     const query = `SELECT sku FROM products WHERE xml_source_id = ? AND sku IS NOT NULL AND sku != ''`;
@@ -2301,11 +2313,20 @@ function filterProductsBySKU(xmlProducts: any[], existingSKUs: Set<string>, skuF
 // MySQL'de ürün güncelleme fonksiyonu
 async function updateProductInMySQL(sku: string, productData: any, cronjob: any): Promise<boolean> {
   try {
-    const { getImportConnection } = await import('./mysql-import');
-    const connection = getImportConnection();
+    // Database ayarlarını sistem ayarlarından al
+    const dbSettings = await pageStorage.getDatabaseSettings();
+    if (!dbSettings || !dbSettings.host) {
+      console.log(`⚠️  MySQL ayarları yapılandırılmamış: ${sku}`);
+      return false;
+    }
+
+    // MySQL bağlantısını kur
+    const { connectToImportDatabase, getImportConnection } = await import('./mysql-import');
+    await connectToImportDatabase(dbSettings);
     
+    const connection = getImportConnection();
     if (!connection) {
-      console.log(`⚠️  MySQL bağlantısı yok, ürün güncellenemedi: ${sku}`);
+      console.log(`⚠️  MySQL bağlantısı kurulamadı: ${sku}`);
       return false;
     }
 
@@ -2361,11 +2382,20 @@ async function updateProductInMySQL(sku: string, productData: any, cronjob: any)
 // MySQL'de sadece fiyat ve stok güncelleme fonksiyonu
 async function updateProductPriceStockInMySQL(sku: string, price: number, stock: number): Promise<boolean> {
   try {
-    const { getImportConnection } = await import('./mysql-import');
-    const connection = getImportConnection();
+    // Database ayarlarını sistem ayarlarından al
+    const dbSettings = await pageStorage.getDatabaseSettings();
+    if (!dbSettings || !dbSettings.host) {
+      console.log(`⚠️  MySQL ayarları yapılandırılmamış: ${sku}`);
+      return false;
+    }
+
+    // MySQL bağlantısını kur
+    const { connectToImportDatabase, getImportConnection } = await import('./mysql-import');
+    await connectToImportDatabase(dbSettings);
     
+    const connection = getImportConnection();
     if (!connection) {
-      console.log(`⚠️  MySQL bağlantısı yok, fiyat/stok güncellenemedi: ${sku}`);
+      console.log(`⚠️  MySQL bağlantısı kurulamadı: ${sku}`);
       return false;
     }
 
