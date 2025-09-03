@@ -54,11 +54,23 @@ export default function CronjobPage() {
       const response = await apiRequest("POST", "/api/cronjobs", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      const webhookUrl = getWebhookUrl(data.id);
       toast({
-        title: "Başarılı",
-        description: "Cronjob başarıyla oluşturuldu",
+        title: "✅ Cronjob Oluşturuldu",
+        description: (
+          <div>
+            <p>Cronjob başarıyla oluşturuldu!</p>
+            <p className="text-xs mt-1 p-1 bg-gray-100 rounded font-mono">
+              Tetikleme URL'si panoya kopyalandı
+            </p>
+          </div>
+        ),
       });
+      
+      // URL'yi otomatik olarak panoya kopyala
+      navigator.clipboard.writeText(webhookUrl);
+      
       setCronjobName("");
       setSelectedXmlSource("");
       setSelectedFrequency("");
@@ -247,7 +259,7 @@ export default function CronjobPage() {
   };
 
   const getWebhookUrl = (cronjobId: string) => {
-    return `${window.location.origin}/api/webhook/cronjob/${cronjobId}`;
+    return `${window.location.origin}/api/trigger-cronjob/${cronjobId}`;
   };
 
   return (
@@ -459,23 +471,28 @@ export default function CronjobPage() {
                           <div className="text-sm text-muted-foreground">
                             {xmlSource?.name || 'Bilinmeyen XML'}
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Webhook URL: 
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-auto p-0 ml-1 text-xs"
-                              onClick={() => {
-                                navigator.clipboard.writeText(getWebhookUrl(cronjob.id!));
-                                toast({
-                                  title: "Kopyalandı",
-                                  description: "Webhook URL panoya kopyalandı",
-                                });
-                              }}
-                              data-testid={`button-copy-webhook-${cronjob.id}`}
-                            >
-                              <Download className="h-3 w-3" />
-                            </Button>
+                          <div className="text-xs text-muted-foreground mt-2">
+                            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
+                              <span className="text-xs font-mono flex-1 truncate">
+                                {getWebhookUrl(cronjob.id!)}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(getWebhookUrl(cronjob.id!));
+                                  toast({
+                                    title: "✅ Kopyalandı",
+                                    description: "Tetikleme URL'si panoya kopyalandı",
+                                  });
+                                }}
+                                data-testid={`button-copy-webhook-${cronjob.id}`}
+                                title="URL'yi kopyala"
+                              >
+                                📋
+                              </Button>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>
