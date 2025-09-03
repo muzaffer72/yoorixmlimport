@@ -103,28 +103,69 @@ export class GeminiService {
 
     console.log(`🧠 AI Mapping başlıyor: ${xmlCategories.length} XML kategori, ${localCategories.length} yerel kategori`);
 
-    // Çok fazla kategori varsa sınırla
-    const maxLocalCategories = 100; // En fazla 100 yerel kategori
-    const maxXmlCategories = 10;    // En fazla 10 XML kategori bir seferde
+    // Batch işleme için ayarlar
+    const maxLocalCategories = localCategories.length; // TÜM yerel kategorileri kullan
+    const maxXmlCategoriesPerBatch = 20; // Her seferde 20 XML kategorisi işle (API limit için)
     
     const limitedLocalCategories = localCategories.slice(0, maxLocalCategories);
-    const limitedXmlCategories = xmlCategories.slice(0, maxXmlCategories);
     
-    if (localCategories.length > maxLocalCategories) {
-      console.log(`⚠️ Yerel kategoriler ${localCategories.length} -> ${limitedLocalCategories.length} sınırlandı`);
+    console.log(`📊 Kategori Durumu: ${xmlCategories.length} XML kategori, ${limitedLocalCategories.length} yerel kategori kontrol edilecek`);
+    
+    // Eğer XML kategori sayısı fazlaysa batch'lere böl
+    const xmlBatches = [];
+    for (let i = 0; i < xmlCategories.length; i += maxXmlCategoriesPerBatch) {
+      xmlBatches.push(xmlCategories.slice(i, i + maxXmlCategoriesPerBatch));
     }
     
-    if (xmlCategories.length > maxXmlCategories) {
-      console.log(`⚠️ XML kategoriler ${xmlCategories.length} -> ${limitedXmlCategories.length} sınırlandı`);
+    console.log(`🔄 ${xmlBatches.length} batch'te işlenecek (her batch ${maxXmlCategoriesPerBatch} XML kategorisi)`);
+    
+    let allMappings: Array<{
+      xmlCategory: string;
+      suggestedCategory: {id: string, name: string} | null;
+      confidence: number;
+      reasoning: string;
+    }> = [];
+    
+    // Her batch'i işle
+    for (let batchIndex = 0; batchIndex < xmlBatches.length; batchIndex++) {
+      const batchXmlCategories = xmlBatches[batchIndex];
+      console.log(`🔄 Batch ${batchIndex + 1}/${xmlBatches.length} işleniyor: ${batchXmlCategories.length} kategori`);
+      
+      const batchMappings = await this.processBatch(batchXmlCategories, limitedLocalCategories, modelName);
+      allMappings = allMappings.concat(batchMappings);
+      
+      // Batch'ler arası kısa bekleme (API rate limit için)
+      if (batchIndex < xmlBatches.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    
+    console.log(`✅ AI Mapping tamamlandı: ${allMappings.length} eşleştirme, ${allMappings.filter((m: any) => m.suggestedCategory).length} başarılı`);
+    return allMappings;
+  }
+  
+  // Batch işleme metodu
+  private async processBatch(
+    xmlCategories: string[],
+    localCategories: Array<{id: string, name: string}>,
+    modelName: string
+  ): Promise<Array<{
+    xmlCategory: string;
+    suggestedCategory: {id: string, name: string} | null;
+    confidence: number;
+    reasoning: string;
+  }>> {
+    if (!this.client) {
+      throw new Error("Gemini API anahtarı ayarlanmamış");
     }
 
-    const prompt = `Sen bir e-ticaret uzmanısın. XML kategorilerini yerel kategorilerle eşleştir.
+    const prompt = `Sen bir e-ticaret uzmanısın. XML kategorilerini 3500+ yerel kategorilerle eşleştir.
 
-XML Kategorileri:
-${limitedXmlCategories.map((cat, i) => `${i + 1}. ${cat}`).join('\n')}
+XML Kategorileri (eşleştirilecek):
+${xmlCategories.map((cat, i) => `${i + 1}. ${cat}`).join('\n')}
 
-Yerel Kategoriler:
-${limitedLocalCategories.map((cat, i) => `${i + 1}. ${cat.name} (ID: ${cat.id})`).join('\n')}
+Mevcut Yerel Kategoriler (hedef kategoriler - ${localCategories.length} adet):
+${localCategories.map((cat, i) => `${i + 1}. ${cat.name} (ID: ${cat.id})`).join('\n')}
 
 JSON formatında yanıt ver:
 {
@@ -138,10 +179,12 @@ JSON formatında yanıt ver:
   ]
 }
 
-KURALLAR:
-- Anlam benzerliğine odaklan
-- "Fantazi Sütyen" -> "İç Giyim" gibi eşleştirmeleri yap
-- Belirsizse confidence'ı düşük tut
+ÖNEMLİ KURALLAR:
+- ÖNCE TAM EŞLEŞME ara: "Havlu" XML kategorisi varsa "Havlu" yerel kategorisini tercih et
+- İSİM BENZERLİĞİNE odaklan: "Banyo Askısı" ile "Banyo Askıları" %95+ eşleşir
+- KAPSAMLI EŞLEŞTIRME: "Banyo Aksesuarları" → "Aksesuar" yerine daha spesifik kategori varsa onu seç
+- 3500+ kategori arasından EN UYGUN olanı seç, genel kategorileri son seçenek olarak kullan
+- Confidence'ı gerçekçi belirle: %90+ sadece çok iyi eşleşmeler için
 - Uygun yoksa suggestedCategoryId null yap`;
 
     try {
@@ -152,12 +195,12 @@ KURALLAR:
         }
       });
       
-      console.log("🚀 Gemini API çağrısı yapılıyor...");
+      console.log(`🚀 Batch Gemini API çağrısı: ${xmlCategories.length} XML, ${localCategories.length} yerel kategori`);
       const result = await model.generateContent(prompt);
       const response = result.response;
       let responseText = response.text() || "{}";
       
-      console.log("📥 Gemini yanıtı alındı:", responseText.substring(0, 200));
+      console.log("📥 Batch yanıtı alındı:", responseText.substring(0, 200));
       
       // JSON temizleme
       responseText = responseText.trim();
@@ -180,7 +223,7 @@ KURALLAR:
       // Sonuçları dönüştür
       const mappings = (result_parsed.mappings || []).map((mapping: any) => {
         const suggestedCategory = mapping.suggestedCategoryId 
-          ? limitedLocalCategories.find(cat => cat.id === mapping.suggestedCategoryId) || null
+          ? localCategories.find(cat => cat.id === mapping.suggestedCategoryId) || null
           : null;
 
         return {
@@ -191,17 +234,11 @@ KURALLAR:
         };
       });
       
-      console.log(`✅ AI Mapping tamamlandı: ${mappings.length} eşleştirme, ${mappings.filter((m: any) => m.suggestedCategory).length} başarılı`);
+      console.log(`✅ Batch tamamlandı: ${mappings.length} eşleştirme, ${mappings.filter((m: any) => m.suggestedCategory).length} başarılı`);
       return mappings;
 
     } catch (error: any) {
-      console.error("❌ Gemini API hatası detayı:", {
-        name: error.name,
-        message: error.message,
-        status: error.status,
-        statusText: error.statusText,
-        stack: error.stack?.substring(0, 300)
-      });
+      console.error("❌ Batch Gemini API hatası:", error);
       
       // Spesifik hata tiplerini kontrol et
       if (error.message?.includes('API key') || error.message?.includes('API_KEY_INVALID')) {
