@@ -15,6 +15,52 @@ let currentImportId: string | null = null;
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // Categories to JSON endpoint
+  app.post("/api/categories/save-to-json", async (req, res) => {
+    try {
+      console.log("🔄 Kategorileri JSON'a kaydetme isteği alındı...");
+      const result = await pageStorage.saveCategoriesToLocalJson();
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: result.message,
+          count: result.count,
+          categories: result.categories
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: result.message,
+          count: 0
+        });
+      }
+    } catch (error: any) {
+      console.error("❌ Kategoriler JSON'a kaydedilirken API hatası:", error);
+      res.status(500).json({
+        success: false,
+        message: "Kategoriler kaydedilirken hata oluştu: " + error.message,
+        count: 0
+      });
+    }
+  });
+
+  // Get local JSON categories endpoint
+  app.get("/api/categories/local-json", async (req, res) => {
+    try {
+      const result = await pageStorage.getLocalJsonCategories();
+      res.json(result);
+    } catch (error: any) {
+      console.error("❌ Yerel JSON kategoriler okunurken hata:", error);
+      res.status(500).json({
+        categories: [],
+        lastUpdated: null,
+        count: 0,
+        error: error.message
+      });
+    }
+  });
+
   // Dashboard endpoints
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
@@ -3167,67 +3213,67 @@ async function updateProductPriceAndStock(productId: string, product: any, xmlSo
   console.log(`✅ Updated product ${productId}: Price=${finalPrice}, Stock=${product.stock || 0}`);
 }
 
-  // Categories to JSON endpoint
-  app.post("/api/categories/save-to-json", async (req, res) => {
-    try {
-      console.log("🔄 Kategorileri JSON'a kaydetme isteği alındı...");
-      const result = await pageStorage.saveCategoriesToLocalJson();
-      
-      if (result.success) {
-        res.json({
-          success: true,
-          message: result.message,
-          count: result.count,
-          categories: result.categories
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: result.message,
-          count: 0
-        });
-      }
-    } catch (error: any) {
-      console.error("❌ Kategoriler JSON'a kaydedilirken API hatası:", error);
-      res.status(500).json({
-        success: false,
-        message: "Kategoriler kaydedilirken hata oluştu: " + error.message,
-        count: 0
-      });
-    }
-  });
-
-  // Get local JSON categories endpoint
-  app.get("/api/categories/local-json", async (req, res) => {
-    try {
-      const result = await pageStorage.getLocalJsonCategories();
-      res.json(result);
-    } catch (error: any) {
-      console.error("❌ Yerel JSON kategoriler okunurken hata:", error);
-      res.status(500).json({
-        categories: [],
-        lastUpdated: null,
-        count: 0,
-        error: error.message
-      });
-    }
-  });
-
   const server = createServer(app);
   return server;
 }
 
 // Yardımcı Fonksiyonlar
-function extractProductData(productNode: Element, fieldMapping: any): any {
-  const product: any = {};
-  
-  // Field mapping'e göre veriyi çıkar
-  Object.keys(fieldMapping).forEach(localField => {
-    const xmlField = fieldMapping[localField];
-    if (xmlField && productNode.getElementsByTagName(xmlField)[0]) {
-      product[localField] = productNode.getElementsByTagName(xmlField)[0].textContent;
-    }
-  });
-  
-  return product;
+async function checkProductBySku(sku: string): Promise<any> {
+  // Mock implementation - gerçekte MySQL'den kontrol edilecek
+  return null; // Şimdilik null döndür
 }
+
+async function importNewProduct(product: any, xmlSource: any): Promise<void> {
+  // Yeni ürün import etme mantığı
+  console.log(`➕ Importing new product: ${product.name} (SKU: ${product.sku})`);
+  // mysql-import.ts'teki importProductToMySQL fonksiyonunu kullan
+}
+
+async function updateExistingProduct(productId: string, product: any, cronjob: any): Promise<void> {
+  // Mevcut ürün güncelleme mantığı
+  console.log(`🔄 Updating existing product: ${product.name} (SKU: ${product.sku})`);
+  
+  // Açıklama güncelleme
+  if (cronjob.updateDescriptions) {
+    console.log(`📝 Updating descriptions for: ${product.name}`);
+    
+    if (cronjob.useAiForDescriptions) {
+      // AI ile açıklama güncelleme
+      const { pageStorage } = await import('./pageStorage');
+      const geminiSettings = await pageStorage.getGeminiSettings();
+      if (geminiSettings && geminiSettings.is_configured) {
+        try {
+          const { GeminiService } = await import('./geminiService');
+          const geminiService = new GeminiService(geminiSettings.api_key);
+          
+          if (geminiSettings.useAiForShortDescription && product.shortDescription) {
+            const optimizedShort = await geminiService.optimizeShortDescription(
+              product.name, 
+              product.shortDescription,
+              geminiSettings.selected_model
+            );
+            product.shortDescription = optimizedShort;
+          }
+          
+          if (geminiSettings.useAiForFullDescription && product.description) {
+            const optimizedFull = await geminiService.optimizeFullDescription(
+              product.name,
+              product.description,
+              geminiSettings.selected_model
+            );
+            product.description = optimizedFull;
+          }
+        } catch (aiError) {
+          console.error(`⚠️ AI processing failed, using original descriptions:`, aiError);
+        }
+      }
+    }
+  }
+  
+  // Fiyat ve stok güncelleme
+  if (cronjob.updatePricesAndStock) {
+    console.log(`💰 Updating price and stock for: ${product.name}`);
+    // updateProductPriceAndStock fonksiyonunu çağır
+  }
+}
+

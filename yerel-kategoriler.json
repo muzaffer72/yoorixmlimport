@@ -1,0 +1,63 @@
+{
+  "categories": [
+    {
+      "id": "368",
+      "name": "Aksesuar",
+      "title": "Aksesuar",
+      "parentId": null,
+      "createdAt": "2025-09-03T20:39:08.895Z"
+    },
+    {
+      "id": "369",
+      "name": "Diğer Aksesuarlar",
+      "title": "Diğer Aksesuarlar",
+      "parentId": "368",
+      "createdAt": "2025-09-03T20:39:08.895Z"
+    },
+    {
+      "id": "371",
+      "name": "Kol Düğmesi",
+      "title": "Kol Düğmesi",
+      "parentId": "368",
+      "createdAt": "2025-09-03T20:39:08.895Z"
+    },
+    {
+      "id": "400",
+      "name": "Elektronik",
+      "title": "Elektronik Ürünler",
+      "parentId": null,
+      "createdAt": "2025-09-03T20:39:08.895Z"
+    },
+    {
+      "id": "401",
+      "name": "Telefon",
+      "title": "Akıllı Telefonlar",
+      "parentId": "400",
+      "createdAt": "2025-09-03T20:39:08.895Z"
+    },
+    {
+      "id": "402",
+      "name": "Bilgisayar",
+      "title": "Bilgisayar ve Laptop",
+      "parentId": "400",
+      "createdAt": "2025-09-03T20:39:08.895Z"
+    },
+    {
+      "id": "450",
+      "name": "Giyim",
+      "title": "Giyim ve Aksesuar",
+      "parentId": null,
+      "createdAt": "2025-09-03T20:39:08.895Z"
+    },
+    {
+      "id": "500",
+      "name": "Ev",
+      "title": "Ev ve Yaşam",
+      "parentId": null,
+      "createdAt": "2025-09-03T20:39:08.895Z"
+    }
+  ],
+  "lastUpdated": "2025-09-03T20:41:23.850Z",
+  "source": "mock-database",
+  "count": 8
+}
