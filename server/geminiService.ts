@@ -46,6 +46,30 @@ export class GeminiService {
     }
   }
 
+  // AI test fonksiyonu - bağlantıyı kontrol et
+  async testAIConnection(): Promise<string> {
+    if (!this.client) {
+      throw new Error("Gemini API anahtarı ayarlanmamış");
+    }
+
+    try {
+      console.log("🧪 AI bağlantı testi başlıyor...");
+      const model = this.client.getGenerativeModel({ 
+        model: "gemini-1.5-flash"
+      });
+      
+      const result = await model.generateContent("Merhaba, nasılsın? Kısa yanıt ver.");
+      const response = await result.response;
+      const text = response.text();
+      
+      console.log("✅ AI test başarılı:", text.substring(0, 100));
+      return text;
+    } catch (error: any) {
+      console.error("❌ AI test başarısız:", error);
+      throw error;
+    }
+  }
+
   // Kategori eşleştirme için Gemini'yi kullan - SADELEŞTIRILMIŞ
   async mapCategoriesWithAI(
     xmlCategories: string[], 
@@ -155,8 +179,24 @@ KURALLAR:
       return mappings;
 
     } catch (error: any) {
-      console.error("❌ Gemini API hatası:", error);
-      throw new Error("AI eşleştirme hatası: " + error.message);
+      console.error("❌ Gemini API hatası detayı:", {
+        name: error.name,
+        message: error.message,
+        status: error.status,
+        statusText: error.statusText,
+        stack: error.stack?.substring(0, 300)
+      });
+      
+      // Spesifik hata tiplerini kontrol et
+      if (error.message?.includes('API key')) {
+        throw new Error("Geçersiz Gemini API anahtarı");
+      } else if (error.message?.includes('quota') || error.message?.includes('limit')) {
+        throw new Error("Gemini API quota aşıldı");
+      } else if (error.status === 403) {
+        throw new Error("Gemini API erişim izni yok");
+      } else {
+        throw new Error("AI eşleştirme hatası: " + error.message);
+      }
     }
   }
 
