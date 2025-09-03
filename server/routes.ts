@@ -3306,6 +3306,48 @@ function applyProfitMargin(originalPrice: number, xmlSource: any): number {
   }
   return originalPrice;
 }
+  // Mevcut ürün güncelleme mantığı
+  console.log(`🔄 Updating existing product: ${product.name} (SKU: ${product.sku})`);
+  
+  // Açıklama güncelleme
+  if (cronjob.updateDescriptions) {
+    console.log(`📝 Updating descriptions for: ${product.name}`);
+    
+    if (cronjob.useAiForDescriptions) {
+      // AI ile açıklama güncelleme
+      const { pageStorage } = await import('./pageStorage');
+      const geminiSettings = await pageStorage.getGeminiSettings();
+      if (geminiSettings && geminiSettings.is_configured) {
+        try {
+          const { GeminiService } = await import('./geminiService');
+          const geminiService = new GeminiService(geminiSettings.api_key);
+          
+          if (geminiSettings.useAiForShortDescription && product.shortDescription) {
+            const optimizedShort = await geminiService.optimizeShortDescription(
+              product.name, 
+              product.shortDescription,
+              geminiSettings.selected_model
+            );
+            product.shortDescription = optimizedShort;
+          }
+          
+          if (geminiSettings.useAiForFullDescription && product.description) {
+            const optimizedFull = await geminiService.optimizeFullDescription(
+              product.name,
+              product.description,
+              geminiSettings.selected_model
+            );
+            product.description = optimizedFull;
+          }
+        } catch (aiError) {
+          console.error(`⚠️ AI processing failed, using original descriptions:`, aiError);
+        }
+      }
+    }
+  }
+  
+  // Fiyat ve stok güncelleme
+}
 
 // Yardımcı Fonksiyonlar
 async function checkProductBySku(sku: string): Promise<any> {
@@ -3386,68 +3428,3 @@ async function updateProductPriceAndStock(productId: string, product: any, xmlSo
   // Mock implementation - gerçekte MySQL'e yazılacak
   console.log(`✅ Updated product ${productId}: Price=${finalPrice}, Stock=${product.stock || 0}`);
 }
-
-  const server = createServer(app);
-  return server;
-}
-
-// Yardımcı Fonksiyonlar
-async function checkProductBySku(sku: string): Promise<any> {
-  // Mock implementation - gerçekte MySQL'den kontrol edilecek
-  return null; // Şimdilik null döndür
-}
-
-async function importNewProduct(product: any, xmlSource: any): Promise<void> {
-  // Yeni ürün import etme mantığı
-  console.log(`➕ Importing new product: ${product.name} (SKU: ${product.sku})`);
-  // mysql-import.ts'teki importProductToMySQL fonksiyonunu kullan
-}
-
-async function updateExistingProduct(productId: string, product: any, cronjob: any): Promise<void> {
-  // Mevcut ürün güncelleme mantığı
-  console.log(`🔄 Updating existing product: ${product.name} (SKU: ${product.sku})`);
-  
-  // Açıklama güncelleme
-  if (cronjob.updateDescriptions) {
-    console.log(`📝 Updating descriptions for: ${product.name}`);
-    
-    if (cronjob.useAiForDescriptions) {
-      // AI ile açıklama güncelleme
-      const { pageStorage } = await import('./pageStorage');
-      const geminiSettings = await pageStorage.getGeminiSettings();
-      if (geminiSettings && geminiSettings.is_configured) {
-        try {
-          const { GeminiService } = await import('./geminiService');
-          const geminiService = new GeminiService(geminiSettings.api_key);
-          
-          if (geminiSettings.useAiForShortDescription && product.shortDescription) {
-            const optimizedShort = await geminiService.optimizeShortDescription(
-              product.name, 
-              product.shortDescription,
-              geminiSettings.selected_model
-            );
-            product.shortDescription = optimizedShort;
-          }
-          
-          if (geminiSettings.useAiForFullDescription && product.description) {
-            const optimizedFull = await geminiService.optimizeFullDescription(
-              product.name,
-              product.description,
-              geminiSettings.selected_model
-            );
-            product.description = optimizedFull;
-          }
-        } catch (aiError) {
-          console.error(`⚠️ AI processing failed, using original descriptions:`, aiError);
-        }
-      }
-    }
-  }
-  
-  // Fiyat ve stok güncelleme
-  if (cronjob.updatePricesAndStock) {
-    console.log(`💰 Updating price and stock for: ${product.name}`);
-    // updateProductPriceAndStock fonksiyonunu çağır
-  }
-}
-
