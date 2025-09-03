@@ -2138,13 +2138,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`└─ Model: ${modelName || 'gemini-2.5-flash-lite'}`);
 
       // Gemini service ile batch eşleştirme yap
-      const geminiService = new GeminiService(process.env.GEMINI_API_KEY);
+      const realApiKey = await pageStorage.getGeminiApiKey();
       
-      if (!process.env.GEMINI_API_KEY) {
+      if (!realApiKey) {
         return res.status(500).json({ 
-          message: "GEMINI_API_KEY environment variable not configured" 
+          message: "GEMINI_API_KEY not configured in settings" 
         });
       }
+
+      const geminiService = new GeminiService(realApiKey);
 
       const batchResult = await geminiService.createBatchCategoryMapping(
         xmlSourceId,
@@ -2180,7 +2182,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { xmlSourceId, xmlCategory } = req.params;
       const decodedCategory = decodeURIComponent(xmlCategory);
       
-      const geminiService = new GeminiService(process.env.GEMINI_API_KEY);
+      const realApiKey = await pageStorage.getGeminiApiKey();
+      if (!realApiKey) {
+        return res.status(500).json({ 
+          message: "GEMINI_API_KEY not configured in settings" 
+        });
+      }
+      
+      const geminiService = new GeminiService(realApiKey);
       const cachedMapping = await geminiService.getCategoryFromSavedMapping(
         xmlSourceId, 
         decodedCategory
@@ -2248,6 +2257,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Batch status check error:", error);
       res.status(500).json({ 
         message: error.message || "Failed to check batch status" 
+      });
+    }
+  });
+
+  // Debug endpoint - Gemini API key kontrolü
+  app.get("/api/debug/gemini-key", async (req, res) => {
+    try {
+      const geminiSettings = await pageStorage.getGeminiSettings();
+      const realApiKey = pageStorage.getGeminiApiKey();
+      
+      res.json({
+        publicSettings: geminiSettings,
+        hasRealApiKey: !!realApiKey,
+        realApiKeyLength: realApiKey?.length || 0,
+        realApiKeyStartsWith: realApiKey ? realApiKey.substring(0, 8) + '...' : 'N/A'
+      });
+      
+    } catch (error: any) {
+      console.error("Debug gemini key error:", error);
+      res.status(500).json({ 
+        message: error.message || "Failed to check Gemini key status" 
       });
     }
   });

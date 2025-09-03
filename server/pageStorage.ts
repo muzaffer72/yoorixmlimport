@@ -753,14 +753,16 @@ export class PageStorage {
     
     // Gemini API key kontrolü
     const geminiSettings = await this.getGeminiSettings();
+    const realApiKey = this.getGeminiApiKey(); // Gerçek API key'i al
+    
     console.log("🔧 Gemini Settings Check:", { 
       found: !!geminiSettings, 
-      hasApiKey: !!(geminiSettings?.api_key), 
-      keyLength: geminiSettings?.api_key?.length || 0,
+      hasApiKey: !!(realApiKey), 
+      keyLength: realApiKey?.length || 0,
       model: geminiSettings?.selected_model 
     });
     
-    const useAI = geminiSettings && geminiSettings.api_key && geminiSettings.api_key.length > 10;
+    const useAI = geminiSettings && realApiKey && realApiKey.length > 10;
     console.log(`🤖 AI kullanım kararı: ${useAI}`);
     
     if (useAI) {
@@ -769,7 +771,7 @@ export class PageStorage {
       
       try {
         const aiMappings = await import('./geminiService').then(async ({ GeminiService }) => {
-          const geminiService = new GeminiService(geminiSettings.api_key);
+          const geminiService = new GeminiService(realApiKey); // Gerçek API key'i kullan
           console.log("🔗 GeminiService instance oluşturuldu");
           
           // Önce batch dosyasından eşleştirme aramayı dene
