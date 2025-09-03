@@ -209,7 +209,7 @@ export default function SettingsPage() {
   // Gemini API mutations
   const testApiKeyMutation = useMutation({
     mutationFn: async (apiKey: string) => {
-      const response = await apiRequest("POST", "/api/gemini/test-api-key", { apiKey });
+      const response = await apiRequest("POST", "/api/gemini/validate-api-key", { apiKey });
       return response.json();
     },
     onSuccess: (data) => {

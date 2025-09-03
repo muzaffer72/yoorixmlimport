@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface GeminiModel {
   name: string;
@@ -8,24 +8,24 @@ export interface GeminiModel {
 }
 
 export class GeminiService {
-  private client: GoogleGenAI | null = null;
+  private client: GoogleGenerativeAI | null = null;
   
   constructor(apiKey?: string) {
     if (apiKey) {
-      this.client = new GoogleGenAI({ apiKey });
+      this.client = new GoogleGenerativeAI(apiKey);
     }
   }
 
   // API anahtarını test et ve mevcut modelleri getir
-  async testApiKeyAndGetModels(apiKey: string): Promise<GeminiModel[]> {
+  async validateApiKeyAndGetModels(apiKey: string): Promise<GeminiModel[]> {
     try {
-      const testClient = new GoogleGenAI({ apiKey });
+      const testClient = new GoogleGenerativeAI(apiKey);
       
       // Basit test - bir model ile deneme yap
       const model = testClient.getGenerativeModel({ model: "gemini-1.5-flash" });
-      await model.generateContent("Test");
+      await model.generateContent("Test connection");
       
-      // Başarılıysa sabit model listesi döndür
+      // Başarılıysa sabit model listesi döndür (Google API'sında model listeleme endpoint'i yok)
       return [
         {
           name: "gemini-1.5-flash",
@@ -38,35 +38,51 @@ export class GeminiService {
           displayName: "Gemini 1.5 Pro", 
           description: "Gelişmiş performans modeli",
           supportedGenerationMethods: ["generateContent"]
+        },
+        {
+          name: "gemini-pro",
+          displayName: "Gemini Pro",
+          description: "Standart performans modeli",
+          supportedGenerationMethods: ["generateContent"]
         }
       ];
-    } catch (error) {
-      console.error("Gemini API test failed:", error);
-      throw new Error("Geçersiz API anahtarı veya bağlantı hatası");
+    } catch (error: any) {
+      console.error("Gemini API validation failed:", error);
+      
+      // Spesifik hata mesajları
+      if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('Invalid API key')) {
+        throw new Error("Geçersiz API anahtarı");
+      } else if (error.message?.includes('QUOTA_EXCEEDED')) {
+        throw new Error("API quota aşıldı");
+      } else if (error.status === 403) {
+        throw new Error("API erişim izni yok");
+      } else {
+        throw new Error("API bağlantı hatası: " + error.message);
+      }
     }
   }
 
-  // AI test fonksiyonu - bağlantıyı kontrol et
-  async testAIConnection(): Promise<string> {
+  // AI bağlantısını kontrol et
+  async validateConnection(): Promise<string> {
     if (!this.client) {
       throw new Error("Gemini API anahtarı ayarlanmamış");
     }
 
     try {
-      console.log("🧪 AI bağlantı testi başlıyor...");
+      console.log("🔍 Gemini API bağlantısı kontrol ediliyor...");
       const model = this.client.getGenerativeModel({ 
         model: "gemini-1.5-flash"
       });
       
-      const result = await model.generateContent("Merhaba, nasılsın? Kısa yanıt ver.");
-      const response = await result.response;
+      const result = await model.generateContent("Merhaba, bu bir bağlantı testidir. Kısa yanıt ver.");
+      const response = result.response;
       const text = response.text();
       
-      console.log("✅ AI test başarılı:", text.substring(0, 100));
+      console.log("✅ Gemini API bağlantısı başarılı");
       return text;
     } catch (error: any) {
-      console.error("❌ AI test başarısız:", error);
-      throw error;
+      console.error("❌ Gemini API bağlantısı başarısız:", error);
+      throw new Error("API bağlantı hatası: " + error.message);
     }
   }
 
@@ -138,7 +154,7 @@ KURALLAR:
       
       console.log("🚀 Gemini API çağrısı yapılıyor...");
       const result = await model.generateContent(prompt);
-      const response = await result.response;
+      const response = result.response;
       let responseText = response.text() || "{}";
       
       console.log("📥 Gemini yanıtı alındı:", responseText.substring(0, 200));
@@ -175,7 +191,7 @@ KURALLAR:
         };
       });
       
-      console.log(`✅ AI Mapping tamamlandı: ${mappings.length} eşleştirme, ${mappings.filter(m => m.suggestedCategory).length} başarılı`);
+      console.log(`✅ AI Mapping tamamlandı: ${mappings.length} eşleştirme, ${mappings.filter((m: any) => m.suggestedCategory).length} başarılı`);
       return mappings;
 
     } catch (error: any) {
@@ -188,9 +204,9 @@ KURALLAR:
       });
       
       // Spesifik hata tiplerini kontrol et
-      if (error.message?.includes('API key')) {
+      if (error.message?.includes('API key') || error.message?.includes('API_KEY_INVALID')) {
         throw new Error("Geçersiz Gemini API anahtarı");
-      } else if (error.message?.includes('quota') || error.message?.includes('limit')) {
+      } else if (error.message?.includes('quota') || error.message?.includes('QUOTA_EXCEEDED')) {
         throw new Error("Gemini API quota aşıldı");
       } else if (error.status === 403) {
         throw new Error("Gemini API erişim izni yok");
@@ -212,7 +228,7 @@ KURALLAR:
     try {
       const model = this.client.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(prompt);
-      const response = await result.response;
+      const response = result.response;
       return response.text() || "";
     } catch (error: any) {
       console.error("Gemini generateText error:", error);
@@ -251,9 +267,4 @@ Bu ürün için detaylı, profesyonel ve satışa yönelik uzun açıklama yaz:
 `;
     return this.generateText(prompt, modelName);
   }
-}
-
-// Test fonksiyonu - artık kullanılmıyor
-export async function testGeminiConnection() {
-  throw new Error("Bu fonksiyon artık kullanılmıyor. GeminiService.testAIConnection() kullanın.");
 }

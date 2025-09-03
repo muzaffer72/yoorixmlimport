@@ -865,12 +865,6 @@ export class PageStorage {
     return data.gemini.apiKey;
   }
 
-  // Test Gemini API key
-  testGeminiApiKey(apiKey: string): boolean {
-    // Mock test - always return true for demo
-    return !!(apiKey && apiKey.length > 10);
-  }
-
   // XML Source bazlı kategori yönetimi
   async getExtractedCategoriesForSource(xmlSourceId: string): Promise<string[]> {
     const data = this.loadJsonFile('extracted-categories.json', { categories: [] });

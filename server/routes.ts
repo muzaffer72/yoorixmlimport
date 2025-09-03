@@ -1937,7 +1937,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Gemini AI endpoints
-  app.post("/api/gemini/test-api-key", async (req, res) => {
+  app.post("/api/gemini/validate-api-key", async (req, res) => {
     try {
       const { apiKey } = req.body;
       if (!apiKey) {
@@ -1945,7 +1945,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const geminiService = new GeminiService();
-      const models = await geminiService.testApiKeyAndGetModels(apiKey);
+      const models = await geminiService.validateApiKeyAndGetModels(apiKey);
       
       res.json({ 
         success: true, 
@@ -2062,8 +2062,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Test endpoint - debug için
-  app.post("/api/test-ai", async (req, res) => {
+  // AI Connection endpoint - debug için
+  app.post("/api/validate-ai", async (req, res) => {
     try {
       // pageStorage'dan direkt getGeminiSettings çağır 
       const geminiSettingsArray = await (pageStorage as any).getGeminiSettings();
@@ -2079,18 +2079,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { GeminiService } = await import('./geminiService');
       const geminiService = new GeminiService(activeSettings.apiKey);
       
-      const testResult = await geminiService.testAIConnection();
+      const testResult = await geminiService.validateConnection();
       res.json({ 
         success: true, 
-        message: "AI test başarılı", 
+        message: "AI bağlantısı başarılı", 
         response: testResult.substring(0, 200),
         model: activeSettings.selectedModel 
       });
     } catch (error: any) {
-      console.error("AI test error:", error);
+      console.error("AI connection error:", error);
       res.status(500).json({ 
         success: false, 
-        message: error.message || "AI test başarısız",
+        message: error.message || "AI bağlantısı başarısız",
         error: {
           name: error.name,
           message: error.message
@@ -2099,8 +2099,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Test endpoint (GET version) - debug için
-  app.get("/api/test-ai", async (req, res) => {
+  // AI Connection endpoint (GET version) - debug için
+  app.get("/api/validate-ai", async (req, res) => {
     try {
       // pageStorage'dan direkt getGeminiSettings çağır 
       const geminiSettingsArray = await (pageStorage as any).getGeminiSettings();
@@ -2116,18 +2116,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { GeminiService } = await import('./geminiService');
       const geminiService = new GeminiService(activeSettings.apiKey);
       
-      const testResult = await geminiService.testAIConnection();
+      const testResult = await geminiService.validateConnection();
       res.json({ 
         success: true, 
-        message: "AI test başarılı", 
+        message: "AI bağlantısı başarılı", 
         response: testResult.substring(0, 200),
         model: activeSettings.selectedModel 
       });
     } catch (error: any) {
-      console.error("AI test error:", error);
+      console.error("AI connection error:", error);
       res.status(500).json({ 
         success: false, 
-        message: error.message || "AI test başarısız",
+        message: error.message || "AI bağlantısı başarısız",
         error: {
           name: error.name,
           message: error.message
