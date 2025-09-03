@@ -782,19 +782,41 @@ export class PageStorage {
       
       try {
         console.log("🔗 GeminiService import ediliyor...");
-        const aiMappings = await import('./geminiService').then(async ({ GeminiService }) => {
-          const geminiService = new GeminiService(geminiSettings.api_key);
-          console.log("🔗 GeminiService instance oluşturuldu");
-          
-          console.log("🚀 mapCategoriesWithAI çağrılıyor...");
-          const result = await geminiService.mapCategoriesWithAI(
-            xmlCategories, 
-            localCategories.map(cat => ({ id: cat.id.toString(), name: cat.name })),
-            geminiSettings.selected_model || "gemini-1.5-flash"
-          );
-          console.log(`📈 AI sonucu alındı: ${result.length} eşleştirme`);
-          return result;
-        });
+        
+        // Import kontrolü
+        let GeminiServiceModule;
+        try {
+          GeminiServiceModule = await import('./geminiService');
+          console.log("✅ GeminiService modülü başarıyla import edildi");
+        } catch (importError: any) {
+          console.error("❌ GeminiService import hatası:", importError);
+          throw new Error("GeminiService import edilemedi: " + (importError?.message || importError));
+        }
+        
+        const { GeminiService } = GeminiServiceModule;
+        console.log("🔗 GeminiService class'ı alındı");
+        
+        // Service instance
+        let geminiService;
+        try {
+          geminiService = new GeminiService(geminiSettings.api_key);
+          console.log("✅ GeminiService instance oluşturuldu");
+        } catch (instanceError: any) {
+          console.error("❌ GeminiService instance hatası:", instanceError);
+          throw new Error("GeminiService instance oluşturulamadı: " + (instanceError?.message || instanceError));
+        }
+        
+        console.log("🚀 mapCategoriesWithAI çağrılıyor...");
+        console.log(`📊 Parametreler: ${xmlCategories.length} XML kategori, ${localCategories.length} yerel kategori, model: ${geminiSettings.selected_model || "gemini-1.5-flash"}`);
+        
+        // AI mapping çağrısı
+        const aiMappings = await geminiService.mapCategoriesWithAI(
+          xmlCategories, 
+          localCategories.map(cat => ({ id: cat.id.toString(), name: cat.name })),
+          geminiSettings.selected_model || "gemini-1.5-flash"
+        );
+        
+        console.log(`📈 AI sonucu alındı: ${aiMappings.length} eşleştirme`);
         
         console.log("🔄 AI sonuçları işleniyor...");
         
