@@ -1,0 +1,16 @@
+{
+  "gemini": {
+    "apiKey": "AIzaSyAaf8xe5cttgemweIQX6FgaHnXN_KFDLuA",
+    "selectedModel": "gemini-2.0-flash-exp",
+    "isActive": true,
+    "isConfigured": true
+  },
+  "database": {
+    "host": "109.71.252.34",
+    "port": 3306,
+    "database": "herc_umanet",
+    "username": "herc_umanet",
+    "password": "e7G6ieyahg^uhFuJ",
+    "isActive": true
+  }
+}

@@ -1,4 +1,6 @@
 const express = require('express');
+const mysql = require('mysql2/promise');
+const fs = require('fs');
 const path = require('path');
 
 const app = express();
@@ -17,48 +19,169 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// Mock categories data
-const mockCategories = [
-  { id: "368", name: "Aksesuar", title: "Aksesuar", parentId: null, createdAt: new Date() },
-  { id: "369", name: "Diğer Aksesuarlar", title: "Diğer Aksesuarlar", parentId: "368", createdAt: new Date() },
-  { id: "371", name: "Kol Düğmesi", title: "Kol Düğmesi", parentId: "368", createdAt: new Date() },
-  { id: "400", name: "Elektronik", title: "Elektronik Ürünler", parentId: null, createdAt: new Date() },
-  { id: "401", name: "Telefon", title: "Akıllı Telefonlar", parentId: "400", createdAt: new Date() },
-  { id: "402", name: "Bilgisayar", title: "Bilgisayar ve Laptop", parentId: "400", createdAt: new Date() },
-  { id: "450", name: "Giyim", title: "Giyim ve Aksesuar", parentId: null, createdAt: new Date() },
-  { id: "500", name: "Ev", title: "Ev ve Yaşam", parentId: null, createdAt: new Date() }
-];
+// Database connection
+let importConnection = null;
 
-// Categories to JSON endpoint
-app.post("/api/categories/save-to-json", (req, res) => {
+// Get database settings from settings.json
+function getDatabaseSettings() {
   try {
-    console.log("🔄 Kategoriler JSON'a kaydediliyor...");
+    const settingsPath = path.join(__dirname, 'settings.json');
+    if (!fs.existsSync(settingsPath)) {
+      return null;
+    }
     
-    // Simulate saving to file
-    require('fs').writeFileSync(
-      path.join(__dirname, 'yerel-kategoriler.json'),
-      JSON.stringify({
-        categories: mockCategories,
-        lastUpdated: new Date().toISOString(),
-        source: "mock-database",
-        count: mockCategories.length
-      }, null, 2)
+    const data = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    if (!data.database || !data.database.host) {
+      return null;
+    }
+    
+    return {
+      host: data.database.host,
+      port: data.database.port || 3306,
+      database: data.database.database,
+      username: data.database.username,
+      password: data.database.password,
+      isActive: data.database.isActive
+    };
+  } catch (error) {
+    console.error('Error reading database settings:', error);
+    return null;
+  }
+}
+
+// Connect to MySQL
+async function connectToDatabase() {
+  const dbSettings = getDatabaseSettings();
+  if (!dbSettings || !dbSettings.host) {
+    throw new Error('MySQL database ayarları yapılandırılmamış');
+  }
+
+  console.log('Connecting to MySQL...');
+  importConnection = mysql.createPool({
+    host: dbSettings.host,
+    port: dbSettings.port,
+    user: dbSettings.username,
+    password: dbSettings.password,
+    database: dbSettings.database,
+    connectionLimit: 10,
+    connectTimeout: 60000,
+    ssl: false,
+    charset: 'utf8mb4'
+  });
+
+  // Test connection
+  const [rows] = await importConnection.execute('SELECT 1 as test');
+  console.log('MySQL connection successful');
+  return importConnection;
+}
+
+// Get categories from MySQL
+async function getLocalCategories() {
+  if (!importConnection) {
+    throw new Error('Import database not connected');
+  }
+
+  try {
+    console.log('🔍 Fetching categories from category_languages table...');
+    
+    // Check if table exists
+    const [tables] = await importConnection.execute('SHOW TABLES LIKE "category_languages"');
+    if (!tables || tables.length === 0) {
+      throw new Error('category_languages tablosu bulunamadı');
+    }
+    
+    // Get categories
+    const [rows] = await importConnection.execute(
+      'SELECT id, category_id, title FROM category_languages WHERE title IS NOT NULL AND title != ""'
     );
     
-    console.log(`✅ ${mockCategories.length} kategori yerel-kategoriler.json dosyasına kaydedildi`);
+    console.log(`✅ Found ${rows.length} categories in category_languages table`);
+    return rows;
+    
+  } catch (error) {
+    console.error('Error fetching categories from MySQL:', error);
+    throw error;
+  }
+}
+
+// Categories to JSON endpoint
+app.post("/api/categories/save-to-json", async (req, res) => {
+  try {
+    console.log("🔄 Kategorileri MySQL'den çekip JSON'a kaydediliyor...");
+    
+    // Connect to database if not connected
+    if (!importConnection) {
+      await connectToDatabase();
+    }
+    
+    // Get categories from MySQL
+    const dbCategories = await getLocalCategories();
+    
+    // Transform data to expected format
+    const categories = dbCategories.map(cat => ({
+      id: cat.category_id.toString(),
+      name: cat.title,
+      title: cat.title,
+      parentId: null, // MySQL'de parent ilişkisi varsa buraya eklenebilir
+      createdAt: new Date()
+    }));
+    
+    // Save to JSON file
+    const categoriesData = {
+      categories: categories,
+      lastUpdated: new Date().toISOString(),
+      source: "mysql-database",
+      count: categories.length,
+      mysqlTable: "category_languages"
+    };
+    
+    const filePath = path.join(__dirname, 'yerel-kategoriler.json');
+    fs.writeFileSync(filePath, JSON.stringify(categoriesData, null, 2));
+    
+    console.log(`✅ ${categories.length} kategori MySQL'den çekilip yerel-kategoriler.json dosyasına kaydedildi`);
     
     res.json({
       success: true,
-      message: `${mockCategories.length} kategori başarıyla yerel-kategoriler.json dosyasına kaydedildi`,
-      count: mockCategories.length,
-      categories: mockCategories
+      message: `${categories.length} kategori başarıyla MySQL'den çekilip yerel-kategoriler.json dosyasına kaydedildi`,
+      count: categories.length,
+      categories: categories,
+      source: "mysql-database"
     });
   } catch (error) {
     console.error("❌ Kategori kaydetme hatası:", error);
+    
+    // Specific error handling for database issues
+    let errorMessage = error.message;
+    let suggestions = [];
+    
+    if (error.code === 'ECONNREFUSED') {
+      errorMessage = "MySQL sunucusuna bağlanılamıyor";
+      suggestions = [
+        "MySQL sunucusunun çalıştığından emin olun",
+        "settings.json dosyasında doğru host ve port ayarlandığından emin olun",
+        "Güvenlik duvarı ayarlarını kontrol edin"
+      ];
+    } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+      errorMessage = "MySQL kullanıcı adı veya şifre hatalı";
+      suggestions = [
+        "settings.json dosyasında username ve password'u kontrol edin",
+        "MySQL kullanıcısının veritabanına erişim yetkisi olduğundan emin olun"
+      ];
+    } else if (error.code === 'ER_BAD_DB_ERROR') {
+      errorMessage = "Belirtilen veritabanı bulunamıyor";
+      suggestions = [
+        "settings.json dosyasında database adını kontrol edin",
+        "Veritabanının mevcut olduğundan emin olun"
+      ];
+    }
+    
     res.status(500).json({
       success: false,
-      message: "Kategoriler kaydedilirken hata oluştu: " + error.message,
-      count: 0
+      message: errorMessage,
+      count: 0,
+      error: error.message,
+      suggestions: suggestions,
+      errorCode: error.code
     });
   }
 });
