@@ -846,18 +846,24 @@ export class PageStorage {
         console.log(`📈 AI sonucu alındı: ${aiMappings.length} eşleştirme`);
         
         console.log("🔄 AI sonuçları işleniyor...");
+        console.log(`📊 AI'dan gelen mapping sayısı: ${aiMappings.length}`);
+        console.log(`📋 Yerel kategori sayısı (AI sonucu işlerken): ${localCategories.length}`);
+        console.log(`🏷️ İlk 5 yerel kategori ID'leri:`, localCategories.slice(0, 5).map(c => `${c.id} (${typeof c.id})`));
         
-        const mappings = aiMappings.map((mapping: any) => {
-          // AI'den dönen suggestedCategoryId ile yerel kategoriyi bul
-          const suggestedCategory = mapping.suggestedCategory
-            ? localCategories.find(cat => cat.id.toString() === mapping.suggestedCategory.id.toString())
-            : null;
+        const mappings = aiMappings.map((mapping: any, index: number) => {
+          console.log(`\n🔍 Mapping ${index + 1}/${aiMappings.length}:`);
+          console.log(`   XML Kategori: "${mapping.xmlCategory}"`);
+          console.log(`   AI Önerisi:`, mapping.suggestedCategory);
+          console.log(`   Confidence: ${mapping.confidence}`);
+          
+          // AI'dan dönen suggestedCategory artık doğrudan yerel kategori objesi
+          const suggestedCategory = mapping.suggestedCategory || null;
             
-          console.log(`🔍 Eşleştirme: "${mapping.xmlCategory}" → ID: ${mapping.suggestedCategory?.id} → ${suggestedCategory ? `Bulundu: ${suggestedCategory.name}` : 'Bulunamadı'}`);
+          console.log(`   🎯 Sonuç: ${suggestedCategory ? `BULUNDU → ${suggestedCategory.name} (ID: ${suggestedCategory.id})` : '❌ BULUNAMADI'}`);
             
           return {
             xmlCategory: mapping.xmlCategory,
-            suggestedCategory: suggestedCategory || null,
+            suggestedCategory: suggestedCategory,
             confidence: mapping.confidence,
             reasoning: mapping.reasoning
           };

@@ -230,7 +230,7 @@ JSON formatında yanıt ver:
   "mappings": [
     {
       "xmlCategory": "kategori_adı",
-      "suggestedCategoryId": "id_veya_null",
+      "suggestedCategoryName": "kategori_adı_veya_null",
       "confidence": 0.9,
       "reasoning": "açıklama"
     }
@@ -243,7 +243,8 @@ JSON formatında yanıt ver:
 - KAPSAMLI EŞLEŞTIRME: "Banyo Aksesuarları" → "Aksesuar" yerine daha spesifik kategori varsa onu seç
 - 3500+ kategori arasından EN UYGUN olanı seç, genel kategorileri son seçenek olarak kullan
 - Confidence'ı gerçekçi belirle: %90+ sadece çok iyi eşleşmeler için
-- Uygun yoksa suggestedCategoryId null yap`;
+- Uygun yoksa suggestedCategoryName null yap
+- SADECE suggestedCategoryName'de KATEGORI ADI döndür, ID değil!`;
 
     try {
       const model = this.client.getGenerativeModel({ 
@@ -280,13 +281,14 @@ JSON formatında yanıt ver:
       
       // Sonuçları dönüştür
       const mappings = (result_parsed.mappings || []).map((mapping: any) => {
-        const suggestedCategory = mapping.suggestedCategoryId 
-          ? localCategories.find(cat => cat.id === mapping.suggestedCategoryId) || null
+        // AI'dan kategori adı geldi, bunu kullanarak kategoriyi bul
+        const suggestedCategory = mapping.suggestedCategoryName 
+          ? localCategories.find(cat => cat.name.toLowerCase().trim() === mapping.suggestedCategoryName.toLowerCase().trim()) || null
           : null;
 
         return {
           xmlCategory: mapping.xmlCategory || "",
-          suggestedCategory,
+          suggestedCategory, // Bu artık tam kategori objesi (id + name)
           confidence: Math.min(Math.max(mapping.confidence || 0, 0), 1),
           reasoning: (mapping.reasoning || "Açıklama yok").substring(0, 200)
         };
