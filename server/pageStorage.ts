@@ -98,7 +98,7 @@ export class PageStorage {
       entityType: "xml_source"
     });
     
-    this.updateDashboardStats();
+    await this.updateDashboardStats();
     return newXmlSource;
   }
 
@@ -128,7 +128,7 @@ export class PageStorage {
       entityType: "xml_source"
     });
     
-    this.updateDashboardStats();
+    await this.updateDashboardStats();
     return updated;
   }
 
@@ -155,7 +155,7 @@ export class PageStorage {
       entityType: "xml_source"
     });
     
-    this.updateDashboardStats();
+    await this.updateDashboardStats();
     return true;
   }
 
@@ -248,7 +248,7 @@ export class PageStorage {
       entityType: "cronjob"
     });
     
-    this.updateDashboardStats();
+    await this.updateDashboardStats();
     return newCronjob;
   }
 
@@ -278,7 +278,7 @@ export class PageStorage {
       entityType: "cronjob"
     });
     
-    this.updateDashboardStats();
+    await this.updateDashboardStats();
     return updated;
   }
 
@@ -302,7 +302,7 @@ export class PageStorage {
       entityType: "cronjob"
     });
     
-    this.updateDashboardStats();
+    await this.updateDashboardStats();
     return true;
   }
 
@@ -613,7 +613,7 @@ export class PageStorage {
       recentProducts: []
     });
     
-    this.updateDashboardStats();
+    await this.updateDashboardStats();
     return data.stats;
   }
 
@@ -626,7 +626,7 @@ export class PageStorage {
     return data.recentProducts;
   }
 
-  private updateDashboardStats(): void {
+  private async updateDashboardStats(): Promise<void> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -638,6 +638,16 @@ export class PageStorage {
       log.createdAt && new Date(log.createdAt) >= today
     );
     
+    // Dinamik kategori sayısı - hata durumunda 0 göster
+    let totalCategories = 0;
+    try {
+      const categories = await this.getCategories();
+      totalCategories = categories.length;
+    } catch (error) {
+      console.warn("Dashboard için kategori sayısı alınamadı:", error);
+      totalCategories = 0;
+    }
+    
     const stats = {
       todayAddedProducts: todayLogs.filter((log: any) => log.type === "product_added").length,
       updatedProducts: todayLogs.filter((log: any) => 
@@ -645,7 +655,7 @@ export class PageStorage {
       ).length,
       activeXmlSources: xmlData.sources.filter((source: any) => source.status === "active").length,
       pendingImports: 0,
-      totalCategories: 8, // Demo kategori sayısı
+      totalCategories: totalCategories, // Dinamik MySQL kategori sayısı
       activeCronjobs: cronjobData.jobs.filter((job: any) => job.isActive).length
     };
     
@@ -658,45 +668,58 @@ export class PageStorage {
     this.saveJsonFile('dashboard.json', dashboardData);
   }
 
-  // Categories (from MySQL database)
+  // Categories (from MySQL database) - Same approach as /api/categories endpoint
   async getCategories(): Promise<Category[]> {
     try {
-      console.log("🔍 MySQL veritabanından kategoriler çekiliyor...");
-      // Mevcut veritabanından kategorileri çek
-      const dbCategories = await db.select().from(categories);
-      console.log(`✅ MySQL'den ${dbCategories.length} kategori başarıyla çekildi`);
+      console.log("🔍 MySQL veritabanından kategoriler çekiliyor (pageStorage)...");
       
-      if (dbCategories.length === 0) {
-        console.warn("⚠️ MySQL veritabanında hiç kategori bulunamadı!");
-        console.log("🔄 Demo kategoriler kullanılacak (MySQL'de kategori yok)");
-        return this.getDemoCategories();
-      } else {
-        console.log("📋 İlk birkaç kategori:", dbCategories.slice(0, 3).map((c: Category) => `${c.name} (ID: ${c.id})`));
-        return dbCategories;
+      // Database ayarlarını kontrol et
+      const dbSettings = await this.getDatabaseSettings();
+      if (!dbSettings || !dbSettings.host) {
+        throw new Error("MySQL database ayarları yapılandırılmamış. Lütfen settings sayfasından veritabanı ayarlarını yapın.");
       }
+
+      console.log("🔗 Importing MySQL functions...");
+      const { getLocalCategories, connectToImportDatabase } = await import('./mysql-import');
       
-    } catch (error) {
-      console.error("❌ KRITIK: MySQL'den kategori çekme hatası:", error);
+      console.log("🔌 Connecting to import database...");
+      await connectToImportDatabase({
+        host: dbSettings.host,
+        port: dbSettings.port,
+        database: dbSettings.database,
+        username: dbSettings.username,
+        password: dbSettings.password
+      });
+
+      console.log("📋 Fetching categories from category_languages table...");
+      const mysqlCategories = await getLocalCategories();
+      console.log(`✅ Found ${mysqlCategories.length} categories from MySQL category_languages table`);
+      
+      if (mysqlCategories.length === 0) {
+        throw new Error("category_languages tablosunda kategori bulunamadı");
+      }
+
+      // MySQL format'ını Category format'ına çevir (API endpoint ile aynı şekilde)
+      const categories: Category[] = mysqlCategories.map(cat => ({
+        id: cat.categoryId.toString(), // categoryId field'ını kullan ve string'e çevir
+        name: cat.title,
+        title: cat.title,
+        parentId: null,
+        createdAt: new Date()
+      }));
+      
+      console.log(`🎯 Successfully converted ${categories.length} MySQL categories`);
+      console.log("📋 İlk birkaç kategori:", categories.slice(0, 3).map((c: Category) => `${c.name} (ID: ${c.id})`));
+      
+      return categories;
+      
+    } catch (error: any) {
+      console.error("❌ KRITIK: MySQL'den kategori çekme hatası (pageStorage):", error);
       console.error("❌ Error detayı:", JSON.stringify(error, null, 2));
-      console.log("🔄 Demo kategoriler kullanılacak (MySQL bağlantı sorunu nedeniyle)");
       
-      return this.getDemoCategories();
+      // MySQL kategoriler yüklenemediğinde sistem çalışmaz - hata fırlat
+      throw new Error(`MySQL kategorileri yüklenemedi: ${error?.message || error}`);
     }
-  }
-  
-  private getDemoCategories(): Category[] {
-    console.warn("⚠️ DEMO KATEGORİLER KULLANILIYOR - BU ÜRETİM İÇİN UYGUN DEĞİL!");
-    // Demo kategoriler - gerçek MySQL ID'leri ile
-    return [
-      { id: "368", name: "Aksesuar", title: "Aksesuar", parentId: null, createdAt: new Date() },
-      { id: "369", name: "Diğer Aksesuarlar", title: "Diğer Aksesuarlar", parentId: "368", createdAt: new Date() },
-      { id: "371", name: "Kol Düğmesi", title: "Kol Düğmesi", parentId: "368", createdAt: new Date() },
-      { id: "400", name: "Elektronik", title: "Elektronik Ürünler", parentId: null, createdAt: new Date() },
-      { id: "401", name: "Telefon", title: "Akıllı Telefonlar", parentId: "400", createdAt: new Date() },
-      { id: "402", name: "Bilgisayar", title: "Bilgisayar ve Laptop", parentId: "400", createdAt: new Date() },
-      { id: "450", name: "Giyim", title: "Giyim ve Aksesuar", parentId: null, createdAt: new Date() },
-      { id: "500", name: "Ev", title: "Ev ve Yaşam", parentId: null, createdAt: new Date() }
-    ];
   }
 
   // Auto-mapping için kategori eşleştirme
