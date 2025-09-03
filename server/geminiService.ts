@@ -28,6 +28,12 @@ export class GeminiService {
       // Başarılıysa sabit model listesi döndür (Google API'sında model listeleme endpoint'i yok)
       return [
         {
+          name: "gemini-2.0-flash-exp",
+          displayName: "Gemini 2.0 Flash (Experimental)",
+          description: "En yeni deneysel model",
+          supportedGenerationMethods: ["generateContent"]
+        },
+        {
           name: "gemini-1.5-flash",
           displayName: "Gemini 1.5 Flash",
           description: "Hızlı ve verimli model",
@@ -131,7 +137,7 @@ export class GeminiService {
       const batchXmlCategories = xmlBatches[batchIndex];
       console.log(`🔄 Batch ${batchIndex + 1}/${xmlBatches.length} işleniyor: ${batchXmlCategories.length} kategori`);
       
-      const batchMappings = await this.processBatch(batchXmlCategories, limitedLocalCategories, modelName);
+      const batchMappings = await this.processBatchWithRetry(batchXmlCategories, limitedLocalCategories, modelName);
       allMappings = allMappings.concat(batchMappings);
       
       // Batch'ler arası kısa bekleme (API rate limit için)
@@ -145,6 +151,58 @@ export class GeminiService {
   }
   
   // Batch işleme metodu
+  // Retry mekanizması ile batch işleme
+  private async processBatchWithRetry(
+    xmlCategories: string[],
+    localCategories: Array<{id: string, name: string}>,
+    modelName: string,
+    maxRetries: number = 3
+  ): Promise<any[]> {
+    const availableModels = ["gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        // Her denemede farklı model kullan
+        const currentModel = attempt === 0 ? modelName : availableModels[attempt % availableModels.length];
+        console.log(`🔄 Deneme ${attempt + 1}/${maxRetries}, Model: ${currentModel}`);
+        
+        return await this.processBatch(xmlCategories, localCategories, currentModel);
+        
+      } catch (error: any) {
+        console.error(`❌ Deneme ${attempt + 1} başarısız:`, error.message);
+        
+        // Kalıcı hatalar için retry yapma
+        if (error.message?.includes('API key') || 
+            error.message?.includes('API_KEY_INVALID') ||
+            error.message?.includes('quota') ||
+            error.message?.includes('QUOTA_EXCEEDED') ||
+            error.status === 403) {
+          console.log("🚫 Kalıcı hata tespit edildi, retry iptal ediliyor");
+          throw error;
+        }
+        
+        // 503 (Service Unavailable) ve 429 (Rate Limit) için retry yap
+        if (error.status === 503 || error.status === 429 || 
+            error.message?.includes('overloaded') || 
+            error.message?.includes('rate limit')) {
+          console.log("⏳ Geçici hata, retry yapılacak...");
+        }
+        
+        // Son deneme ise hata fırlat
+        if (attempt === maxRetries - 1) {
+          throw error;
+        }
+        
+        // Bekleme süresi (exponential backoff)
+        const waitTime = Math.pow(2, attempt) * 2000; // 2s, 4s, 8s...
+        console.log(`⏱️ ${waitTime}ms bekliyor...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+    
+    throw new Error("Tüm retry denemeleri başarısız");
+  }
+
   private async processBatch(
     xmlCategories: string[],
     localCategories: Array<{id: string, name: string}>,

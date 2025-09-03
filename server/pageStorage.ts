@@ -661,12 +661,21 @@ export class PageStorage {
   // Categories (from MySQL database)
   async getCategories(): Promise<Category[]> {
     try {
+      console.log("🔍 MySQL veritabanından kategoriler çekiliyor...");
       // Mevcut veritabanından kategorileri çek
       const dbCategories = await db.select().from(categories);
+      console.log(`✅ MySQL'den ${dbCategories.length} kategori başarıyla çekildi`);
+      
+      if (dbCategories.length === 0) {
+        console.warn("⚠️ MySQL veritabanında hiç kategori bulunamadı!");
+      } else {
+        console.log("📋 İlk birkaç kategori:", dbCategories.slice(0, 3).map((c: Category) => `${c.name} (ID: ${c.id})`));
+      }
+      
       return dbCategories;
     } catch (error) {
-      console.error("Error fetching categories from database:", error);
-      console.log("Replit environment detected, returning demo categories");
+      console.error("❌ MySQL'den kategori çekme hatası:", error);
+      console.log("🔄 Demo kategoriler kullanılacak (MySQL bağlantı sorunu nedeniyle)");
       
       // Demo kategoriler - gerçek MySQL ID'leri ile
       return [
