@@ -26,11 +26,8 @@ export class PageStorage {
     // Ensure data directory exists
     if (!existsSync(this.dataDir)) {
       mkdirSync(this.dataDir, { recursive: true });
-    }        } catch (error: any) {
-        console.error("❌ AI eşleştirme hatası, fallback kullanılıyor:", error);
-        console.log("🔍 Hata mesajı:", error?.message);
-        // AI başarısız olursa fallback'e düş
-      }}
+    }
+  }
 
   private loadJsonFile(filename: string, defaultData: any): any {
     const filePath = join(this.dataDir, filename);
