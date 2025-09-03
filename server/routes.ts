@@ -2108,6 +2108,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Batch AI category mapping - creates comprehensive mapping file for XML source
+  app.post("/api/category-mappings/batch-create", async (req, res) => {
+    try {
+      const { xmlSourceId, modelName } = req.body;
+      
+      if (!xmlSourceId) {
+        return res.status(400).json({ message: "XML source ID is required" });
+      }
+
+      // XML Source bilgilerini al
+      const xmlSource = await pageStorage.getXmlSource(xmlSourceId);
+      if (!xmlSource) {
+        return res.status(404).json({ message: "XML source not found" });
+      }
+
+      // XML'den kategorileri çıkar - Mevcut category mapping'lerden al
+      const existingMappings = await pageStorage.getCategoryMappings(xmlSourceId);
+      const uniqueCategories = new Set(existingMappings.map((m: any) => m.xmlCategory).filter(Boolean));
+      const xmlCategories = Array.from(uniqueCategories);
+      
+      if (xmlCategories.length === 0) {
+        return res.status(400).json({ message: "No categories found for this XML source. Please process XML first." });
+      }
+
+      console.log(`📊 Batch kategori eşleştirme başlatılıyor:`);
+      console.log(`├─ XML Source: ${xmlSource.name || xmlSourceId}`);
+      console.log(`├─ Kategori Sayısı: ${xmlCategories.length}`);
+      console.log(`└─ Model: ${modelName || 'gemini-2.5-flash-lite'}`);
+
+      // Gemini service ile batch eşleştirme yap
+      const geminiService = new GeminiService(process.env.GEMINI_API_KEY);
+      
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ 
+          message: "GEMINI_API_KEY environment variable not configured" 
+        });
+      }
+
+      const batchResult = await geminiService.createBatchCategoryMapping(
+        xmlSourceId,
+        xmlCategories,
+        modelName || 'gemini-2.5-flash-lite'
+      );
+
+      res.json({
+        message: "Batch kategori eşleştirme tamamlandı",
+        success: true,
+        filePath: batchResult.filePath,
+        stats: {
+          xmlSourceId,
+          xmlSourceName: xmlSource.name || xmlSourceId,
+          totalXmlCategories: xmlCategories.length,
+          totalMappings: batchResult.totalMappings,
+          batchCount: batchResult.batchCount,
+          avgConfidence: Math.round(batchResult.avgConfidence * 100) / 100
+        }
+      });
+      
+    } catch (error: any) {
+      console.error("Batch AI mapping error:", error);
+      res.status(500).json({ 
+        message: error.message || "Batch AI eşleştirme sırasında hata oluştu" 
+      });
+    }
+  });
+
+  // Get category suggestion from cached mapping file
+  app.get("/api/category-mappings/cached/:xmlSourceId/:xmlCategory", async (req, res) => {
+    try {
+      const { xmlSourceId, xmlCategory } = req.params;
+      const decodedCategory = decodeURIComponent(xmlCategory);
+      
+      const geminiService = new GeminiService(process.env.GEMINI_API_KEY);
+      const cachedMapping = await geminiService.getCategoryFromSavedMapping(
+        xmlSourceId, 
+        decodedCategory
+      );
+      
+      if (!cachedMapping) {
+        return res.status(404).json({ 
+          message: "No cached mapping found for this category",
+          fromCache: false 
+        });
+      }
+      
+      res.json(cachedMapping);
+      
+    } catch (error: any) {
+      console.error("Cached mapping lookup error:", error);
+      res.status(500).json({ 
+        message: error.message || "Cached mapping lookup failed" 
+      });
+    }
+  });
+
+  // Check if batch mapping file exists for XML source
+  app.get("/api/category-mappings/batch-status/:xmlSourceId", async (req, res) => {
+    try {
+      const { xmlSourceId } = req.params;
+      const fs = require('fs');
+      const path = require('path');
+      
+      const mappingFilePath = path.join(process.cwd(), `${xmlSourceId}-mappings.json`);
+      const fileExists = fs.existsSync(mappingFilePath);
+      
+      if (!fileExists) {
+        return res.json({
+          exists: false,
+          message: "Batch mapping file not found"
+        });
+      }
+      
+      // Dosya bilgilerini al
+      try {
+        const fileStats = fs.statSync(mappingFilePath);
+        const fileContent = fs.readFileSync(mappingFilePath, 'utf8');
+        const mappingData = JSON.parse(fileContent);
+        
+        res.json({
+          exists: true,
+          filePath: mappingFilePath,
+          createdAt: mappingData.createdAt || fileStats.mtime,
+          fileSize: fileStats.size,
+          stats: mappingData.stats || {},
+          xmlCategories: mappingData.xmlCategories?.length || 0,
+          mappings: mappingData.mappings?.length || 0
+        });
+        
+      } catch (readError) {
+        res.json({
+          exists: true,
+          filePath: mappingFilePath,
+          error: "File exists but cannot be read or parsed"
+        });
+      }
+      
+    } catch (error: any) {
+      console.error("Batch status check error:", error);
+      res.status(500).json({ 
+        message: error.message || "Failed to check batch status" 
+      });
+    }
+  });
+
   // Cronjob endpoints
   app.get("/api/cronjobs", async (req, res) => {
     try {

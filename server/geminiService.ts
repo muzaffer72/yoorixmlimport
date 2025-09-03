@@ -7969,7 +7969,336 @@ export class GeminiService {
     }
   }
 
-  // Kategori eşleştirme için Gemini'yi kullan
+  // Batch kategori eşleştirme - XML kaynağı için komple eşleştirme dosyası oluştur
+  async createBatchCategoryMapping(
+    xmlSourceId: string,
+    xmlCategories: string[],
+    modelName: string = "gemini-2.5-flash-lite"
+  ): Promise<{
+    filePath: string;
+    totalMappings: number;
+    batchCount: number;
+    avgConfidence: number;
+  }> {
+    if (!this.client) {
+      throw new Error("Gemini API anahtarı ayarlanmamış");
+    }
+
+    const localCategories = this.loadLocalCategories();
+    const batchSize = 500; // Her batch'de 500 yerel kategori
+    const xmlCount = xmlCategories.length;
+    const localCount = localCategories.length;
+    const batchCount = Math.ceil(localCount / batchSize);
+    
+    console.log(`🚀 Batch eşleştirme başlatılıyor:`);
+    console.log(`├─ XML Kategorileri: ${xmlCount}`);
+    console.log(`├─ Yerel Kategoriler: ${localCount}`);
+    console.log(`├─ Batch Boyutu: ${batchSize}`);
+    console.log(`└─ Toplam Batch: ${batchCount}`);
+
+    const allMappings: Array<{
+      xmlCategory: string;
+      suggestedCategory: {id: string, name: string} | null;
+      confidence: number;
+      reasoning: string;
+      batchNumber: number;
+    }> = [];
+
+    // Her batch için eşleştirme yap
+    for (let batchIndex = 0; batchIndex < batchCount; batchIndex++) {
+      const startIndex = batchIndex * batchSize;
+      const endIndex = Math.min(startIndex + batchSize, localCount);
+      const batchCategories = localCategories.slice(startIndex, endIndex);
+      
+      console.log(`📊 Batch ${batchIndex + 1}/${batchCount} işleniyor (${batchCategories.length} kategori)...`);
+      
+      try {
+        const batchMappings = await this.mapCategoriesWithAIBatch(
+          xmlCategories, 
+          batchCategories, 
+          batchIndex + 1,
+          modelName
+        );
+        
+        // Batch numarasını ekle
+        const mappingsWithBatch = batchMappings.map(mapping => ({
+          ...mapping,
+          batchNumber: batchIndex + 1
+        }));
+        
+        allMappings.push(...mappingsWithBatch);
+        
+        // Batch sonucunu kaydet
+        const batchFilePath = path.join(process.cwd(), `${xmlSourceId}-batch-${batchIndex + 1}.json`);
+        await fs.promises.writeFile(batchFilePath, JSON.stringify(mappingsWithBatch, null, 2), 'utf8');
+        console.log(`✅ Batch ${batchIndex + 1} kaydedildi: ${batchFilePath}`);
+        
+        // API rate limit için kısa bekle
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+      } catch (error: any) {
+        console.error(`❌ Batch ${batchIndex + 1} hatası:`, error.message);
+        // Hata durumunda boş mapping ekle
+        const emptyMappings = xmlCategories.map(xmlCat => ({
+          xmlCategory: xmlCat,
+          suggestedCategory: null,
+          confidence: 0,
+          reasoning: `Batch ${batchIndex + 1} işlenirken hata oluştu: ${error.message}`,
+          batchNumber: batchIndex + 1
+        }));
+        allMappings.push(...emptyMappings);
+      }
+    }
+
+    // En iyi eşleştirmeleri bul (her XML kategorisi için en yüksek confidence'ı al)
+    const bestMappings = this.findBestMappingsFromBatches(allMappings);
+    
+    // Ana dosyayı kaydet
+    const finalFilePath = path.join(process.cwd(), `${xmlSourceId}-mappings.json`);
+    const finalData = {
+      xmlSourceId,
+      createdAt: new Date().toISOString(),
+      xmlCategories: xmlCategories,
+      totalLocalCategories: localCount,
+      batchCount,
+      batchSize,
+      mappings: bestMappings,
+      stats: {
+        totalMappings: bestMappings.length,
+        withSuggestions: bestMappings.filter(m => m.suggestedCategory).length,
+        avgConfidence: bestMappings.reduce((sum, m) => sum + m.confidence, 0) / bestMappings.length,
+        highConfidence: bestMappings.filter(m => m.confidence >= 0.8).length,
+        mediumConfidence: bestMappings.filter(m => m.confidence >= 0.5 && m.confidence < 0.8).length,
+        lowConfidence: bestMappings.filter(m => m.confidence < 0.5).length
+      }
+    };
+    
+    await fs.promises.writeFile(finalFilePath, JSON.stringify(finalData, null, 2), 'utf8');
+    
+    // Batch dosyalarını temizle
+    for (let i = 1; i <= batchCount; i++) {
+      const batchFile = path.join(process.cwd(), `${xmlSourceId}-batch-${i}.json`);
+      try {
+        await fs.promises.unlink(batchFile);
+      } catch (e) {
+        // Dosya yoksa sorun değil
+      }
+    }
+    
+    console.log(`🎉 Batch eşleştirme tamamlandı:`);
+    console.log(`├─ Dosya: ${finalFilePath}`);
+    console.log(`├─ Toplam Eşleştirme: ${finalData.stats.totalMappings}`);
+    console.log(`├─ Öneri ile: ${finalData.stats.withSuggestions}`);
+    console.log(`├─ Ortalama Güven: %${(finalData.stats.avgConfidence * 100).toFixed(1)}`);
+    console.log(`├─ Yüksek Güven (≥%80): ${finalData.stats.highConfidence}`);
+    console.log(`├─ Orta Güven (%50-79): ${finalData.stats.mediumConfidence}`);
+    console.log(`└─ Düşük Güven (<%50): ${finalData.stats.lowConfidence}`);
+    
+    return {
+      filePath: finalFilePath,
+      totalMappings: finalData.stats.totalMappings,
+      batchCount,
+      avgConfidence: finalData.stats.avgConfidence
+    };
+  }
+
+  // Batch'lerden en iyi eşleştirmeleri seç
+  private findBestMappingsFromBatches(allMappings: Array<{
+    xmlCategory: string;
+    suggestedCategory: {id: string, name: string} | null;
+    confidence: number;
+    reasoning: string;
+    batchNumber: number;
+  }>): Array<{
+    xmlCategory: string;
+    suggestedCategory: {id: string, name: string} | null;
+    confidence: number;
+    reasoning: string;
+    fromBatch: number;
+  }> {
+    const mappingsByXmlCategory = new Map<string, typeof allMappings>();
+    
+    // XML kategorilerine göre grupla
+    allMappings.forEach(mapping => {
+      const xmlCat = mapping.xmlCategory;
+      if (!mappingsByXmlCategory.has(xmlCat)) {
+        mappingsByXmlCategory.set(xmlCat, []);
+      }
+      mappingsByXmlCategory.get(xmlCat)!.push(mapping);
+    });
+    
+    const bestMappings: Array<{
+      xmlCategory: string;
+      suggestedCategory: {id: string, name: string} | null;
+      confidence: number;
+      reasoning: string;
+      fromBatch: number;
+    }> = [];
+    
+    // Her XML kategorisi için en iyi eşleştirmeyi bul
+    mappingsByXmlCategory.forEach((mappings, xmlCategory) => {
+      // Confidence'a göre sırala (en yüksek önce)
+      const sortedMappings = mappings.sort((a, b) => b.confidence - a.confidence);
+      const bestMapping = sortedMappings[0];
+      
+      bestMappings.push({
+        xmlCategory: bestMapping.xmlCategory,
+        suggestedCategory: bestMapping.suggestedCategory,
+        confidence: bestMapping.confidence,
+        reasoning: bestMapping.reasoning,
+        fromBatch: bestMapping.batchNumber
+      });
+    });
+    
+    return bestMappings;
+  }
+
+  // Tek batch için eşleştirme yap
+  private async mapCategoriesWithAIBatch(
+    xmlCategories: string[],
+    localCategoriesBatch: LocalCategory[],
+    batchNumber: number,
+    modelName: string = "gemini-2.5-flash-lite"
+  ): Promise<Array<{
+    xmlCategory: string;
+    suggestedCategory: {id: string, name: string} | null;
+    confidence: number;
+    reasoning: string;
+  }>> {
+    const prompt = `
+Sen bir e-ticaret kategori uzmanısın. XML'den gelen kategori isimlerini mevcut yerel kategoriler (Batch ${batchNumber}) ile eşleştirmen gerekiyor.
+
+XML Kategorileri (${xmlCategories.length} adet):
+${xmlCategories.map((cat, i) => `${i + 1}. ${cat}`).join('\n')}
+
+Yerel Kategoriler - Batch ${batchNumber} (${localCategoriesBatch.length} adet):
+${localCategoriesBatch.map((cat, i) => `${i + 1}. ${cat.name} (ID: ${cat.id})`).join('\n')}
+
+Her XML kategorisi için BU BATCH'TEKİ yerel kategoriler arasından:
+1. En uygun yerel kategoriyi bul (name alanına bakarak)
+2. Eşleştirme güven skorunu (0-1 arası) belirle
+3. Eşleştirme nedenini açıkla
+
+SADECE BU BATCH'TEKİ KATEGORİLERLE EŞLEŞTİR! Başka kategori önerme.
+
+JSON formatında yanıt ver:
+{
+  "mappings": [
+    {
+      "xmlCategory": "XML kategori adı",
+      "suggestedCategoryId": "bu_batchteki_kategori_id veya null",
+      "confidence": 0.95,
+      "reasoning": "Bu batch'teki kategori ile eşleştirme nedeni"
+    }
+  ]
+}
+
+Kurallar:
+- SADECE bu batch'teki ${localCategoriesBatch.length} kategori arasından seç
+- Emin değilsen confidence düşük ver (0.1-0.5)
+- Hiç uygun olmayan kategoriler için null + confidence 0 ver
+- Türkçe karakter benzerliğini dikkate al
+- Anlam benzerliği önemli, tam kelime eşleşmesi şart değil
+`;
+
+    try {
+      if (!this.client) {
+        throw new Error(`Batch ${batchNumber} - Gemini client başlatılmamış`);
+      }
+      
+      const result = await this.client.models.generateContent({
+        model: modelName,
+        contents: prompt
+      });
+      
+      let responseText = result.text || "{}";
+      
+      // JSON temizleme
+      responseText = responseText.trim();
+      if (responseText.startsWith('```json')) {
+        responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      }
+      if (responseText.startsWith('```')) {
+        responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      let result_parsed;
+      try {
+        result_parsed = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error(`JSON parse error in batch ${batchNumber}:`, parseError);
+        responseText = responseText.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+        result_parsed = JSON.parse(responseText);
+      }
+      
+      // Sonuçları dönüştür
+      const mappings = (result_parsed.mappings || []).map((mapping: any) => {
+        const suggestedCategory = mapping.suggestedCategoryId 
+          ? localCategoriesBatch.find(cat => cat.id === mapping.suggestedCategoryId) || null
+          : null;
+
+        return {
+          xmlCategory: mapping.xmlCategory || "",
+          suggestedCategory: suggestedCategory ? {
+            id: suggestedCategory.id,
+            name: suggestedCategory.name
+          } : null,
+          confidence: Math.min(Math.max(mapping.confidence || 0, 0), 1),
+          reasoning: (mapping.reasoning || "Açıklama yok").substring(0, 200)
+        };
+      });
+
+      return mappings;
+    } catch (error: any) {
+      console.error(`Gemini API error in batch ${batchNumber}:`, error);
+      throw new Error(`Batch ${batchNumber} AI eşleştirme hatası: ${error.message}`);
+    }
+  }
+
+  // Kayıtlı eşleştirme dosyasından kategori önerisi al
+  async getCategoryFromSavedMapping(
+    xmlSourceId: string, 
+    xmlCategory: string
+  ): Promise<{
+    suggestedCategory: {id: string, name: string} | null;
+    confidence: number;
+    reasoning: string;
+    fromCache: boolean;
+  } | null> {
+    const mappingFilePath = path.join(process.cwd(), `${xmlSourceId}-mappings.json`);
+    
+    try {
+      if (!fs.existsSync(mappingFilePath)) {
+        return null; // Dosya yok, cache yok
+      }
+      
+      const fileContent = await fs.promises.readFile(mappingFilePath, 'utf8');
+      const mappingData = JSON.parse(fileContent);
+      
+      // XML kategori eşleştirmesini bul
+      const mapping = mappingData.mappings?.find((m: any) => 
+        m.xmlCategory === xmlCategory || 
+        m.xmlCategory.toLowerCase().trim() === xmlCategory.toLowerCase().trim()
+      );
+      
+      if (!mapping) {
+        return null; // Bu kategori için eşleştirme yok
+      }
+      
+      return {
+        suggestedCategory: mapping.suggestedCategory,
+        confidence: mapping.confidence || 0,
+        reasoning: mapping.reasoning || "Kayıtlı eşleştirmeden alındı",
+        fromCache: true
+      };
+      
+    } catch (error: any) {
+      console.error("Kayıtlı eşleştirme okuma hatası:", error.message);
+      return null;
+    }
+  }
+
+  // Kategori eşleştirme için Gemini'yi kullan - eski method (backward compatibility)
   async mapCategoriesWithAI(
     xmlCategories: string[], 
     modelName: string = "gemini-2.5-flash-lite"

@@ -725,7 +725,7 @@ export class PageStorage {
     return { mappings, summary };
   }
 
-  // AI ile kategori eşleştirme
+  // AI ile kategori eşleştirme - önce batch dosyasını kontrol et
   async aiMapCategories(xmlSourceId: string): Promise<{
     mappings: Array<{
       xmlCategory: string;
@@ -766,15 +766,55 @@ export class PageStorage {
     if (useAI) {
       console.log("🤖 AI kullanılarak kategori eşleştirmesi yapılıyor...");
       console.log(`📊 Input: ${xmlCategories.length} XML kategorisi, ${localCategories.length} yerel kategori`);
+      
       try {
         const aiMappings = await import('./geminiService').then(async ({ GeminiService }) => {
           const geminiService = new GeminiService(geminiSettings.api_key);
           console.log("🔗 GeminiService instance oluşturuldu");
-          return geminiService.mapCategoriesWithAI(
-            xmlCategories, 
-            localCategories.map(cat => ({ id: cat.id.toString(), name: cat.name })),
-            geminiSettings.selected_model || "gemini-1.5-flash"
-          );
+          
+          // Önce batch dosyasından eşleştirme aramayı dene
+          const batchMappings: Array<{
+            xmlCategory: string;
+            suggestedCategory: {id: string, name: string} | null;
+            confidence: number;
+            reasoning: string;
+            fromCache: boolean;
+          }> = [];
+          
+          console.log("📂 Batch mapping dosyası kontrol ediliyor...");
+          let foundInBatch = 0;
+          
+          for (const xmlCategory of xmlCategories) {
+            const cachedMapping = await geminiService.getCategoryFromSavedMapping(xmlSourceId, xmlCategory);
+            if (cachedMapping) {
+              batchMappings.push({
+                xmlCategory,
+                ...cachedMapping
+              });
+              foundInBatch++;
+            } else {
+              // Batch'te bulunamayan kategoriler için boş mapping
+              batchMappings.push({
+                xmlCategory,
+                suggestedCategory: null,
+                confidence: 0,
+                reasoning: "Batch mapping dosyasında bulunamadı",
+                fromCache: false
+              });
+            }
+          }
+          
+          if (foundInBatch > 0) {
+            console.log(`📁 Batch dosyasından ${foundInBatch}/${xmlCategories.length} kategori eşleştirmesi bulundu`);
+            return batchMappings;
+          } else {
+            console.log("📁 Batch mapping dosyası bulunamadı, canlı AI eşleştirme yapılıyor...");
+            // Fallback olarak canlı AI eşleştirmesi yap
+            return geminiService.mapCategoriesWithAI(
+              xmlCategories, 
+              geminiSettings.selected_model || "gemini-1.5-flash"
+            );
+          }
         });
         
         const mappings = aiMappings.map((mapping: any) => {
@@ -786,7 +826,7 @@ export class PageStorage {
             xmlCategory: mapping.xmlCategory,
             suggestedCategory: suggestedCategory || null,
             confidence: mapping.confidence,
-            reasoning: mapping.reasoning
+            reasoning: mapping.reasoning + (mapping.fromCache ? " (Cache'den alındı)" : "")
           };
         });
         
