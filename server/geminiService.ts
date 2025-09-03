@@ -8368,6 +8368,10 @@ Lütfen şu JSON formatında yanıt ver:
       let responseText = result.text || "{}";
       
       // JSON temizleme - bazen Gemini ekstra karakterler ekliyor
+      console.log("--- Gemini API Raw Response ---");
+      console.log(responseText);
+      console.log("-----------------------------");
+
       responseText = responseText.trim();
       if (responseText.startsWith('```json')) {
         responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
@@ -8377,19 +8381,26 @@ Lütfen şu JSON formatında yanıt ver:
       }
       
       // Bozuk string'leri düzelt
-      responseText = responseText.replace(/\\n/g, '\\\\n');
-      responseText = responseText.replace(/\n/g, '\\n');
-      responseText = responseText.replace(/\r/g, '\\r');
-      responseText = responseText.replace(/\t/g, '\\t');
+      // Bu satırlar JSON yapısını bozabileceğinden kaldırıldı.
+      // responseText = responseText.replace(/\\n/g, '\\\\n');
+      // responseText = responseText.replace(/\n/g, '\\n');
+      // responseText = responseText.replace(/\r/g, '\\r');
+      // responseText = responseText.replace(/\t/g, '\\t');
       
       let result_parsed;
       try {
         result_parsed = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error("JSON parse error, attempting to fix:", parseError);
-        // Son çare: JSON'u manuel olarak düzelt
-        responseText = responseText.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
-        result_parsed = JSON.parse(responseText);
+      } catch (parseError: any) {
+        console.error("JSON parse error in mapCategoriesWithAI. Raw text was:", responseText);
+        console.error("Parse error details:", parseError);
+        // Son çare: JSON'u manuel olarak düzeltmeye çalış
+        try {
+            const fixedResponseText = responseText.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+            result_parsed = JSON.parse(fixedResponseText);
+        } catch (finalParseError: any) {
+            console.error("Final JSON parse attempt failed. Raw text was:", responseText);
+            throw new Error(`Failed to parse AI response after attempting to fix it. Details: ${finalParseError.message}`);
+        }
       }
       
       // Sonuçları dönüştür
