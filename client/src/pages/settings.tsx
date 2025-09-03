@@ -353,7 +353,7 @@ export default function SettingsPage() {
   const saveCategoriesToJsonMutation = useMutation({
     mutationFn: async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/categories/save-to-json", {
+        const response = await fetch("http://xml.hercuma.com:5000/api/categories/save-to-json", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({})

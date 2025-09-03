@@ -126,7 +126,7 @@ app.post("/api/categories/save-to-json", async (req, res) => {
       createdAt: new Date()
     }));
     
-    // Save to JSON file
+    // Prepare data for JSON file
     const categoriesData = {
       categories: categories,
       lastUpdated: new Date().toISOString(),
@@ -135,17 +135,27 @@ app.post("/api/categories/save-to-json", async (req, res) => {
       mysqlTable: "category_languages"
     };
     
-    const filePath = path.join(__dirname, 'yerel-kategoriler.json');
+    // Save to JSON file in the specified directory
+    const targetDir = '/home/hercuma.com/xml.hercuma.com/server/data';
+    const filePath = path.join(targetDir, 'yerel-kategoriler.json');
+    
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+      console.log(`📁 Created directory: ${targetDir}`);
+    }
+    
     fs.writeFileSync(filePath, JSON.stringify(categoriesData, null, 2));
     
-    console.log(`✅ ${categories.length} kategori MySQL'den çekilip yerel-kategoriler.json dosyasına kaydedildi`);
+    console.log(`✅ ${categories.length} kategori MySQL'den çekilip ${filePath} dosyasına kaydedildi`);
     
     res.json({
       success: true,
-      message: `${categories.length} kategori başarıyla MySQL'den çekilip yerel-kategoriler.json dosyasına kaydedildi`,
+      message: `${categories.length} kategori başarıyla MySQL'den çekilip ${filePath} dosyasına kaydedildi`,
       count: categories.length,
       categories: categories,
-      source: "mysql-database"
+      source: "mysql-database",
+      filePath: filePath
     });
   } catch (error) {
     console.error("❌ Kategori kaydetme hatası:", error);
@@ -212,7 +222,7 @@ app.get("/api/categories/local-json", (req, res) => {
   }
 });
 
-const PORT = 3001;
+const PORT = 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Simple server running on http://localhost:${PORT}`);
+  console.log(`🚀 Simple server running on http://xml.hercuma.com:${PORT}`);
 });
