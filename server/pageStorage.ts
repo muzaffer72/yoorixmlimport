@@ -9,11 +9,9 @@ import {
   type DatabaseSettings,
   type InsertDatabaseSettings,
   type Cronjob,
-  type InsertCronjob,
-  categories
+  type InsertCronjob
 } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { db } from "./db";
 import { CategoryMatcher } from "./categoryMatcher";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
