@@ -26,8 +26,11 @@ export class PageStorage {
     // Ensure data directory exists
     if (!existsSync(this.dataDir)) {
       mkdirSync(this.dataDir, { recursive: true });
-    }
-  }
+    }        } catch (error: any) {
+        console.error("❌ AI eşleştirme hatası, fallback kullanılıyor:", error);
+        console.log("🔍 Hata mesajı:", error?.message);
+        // AI başarısız olursa fallback'e düş
+      }}
 
   private loadJsonFile(filename: string, defaultData: any): any {
     const filePath = join(this.dataDir, filename);
@@ -766,16 +769,26 @@ export class PageStorage {
     if (useAI) {
       console.log("🤖 AI kullanılarak kategori eşleştirmesi yapılıyor...");
       console.log(`📊 Input: ${xmlCategories.length} XML kategorisi, ${localCategories.length} yerel kategori`);
+      console.log(`🏷️ XML kategorileri:`, xmlCategories);
+      console.log(`🏪 Yerel kategoriler (ilk 5):`, localCategories.slice(0, 5).map(c => `${c.name} (${c.id})`));
+      
       try {
+        console.log("🔗 GeminiService import ediliyor...");
         const aiMappings = await import('./geminiService').then(async ({ GeminiService }) => {
           const geminiService = new GeminiService(geminiSettings.api_key);
           console.log("🔗 GeminiService instance oluşturuldu");
-          return geminiService.mapCategoriesWithAI(
+          
+          console.log("🚀 mapCategoriesWithAI çağrılıyor...");
+          const result = await geminiService.mapCategoriesWithAI(
             xmlCategories, 
             localCategories.map(cat => ({ id: cat.id.toString(), name: cat.name })),
             geminiSettings.selected_model || "gemini-1.5-flash"
           );
+          console.log(`📈 AI sonucu alındı: ${result.length} eşleştirme`);
+          return result;
         });
+        
+        console.log("🔄 AI sonuçları işleniyor...");
         
         const mappings = aiMappings.map((mapping: any) => {
           const suggestedCategory = mapping.suggestedCategory 
