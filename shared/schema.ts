@@ -138,8 +138,6 @@ export const geminiSettings = mysqlTable("gemini_settings", {
   maxTokens: int("max_tokens").default(1000),
   temperature: decimal("temperature", { precision: 2, scale: 1 }).default("0.7"),
   isActive: boolean("is_active").default(true),
-  useAiForShortDescription: boolean("use_ai_for_short_description").default(false),
-  useAiForFullDescription: boolean("use_ai_for_full_description").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -45,8 +45,6 @@ const geminiFormSchema = insertGeminiSettingsSchema.extend({
   name: z.string().min(1, "Ayar adı gerekli"),
   apiKey: z.string().min(1, "API anahtarı gerekli"),
   selectedModel: z.string().min(1, "Model seçimi gerekli"),
-  useAiForShortDescription: z.boolean().optional(),
-  useAiForFullDescription: z.boolean().optional(),
 });
 
 export default function SettingsPage() {
@@ -58,8 +56,6 @@ export default function SettingsPage() {
     name: string; 
     apiKey: string; 
     selectedModel: string;
-    useAiForShortDescription?: boolean;
-    useAiForFullDescription?: boolean;
   } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -84,8 +80,6 @@ export default function SettingsPage() {
       apiKey: "",
       selectedModel: "",
       isActive: false,
-      useAiForShortDescription: false,
-      useAiForFullDescription: false,
     },
   });
 
@@ -249,8 +243,6 @@ export default function SettingsPage() {
         name: data.name,
         apiKey: data.apiKey,
         model: data.selectedModel,
-        useAiForShortDescription: data.useAiForShortDescription || false,
-        useAiForFullDescription: data.useAiForFullDescription || false,
         isActive: data.isActive || false,
       });
       return response.json();
@@ -425,8 +417,6 @@ export default function SettingsPage() {
       name: setting.name,
       apiKey: setting.apiKey,
       selectedModel: setting.selectedModel,
-      useAiForShortDescription: setting.useAiForShortDescription || false,
-      useAiForFullDescription: setting.useAiForFullDescription || false
     });
   };
 
@@ -439,8 +429,6 @@ export default function SettingsPage() {
         name: editingGemini.name,
         apiKey: editingGemini.apiKey,
         selectedModel: editingGemini.selectedModel,
-        useAiForShortDescription: editingGemini.useAiForShortDescription || false,
-        useAiForFullDescription: editingGemini.useAiForFullDescription || false
       }
     });
   };

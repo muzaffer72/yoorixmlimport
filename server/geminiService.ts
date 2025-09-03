@@ -65,8 +65,8 @@ export class GeminiService {
       if (availableModels.length === 0) {
         availableModels = [
           {
-            name: "gemini-2.0-flash-exp",
-            displayName: "Gemini 2.0 Flash (Experimental)",
+            name: "gemini-2.5-flash-lite",
+            displayName: "Gemini 2.5 Flash Lite",
             description: "En yeni ve hızlı model",
             supportedGenerationMethods: ["generateContent"]
           },
@@ -77,53 +77,18 @@ export class GeminiService {
             supportedGenerationMethods: ["generateContent"]
           },
           {
-            name: "gemini-1.5-pro",
-            displayName: "Gemini 1.5 Pro", 
-            description: "Gelişmiş analiz için optimize edilmiş",
-            supportedGenerationMethods: ["generateContent"]
-          },
-          {
-            name: "gemini-1.5-flash-latest",
-            displayName: "Gemini 1.5 Flash (Latest)",
-            description: "En güncel Flash model",
-            supportedGenerationMethods: ["generateContent"]
-          },
-          {
-            name: "gemini-1.5-flash",
-            displayName: "Gemini 1.5 Flash",
-            description: "Hızlı ve verimli model",
-            supportedGenerationMethods: ["generateContent"]
-          },
-          {
-            name: "gemini-1.5-flash-8b",
-            displayName: "Gemini 1.5 Flash 8B",
-            description: "Küçük ve hızlı model",
-            supportedGenerationMethods: ["generateContent"]
-          },
-          {
-            name: "gemini-1.0-pro-latest",
-            displayName: "Gemini 1.0 Pro (Latest)",
-            description: "En güncel 1.0 Pro model",
-            supportedGenerationMethods: ["generateContent"]
-          },
-          {
-            name: "gemini-1.0-pro",
-            displayName: "Gemini 1.0 Pro",
-            description: "Stabil ve güvenilir model",
-            supportedGenerationMethods: ["generateContent"]
-          },
-          {
-            name: "gemini-pro",
-            displayName: "Gemini Pro",
-            description: "Genel amaçlı model",
-            supportedGenerationMethods: ["generateContent"]
-          },
-          {
-            name: "gemini-pro-vision",
-            displayName: "Gemini Pro Vision",
-            description: "Görsel analiz destekli model",
-            supportedGenerationMethods: ["generateContent"]
-          }
+    "name": "gemma-3-1b",
+    "displayName": "Gemma 3 1B",
+    "description": "Yüksek hız ve verimlilik için optimize edilmiş en küçük Gemma modeli.",
+    "supportedGenerationMethods": ["generateContent"]
+  },
+  {
+    "name": "gemma-3-4b",
+    "displayName": "Gemma 3 4B",
+    "description": "Hız ve performansı dengeleyen, yerel cihazlarda çalışmak üzere tasarlanmış model.",
+    "supportedGenerationMethods": ["generateContent"]
+  }
+          
         ];
       }
 
