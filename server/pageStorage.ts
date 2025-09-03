@@ -751,6 +751,13 @@ export class PageStorage {
       
     const localCategories = await this.getCategories();
     
+    // DEBUG: Yerel kategori sayısını kontrol et
+    console.log(`📊 Yerel kategoriler: ${localCategories.length} adet`);
+    console.log(`🏷️ İlk 10 kategori:`, localCategories.slice(0, 10).map(c => `${c.name} (${c.id})`));
+    if (localCategories.length < 100) {
+      console.log(`⚠️ Yerel kategori sayısı çok az! Tüm kategoriler:`, localCategories.map(c => `${c.name} (${c.id})`));
+    }
+    
     // Gemini API key kontrolü - ZORLA DEBUG
     console.log("🔧 === GEMINI DEBUG BAŞLADI ===");
     
@@ -832,9 +839,12 @@ export class PageStorage {
         console.log("🔄 AI sonuçları işleniyor...");
         
         const mappings = aiMappings.map((mapping: any) => {
-          const suggestedCategory = mapping.suggestedCategory 
-            ? localCategories.find(cat => cat.id.toString() === mapping.suggestedCategory!.id)
+          // AI'den dönen suggestedCategoryId ile yerel kategoriyi bul
+          const suggestedCategory = mapping.suggestedCategory
+            ? localCategories.find(cat => cat.id.toString() === mapping.suggestedCategory.id.toString())
             : null;
+            
+          console.log(`🔍 Eşleştirme: "${mapping.xmlCategory}" → ID: ${mapping.suggestedCategory?.id} → ${suggestedCategory ? `Bulundu: ${suggestedCategory.name}` : 'Bulunamadı'}`);
             
           return {
             xmlCategory: mapping.xmlCategory,
