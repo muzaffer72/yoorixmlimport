@@ -4,6 +4,17 @@ import { pageStorage } from "./pageStorage";
 import { insertXmlSourceSchema, insertCategoryMappingSchema, insertDatabaseSettingsSchema, insertGeminiSettingsSchema } from "@shared/schema";
 import { z } from "zod";
 import * as xml2js from "xml2js";
+
+// Geçici DOMParser mock - Node.js ortamı için
+class MockDOMParser {
+  parseFromString(xmlString: string, contentType: string) {
+    // Bu geçici bir mock, asıl çözüm xml2js kullanmak
+    throw new Error('DOMParser Node.js ortamında desteklenmiyor. xml2js kullanın!');
+  }
+}
+
+// Global DOMParser tanımla (geçici)
+(globalThis as any).DOMParser = MockDOMParser;
 import { ObjectStorageService } from "./objectStorage";
 import { GeminiService } from "./geminiService";
 import { getLocalCategories, connectToImportDatabase, importProductToMySQL, batchImportProductsToMySQL, checkProductTableStructure, deleteAllProductsFromMySQL, deleteProductsByXmlSource, getImportConnection } from "./mysql-import";
@@ -2835,17 +2846,61 @@ async function runImportProductsJob(cronjob: any, xmlSource: any): Promise<any> 
     }
     
     const xmlContent = await response.text();
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlContent, 'text/xml');
+    
+    // XML2JS ile parse et (Node.js uyumlu)
+    const parser = new xml2js.Parser({ 
+      explicitArray: false,
+      ignoreAttrs: false,
+      mergeAttrs: true 
+    });
+    
+    const result = await parser.parseStringPromise(xmlContent);
     
     // Ürünleri parse et
     const products = [];
-    const productNodes = xmlDoc.getElementsByTagName('product'); // Varsayılan tag
+    // XML yapısından products array'ini bul
+    let productData = null;
+    if (result.root && result.root.product) {
+      productData = Array.isArray(result.root.product) ? result.root.product : [result.root.product];
+    } else if (result.products && result.products.product) {
+      productData = Array.isArray(result.products.product) ? result.products.product : [result.products.product];
+    } else if (result.product) {
+      productData = Array.isArray(result.product) ? result.product : [result.product];
+    } else {
+      // Fallback: root level'daki tüm objelerden product anahtar kelimesini ara
+      const findProducts = (obj: any): any[] => {
+        if (!obj || typeof obj !== 'object') return [];
+        
+        for (const key in obj) {
+          if (key.toLowerCase().includes('product')) {
+            const val = obj[key];
+            if (Array.isArray(val)) return val;
+            if (val && typeof val === 'object') return [val];
+          }
+        }
+        
+        // Nested arama
+        for (const key in obj) {
+          const found = findProducts(obj[key]);
+          if (found.length > 0) return found;
+        }
+        
+        return [];
+      };
+      
+      productData = findProducts(result);
+    }
     
-    for (let i = 0; i < productNodes.length; i++) {
-      const productNode = productNodes[i];
-      const productData = extractProductData(productNode, xmlSource.fieldMapping || {});
-      products.push(productData);
+    if (!productData || productData.length === 0) {
+      throw new Error('XML\'de ürün bulunamadı. Lütfen XML yapısını kontrol edin.');
+    }
+    
+    console.log(`📦 Found ${productData.length} products in XML`);
+    
+    for (let i = 0; i < productData.length; i++) {
+      const product = productData[i];
+      const processedProduct = extractProductDataFromXmlObject(product, xmlSource.fieldMapping || {});
+      products.push(processedProduct);
     }
     
     let importedCount = 0;
@@ -3249,6 +3304,26 @@ function extractProductData(productNode: Element, fieldMapping: any): any {
     const xmlField = fieldMapping[localField];
     if (xmlField && productNode.getElementsByTagName(xmlField)[0]) {
       product[localField] = productNode.getElementsByTagName(xmlField)[0].textContent;
+    }
+  });
+  
+  return product;
+}
+
+// XML Object'inden veri çıkarmak için (xml2js parsed object)
+function extractProductDataFromXmlObject(productObj: any, fieldMapping: any): any {
+  const product: any = {};
+  
+  // Field mapping'e göre veriyi çıkar
+  Object.keys(fieldMapping).forEach(localField => {
+    const xmlField = fieldMapping[localField];
+    if (xmlField && productObj[xmlField] !== undefined) {
+      // xml2js bazen tek değerleri string olarak, çok değerleri array olarak parse eder
+      let value = productObj[xmlField];
+      if (Array.isArray(value) && value.length === 1) {
+        value = value[0];
+      }
+      product[localField] = value;
     }
   });
   
