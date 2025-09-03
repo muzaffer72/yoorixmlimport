@@ -7,6 +7,7 @@ import * as xml2js from "xml2js";
 import { ObjectStorageService } from "./objectStorage";
 import { GeminiService } from "./geminiService";
 import { getLocalCategories, connectToImportDatabase, importProductToMySQL, batchImportProductsToMySQL, checkProductTableStructure, deleteAllProductsFromMySQL, deleteProductsByXmlSource, getImportConnection } from "./mysql-import";
+import { findBestCategoryMatch } from './categoryMatcher';
 
 // Global import state management
 let isImportInProgress = false;
@@ -610,7 +611,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
-        console.log("Processed items:", processedItems, "Found categories:", categories.size);
         return Array.from(categories);
       };
 
@@ -1984,28 +1984,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Gemini AI endpoints
-  app.post("/api/gemini/test-api-key", async (req, res) => {
-    try {
-      const { apiKey } = req.body;
-      if (!apiKey) {
-        return res.status(400).json({ message: "API anahtarı gerekli" });
-      }
-
-      const geminiService = new GeminiService();
-      const models = await geminiService.testApiKeyAndGetModels(apiKey);
-      
-      res.json({ 
-        success: true, 
-        models 
-      });
-    } catch (error: any) {
-      res.status(400).json({ 
-        success: false, 
-        message: error.message 
-      });
-    }
-  });
-
+  // Bu bölüm artık kullanılmayacağı için kaldırılabilir veya devre dışı bırakılabilir.
+  // app.post("/api/gemini/test-api-key", ...);
+  // app.post("/api/gemini/categorize", ...);
   app.get("/api/gemini-settings", async (req, res) => {
     try {
       const settings = await pageStorage.getGeminiSettings();
@@ -2557,7 +2538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const xmlText = await response.text();
-      const parser = new xml2js.Parser({ explicitArray: false });
+      const parser = new xml2js.Parser();
       const xmlData = await parser.parseStringPromise(xmlText);
 
       // Dinamik XML path ile ürünleri al
@@ -2609,7 +2590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Kar oranı uygulama (preview için)
+      // Kar marjı uygulama (preview için)
       let previewPrice = mappedProduct.price ? parseFloat(mappedProduct.price) : 0;
       let originalPrice = previewPrice;
       
@@ -3124,7 +3105,7 @@ async function runUpdateProductsJob(cronjob: any, xmlSource: any): Promise<any> 
           
           if ((xmlSource.useAiForShortDescription || xmlSource.useAiForFullDescription) && originalDescription) {
             const geminiSettings = await pageStorage.getGeminiSettings();
-            if (geminiSettings?.isActive && geminiSettings?.apiKey) {
+            if (geminiSettings && geminiSettings.isActive && geminiSettings.apiKey) {
               const { GeminiService } = await import('./geminiService');
               const geminiService = new GeminiService(geminiSettings.apiKey);
               
@@ -3257,7 +3238,7 @@ async function runUpdatePriceStockJob(cronjob: any, xmlSource: any): Promise<any
     let notFoundCount = 0;
     let errorCount = 0;
     
-    // Sadece fiyat ve stok güncellemesi yap
+    // Sadece fiyat ve stok güncelleme yap
     for (const product of filteredProducts) {
       try {
         const sku = getNestedValue(product, skuField);
