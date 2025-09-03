@@ -3180,3 +3180,51 @@ function extractProductData(productNode: Element, fieldMapping: any): any {
   
   return product;
 }
+
+  // Categories to JSON endpoint
+  app.post("/api/categories/save-to-json", async (req, res) => {
+    try {
+      console.log("🔄 Kategorileri JSON'a kaydetme isteği alındı...");
+      const result = await pageStorage.saveCategoriesToLocalJson();
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: result.message,
+          count: result.count,
+          categories: result.categories
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: result.message,
+          count: 0
+        });
+      }
+    } catch (error: any) {
+      console.error("❌ Kategoriler JSON'a kaydedilirken API hatası:", error);
+      res.status(500).json({
+        success: false,
+        message: "Kategoriler kaydedilirken hata oluştu: " + error.message,
+        count: 0
+      });
+    }
+  });
+
+  // Get local JSON categories endpoint
+  app.get("/api/categories/local-json", async (req, res) => {
+    try {
+      const result = await pageStorage.getLocalJsonCategories();
+      res.json(result);
+    } catch (error: any) {
+      console.error("❌ Yerel JSON kategoriler okunurken hata:", error);
+      res.status(500).json({
+        categories: [],
+        lastUpdated: null,
+        count: 0,
+        error: error.message
+      });
+    }
+  });
+
+}

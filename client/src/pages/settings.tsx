@@ -349,6 +349,29 @@ export default function SettingsPage() {
     },
   });
 
+  // Categories to JSON mutation
+  const saveCategoriesToJsonMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/categories/save-to-json", {});
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "✅ Kategoriler Kaydedildi",
+        description: `${data.count} kategori yerel-kategoriler.json dosyasına kaydedildi`,
+        duration: 5000,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ Kategori Kaydetme Hatası",
+        description: error.message || "Kategoriler kaydedilirken hata oluştu",
+        variant: "destructive",
+        duration: 5000,
+      });
+    },
+  });
+
   const onDbSubmit = (data: z.infer<typeof dbFormSchema>) => {
     createDatabaseSettingMutation.mutate(data);
   };
@@ -912,6 +935,55 @@ export default function SettingsPage() {
               <p className="text-xs text-muted-foreground mt-1">
                 Mevcut: {systemSettingsData?.image_storage_path || '/home/hercuma.com/public_html/public/images'}
               </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Categories Management Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-6 w-6" />
+              Kategori Yönetimi
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Veritabanındaki kategorileri yerel JSON dosyasına kaydedin
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <h4 className="font-medium">Kategorileri JSON'a Aktar</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Mevcut veritabanı kategorilerini yerel-kategoriler.json dosyasına kaydet
+                  </p>
+                </div>
+                <Button
+                  onClick={() => saveCategoriesToJsonMutation.mutate()}
+                  disabled={saveCategoriesToJsonMutation.isPending}
+                  className="shrink-0"
+                  data-testid="button-save-categories-json"
+                >
+                  {saveCategoriesToJsonMutation.isPending ? (
+                    <>
+                      <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                      Kaydediliyor...
+                    </>
+                  ) : (
+                    <>
+                      <Database className="mr-2 h-4 w-4" />
+                      JSON'a Kaydet
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              <div className="text-xs text-muted-foreground">
+                <p>• Bu işlem veritabanından tüm kategorileri çeker ve yerel JSON dosyasına kaydeder</p>
+                <p>• JSON dosyası: server/data/yerel-kategoriler.json</p>
+                <p>• Format: {`{ id: "368", name: "Aksesuar", title: "Aksesuar", parentId: null, createdAt: new Date() }`}</p>
+              </div>
             </div>
           </CardContent>
         </Card>
