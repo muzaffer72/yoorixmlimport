@@ -2203,7 +2203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (result.root && result.root.product) {
         for (const product of result.root.product) {
           try {
-            const productData = {
+            const productData: any = {
               name: product.name?.[0] || 'Unknown Product',
               price: parseFloat(product.price?.[0] || '0'),
               description: product.description?.[0] || '',
@@ -2212,8 +2212,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
               categoryId: null // Kategori eşleştirmesi yapılacak
             };
 
+            // AI ile açıklama optimizasyonu
+            if (xmlSource.useAiForShortDescription || xmlSource.useAiForFullDescription) {
+              const geminiSettings = await pageStorage.getGeminiSettings();
+              if (geminiSettings?.isActive && geminiSettings?.apiKey) {
+                const { GeminiService } = await import('./geminiService');
+                const geminiService = new GeminiService(geminiSettings.apiKey);
+                
+                // Kısa açıklama optimizasyonu
+                if (xmlSource.useAiForShortDescription && productData.description) {
+                  try {
+                    const customPrompt = xmlSource.aiShortDescriptionPrompt;
+                    productData.shortDescription = await geminiService.optimizeShortDescription(
+                      productData.description, 
+                      productData.name,
+                      customPrompt
+                    );
+                  } catch (error) {
+                    console.error(`❌ AI kısa açıklama hatası (${productData.sku}):`, error);
+                  }
+                }
+                
+                // Tam açıklama optimizasyonu
+                if (xmlSource.useAiForFullDescription && productData.description) {
+                  try {
+                    const customPrompt = xmlSource.aiFullDescriptionPrompt;
+                    productData.fullDescription = await geminiService.optimizeFullDescription(
+                      productData.description, 
+                      productData.name,
+                      customPrompt
+                    );
+                  } catch (error) {
+                    console.error(`❌ AI tam açıklama hatası (${productData.sku}):`, error);
+                  }
+                }
+              }
+            }
+
             // MySQL'e import et
-            await importProductToMySQL(productData);
+            const finalProductData = {
+              ...productData,
+              currentStock: productData.stock, // stock'u currentStock'a çevir
+              unit: 'adet',
+              minimumOrderQuantity: 1,
+              isCatalog: false
+            };
+            
+            await importProductToMySQL(finalProductData, id);
             importedCount++;
 
           } catch (error) {
@@ -2399,7 +2444,7 @@ async function updateProductPriceStockInMySQL(sku: string, price: number, stock:
       return false;
     }
 
-    const query = `UPDATE products SET price = ?, stock = ?, updated_at = NOW() WHERE sku = ?`;
+    const query = `UPDATE products SET price = ?, current_stock = ?, updated_at = NOW() WHERE sku = ?`;
     const [result] = await connection.execute(query, [price.toString(), stock.toString(), sku]);
     
     return (result as any).affectedRows > 0;
@@ -2571,21 +2616,40 @@ async function runUpdateProductsJob(cronjob: any, xmlSource: any): Promise<any> 
         const sku = getNestedValue(product, skuField);
         
         if (sku && existingSKUs.has(sku)) {
-          // Mevcut ürünü güncelle (açıklamalar dahil)
-          if (cronjob.updateDescriptions && cronjob.useAiForDescriptions) {
-            // AI ile açıklama optimizasyonu
-            const geminiService = new GeminiService();
-            if (product.shortDescription) {
-              product.shortDescription = await geminiService.optimizeShortDescription(
-                product.name || product.title || 'Ürün',
-                product.shortDescription
-              );
-            }
-            if (product.fullDescription) {
-              product.fullDescription = await geminiService.optimizeFullDescription(
-                product.name || product.title || 'Ürün',
-                product.fullDescription
-              );
+          // AI ile açıklama optimizasyonu (XML kaynağının ayarlarına göre)
+          const originalDescription = getNestedValue(product, xmlSource.fieldMapping?.description || 'description') || '';
+          
+          if ((xmlSource.useAiForShortDescription || xmlSource.useAiForFullDescription) && originalDescription) {
+            const geminiSettings = await pageStorage.getGeminiSettings();
+            if (geminiSettings?.isActive && geminiSettings?.apiKey) {
+              const { GeminiService } = await import('./geminiService');
+              const geminiService = new GeminiService(geminiSettings.apiKey);
+              
+              // Kısa açıklama optimizasyonu
+              if (xmlSource.useAiForShortDescription) {
+                try {
+                  product.shortDescription = await geminiService.optimizeShortDescription(
+                    originalDescription,
+                    product.name || product.title || 'Ürün',
+                    xmlSource.aiShortDescriptionPrompt
+                  );
+                } catch (error) {
+                  console.error(`❌ AI kısa açıklama hatası (${sku}):`, error);
+                }
+              }
+              
+              // Tam açıklama optimizasyonu
+              if (xmlSource.useAiForFullDescription) {
+                try {
+                  product.fullDescription = await geminiService.optimizeFullDescription(
+                    originalDescription,
+                    product.name || product.title || 'Ürün',
+                    xmlSource.aiFullDescriptionPrompt
+                  );
+                } catch (error) {
+                  console.error(`❌ AI tam açıklama hatası (${sku}):`, error);
+                }
+              }
             }
           }
           

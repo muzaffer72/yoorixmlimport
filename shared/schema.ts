@@ -19,6 +19,11 @@ export const xmlSources = mysqlTable("xml_sources", {
   profitMarginType: varchar("profit_margin_type", { length: 20 }).default("none"), // none, percent, fixed
   profitMarginPercent: decimal("profit_margin_percent", { precision: 5, scale: 2 }).default("0.00"),
   profitMarginFixed: decimal("profit_margin_fixed", { precision: 10, scale: 2 }).default("0.00"),
+  // AI ayarları - her XML kaynağı için ayrı ayrı ayarlanabilir
+  useAiForShortDescription: boolean("use_ai_for_short_description").default(false),
+  useAiForFullDescription: boolean("use_ai_for_full_description").default(false),
+  aiShortDescriptionPrompt: text("ai_short_description_prompt"), // Özel prompt tanımı
+  aiFullDescriptionPrompt: text("ai_full_description_prompt"), // Özel prompt tanımı
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

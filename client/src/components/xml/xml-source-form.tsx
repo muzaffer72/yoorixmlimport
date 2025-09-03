@@ -39,6 +39,13 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
   const [profitMarginPercent, setProfitMarginPercent] = useState<string>("0");
   const [profitMarginFixed, setProfitMarginFixed] = useState<string>("0");
   const [sampleStructure, setSampleStructure] = useState<any>({});
+  
+  // AI ayarları
+  const [useAiForShortDescription, setUseAiForShortDescription] = useState<boolean>(false);
+  const [useAiForFullDescription, setUseAiForFullDescription] = useState<boolean>(false);
+  const [aiShortDescriptionPrompt, setAiShortDescriptionPrompt] = useState<string>("");
+  const [aiFullDescriptionPrompt, setAiFullDescriptionPrompt] = useState<string>("");
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -148,6 +155,11 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
       profitMarginPercent: profitMarginType === "percent" ? parseFloat(profitMarginPercent) || 0 : 0,
       profitMarginFixed: profitMarginType === "fixed" ? parseFloat(profitMarginFixed) || 0 : 0,
       extractedCategories: xmlCategories.length > 0 ? xmlCategories : undefined,
+      // AI ayarları
+      useAiForShortDescription,
+      useAiForFullDescription,
+      aiShortDescriptionPrompt: aiShortDescriptionPrompt.trim() || undefined,
+      aiFullDescriptionPrompt: aiFullDescriptionPrompt.trim() || undefined,
     };
     createXmlSourceMutation.mutate(submitData);
   };
@@ -599,6 +611,73 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
                           {profitMarginType === "none" && "Fiyat değiştirilmeyecek"}
                         </p>
                       </div>
+                    </div>
+                  </div>
+                  
+                  {/* AI Ayarları */}
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <FlaskConical className="w-4 h-4" />
+                      AI Açıklama Ayarları
+                    </Label>
+                    <div className="space-y-4 mt-3 p-4 bg-muted/50 rounded-lg">
+                      {/* Kısa Açıklama için AI */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label htmlFor="ai-short-description">Kısa açıklama için AI kullan</Label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            XML'den gelen metinleri AI ile 200 karakterlik SEO uyumlu kısa açıklamaya dönüştürür
+                          </p>
+                        </div>
+                        <Switch
+                          id="ai-short-description"
+                          checked={useAiForShortDescription}
+                          onCheckedChange={setUseAiForShortDescription}
+                        />
+                      </div>
+                      
+                      {/* Kısa Açıklama Prompt */}
+                      {useAiForShortDescription && (
+                        <div>
+                          <Label htmlFor="ai-short-prompt">Kısa Açıklama Prompt'u (Opsiyonel)</Label>
+                          <Input
+                            id="ai-short-prompt"
+                            placeholder="Özel prompt yazabilirsiniz (boş bırakılırsa varsayılan kullanılır)"
+                            value={aiShortDescriptionPrompt}
+                            onChange={(e) => setAiShortDescriptionPrompt(e.target.value)}
+                            className="mt-2"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Tam Açıklama için AI */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label htmlFor="ai-full-description">Tam açıklama için AI kullan</Label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            XML'den gelen metinleri AI ile HTML formatlı, SEO uyumlu ve özellik vurgulu açıklamaya dönüştürür
+                          </p>
+                        </div>
+                        <Switch
+                          id="ai-full-description"
+                          checked={useAiForFullDescription}
+                          onCheckedChange={setUseAiForFullDescription}
+                        />
+                      </div>
+                      
+                      {/* Tam Açıklama Prompt */}
+                      {useAiForFullDescription && (
+                        <div>
+                          <Label htmlFor="ai-full-prompt">Tam Açıklama Prompt'u (Opsiyonel)</Label>
+                          <Input
+                            id="ai-full-prompt"
+                            placeholder="Özel prompt yazabilirsiniz (boş bırakılırsa varsayılan kullanılır)"
+                            value={aiFullDescriptionPrompt}
+                            onChange={(e) => setAiFullDescriptionPrompt(e.target.value)}
+                            className="mt-2"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                   
