@@ -7972,7 +7972,7 @@ export class GeminiService {
   // Kategori eşleştirme için Gemini'yi kullan
   async mapCategoriesWithAI(
     xmlCategories: string[], 
-    modelName: string = "gemini-1.5-flash"
+    modelName: string = "gemini-2.5-flash-lite"
   ): Promise<Array<{
     xmlCategory: string;
     suggestedCategory: {id: string, name: string} | null;
@@ -8030,6 +8030,7 @@ Lütfen şu JSON formatında yanıt ver:
 `;
 
     try {
+      // @google/genai API'sinin doğru kullanımı
       const result = await this.client.models.generateContent({
         model: modelName,
         contents: prompt
