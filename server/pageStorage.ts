@@ -760,6 +760,17 @@ export class PageStorage {
       model: geminiSettings?.selected_model 
     });
     
+    // DETAYLI DEBUG
+    if (!geminiSettings) {
+      console.log("❌ HATA: Gemini settings bulunamadı!");
+    } else if (!geminiSettings.api_key) {
+      console.log("❌ HATA: Gemini API key boş!");
+    } else if (geminiSettings.api_key.length <= 10) {
+      console.log(`❌ HATA: Gemini API key çok kısa (${geminiSettings.api_key.length} karakter)!`);
+    } else {
+      console.log("✅ Gemini API key geçerli görünüyor");
+    }
+    
     const useAI = geminiSettings && geminiSettings.api_key && geminiSettings.api_key.length > 10;
     console.log(`🤖 AI kullanım kararı: ${useAI}`);
     
