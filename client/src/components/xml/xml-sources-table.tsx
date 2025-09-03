@@ -65,7 +65,12 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
     defaultCategoryId: null,
     profitMarginType: "none",
     profitMarginPercent: 0,
-    profitMarginFixed: 0
+    profitMarginFixed: 0,
+    // AI ayarları
+    useAiForShortDescription: false,
+    useAiForFullDescription: false,
+    aiShortDescriptionPrompt: "",
+    aiFullDescriptionPrompt: ""
   });
 
   const deleteXmlSourceMutation = useMutation({
@@ -182,7 +187,12 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
       defaultCategoryId: source.defaultCategoryId || null,
       profitMarginType: (source as any).profitMarginType || "none",
       profitMarginPercent: (source as any).profitMarginPercent || 0,
-      profitMarginFixed: (source as any).profitMarginFixed || 0
+      profitMarginFixed: (source as any).profitMarginFixed || 0,
+      // AI ayarları
+      useAiForShortDescription: (source as any).useAiForShortDescription || false,
+      useAiForFullDescription: (source as any).useAiForFullDescription || false,
+      aiShortDescriptionPrompt: (source as any).aiShortDescriptionPrompt || "",
+      aiFullDescriptionPrompt: (source as any).aiFullDescriptionPrompt || ""
     });
     setIsEditModalOpen(true);
   };
@@ -439,6 +449,78 @@ export default function XmlSourcesTable({ xmlSources, isLoading }: XmlSourcesTab
                     {editForm.profitMarginType === "none" && "Kar oranı uygulanmayacak"}
                   </p>
                 </div>
+              </div>
+            </div>
+            
+            {/* AI Ayarları */}
+            <div className="p-4 border rounded-lg bg-blue-50/50 dark:bg-blue-900/10">
+              <div className="flex items-center gap-2 mb-4">
+                <FlaskConical className="h-5 w-5 text-blue-600" />
+                <Label className="text-base font-medium text-blue-700 dark:text-blue-400">AI Açıklama Ayarları</Label>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Kısa Açıklama için AI */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Kısa açıklama için AI kullan</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      XML'den gelen metinleri AI ile 200 karakterlik SEO uyumlu kısa açıklamaya dönüştürür
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={editForm.useAiForShortDescription}
+                    onChange={(e) => setEditForm({ ...editForm, useAiForShortDescription: e.target.checked })}
+                    className="h-4 w-4"
+                    data-testid="checkbox-edit-ai-short-description"
+                  />
+                </div>
+                
+                {/* Kısa Açıklama Prompt */}
+                {editForm.useAiForShortDescription && (
+                  <div>
+                    <Label className="text-sm font-medium">Kısa Açıklama Prompt'u (Opsiyonel)</Label>
+                    <Input
+                      value={editForm.aiShortDescriptionPrompt}
+                      onChange={(e) => setEditForm({ ...editForm, aiShortDescriptionPrompt: e.target.value })}
+                      placeholder="Özel prompt yazabilirsiniz (boş bırakılırsa varsayılan kullanılır)"
+                      className="mt-2"
+                      data-testid="input-edit-ai-short-prompt"
+                    />
+                  </div>
+                )}
+                
+                {/* Tam Açıklama için AI */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Tam açıklama için AI kullan</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      XML'den gelen metinleri AI ile HTML formatlı, SEO uyumlu ve özellik vurgulu açıklamaya dönüştürür
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={editForm.useAiForFullDescription}
+                    onChange={(e) => setEditForm({ ...editForm, useAiForFullDescription: e.target.checked })}
+                    className="h-4 w-4"
+                    data-testid="checkbox-edit-ai-full-description"
+                  />
+                </div>
+                
+                {/* Tam Açıklama Prompt */}
+                {editForm.useAiForFullDescription && (
+                  <div>
+                    <Label className="text-sm font-medium">Tam Açıklama Prompt'u (Opsiyonel)</Label>
+                    <Input
+                      value={editForm.aiFullDescriptionPrompt}
+                      onChange={(e) => setEditForm({ ...editForm, aiFullDescriptionPrompt: e.target.value })}
+                      placeholder="Özel prompt yazabilirsiniz (boş bırakılırsa varsayılan kullanılır)"
+                      className="mt-2"
+                      data-testid="input-edit-ai-full-prompt"
+                    />
+                  </div>
+                )}
               </div>
             </div>
             
