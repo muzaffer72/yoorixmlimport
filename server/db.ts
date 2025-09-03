@@ -41,6 +41,21 @@ function buildConnectionUrl(settings: any): string {
 }
 
 // MySQL bağlantısı
-const DATABASE_URL = getDatabaseConfig();
-export const connection = mysql.createPool(DATABASE_URL);
+let DATABASE_URL;
+try {
+  DATABASE_URL = getDatabaseConfig();
+  console.log("✅ Database config başarıyla alındı");
+} catch (dbConfigError) {
+  console.error("❌ Database config hatası:", dbConfigError);
+  throw dbConfigError;
+}
+
+export const connection = mysql.createPool({
+  uri: DATABASE_URL,
+  connectionLimit: 10,
+  acquireTimeout: 60000,
+  timeout: 60000,
+  reconnect: true
+});
+
 export const db = drizzle(connection, { schema, mode: 'default' });

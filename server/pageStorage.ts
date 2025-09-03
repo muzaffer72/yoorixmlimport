@@ -668,27 +668,35 @@ export class PageStorage {
       
       if (dbCategories.length === 0) {
         console.warn("⚠️ MySQL veritabanında hiç kategori bulunamadı!");
+        console.log("🔄 Demo kategoriler kullanılacak (MySQL'de kategori yok)");
+        return this.getDemoCategories();
       } else {
         console.log("📋 İlk birkaç kategori:", dbCategories.slice(0, 3).map((c: Category) => `${c.name} (ID: ${c.id})`));
+        return dbCategories;
       }
       
-      return dbCategories;
     } catch (error) {
-      console.error("❌ MySQL'den kategori çekme hatası:", error);
+      console.error("❌ KRITIK: MySQL'den kategori çekme hatası:", error);
+      console.error("❌ Error detayı:", JSON.stringify(error, null, 2));
       console.log("🔄 Demo kategoriler kullanılacak (MySQL bağlantı sorunu nedeniyle)");
       
-      // Demo kategoriler - gerçek MySQL ID'leri ile
-      return [
-        { id: "368", name: "Aksesuar", title: "Aksesuar", parentId: null, createdAt: new Date() },
-        { id: "369", name: "Diğer Aksesuarlar", title: "Diğer Aksesuarlar", parentId: "368", createdAt: new Date() },
-        { id: "371", name: "Kol Düğmesi", title: "Kol Düğmesi", parentId: "368", createdAt: new Date() },
-        { id: "400", name: "Elektronik", title: "Elektronik Ürünler", parentId: null, createdAt: new Date() },
-        { id: "401", name: "Telefon", title: "Akıllı Telefonlar", parentId: "400", createdAt: new Date() },
-        { id: "402", name: "Bilgisayar", title: "Bilgisayar ve Laptop", parentId: "400", createdAt: new Date() },
-        { id: "450", name: "Giyim", title: "Giyim ve Aksesuar", parentId: null, createdAt: new Date() },
-        { id: "500", name: "Ev", title: "Ev ve Yaşam", parentId: null, createdAt: new Date() }
-      ];
+      return this.getDemoCategories();
     }
+  }
+  
+  private getDemoCategories(): Category[] {
+    console.warn("⚠️ DEMO KATEGORİLER KULLANILIYOR - BU ÜRETİM İÇİN UYGUN DEĞİL!");
+    // Demo kategoriler - gerçek MySQL ID'leri ile
+    return [
+      { id: "368", name: "Aksesuar", title: "Aksesuar", parentId: null, createdAt: new Date() },
+      { id: "369", name: "Diğer Aksesuarlar", title: "Diğer Aksesuarlar", parentId: "368", createdAt: new Date() },
+      { id: "371", name: "Kol Düğmesi", title: "Kol Düğmesi", parentId: "368", createdAt: new Date() },
+      { id: "400", name: "Elektronik", title: "Elektronik Ürünler", parentId: null, createdAt: new Date() },
+      { id: "401", name: "Telefon", title: "Akıllı Telefonlar", parentId: "400", createdAt: new Date() },
+      { id: "402", name: "Bilgisayar", title: "Bilgisayar ve Laptop", parentId: "400", createdAt: new Date() },
+      { id: "450", name: "Giyim", title: "Giyim ve Aksesuar", parentId: null, createdAt: new Date() },
+      { id: "500", name: "Ev", title: "Ev ve Yaşam", parentId: null, createdAt: new Date() }
+    ];
   }
 
   // Auto-mapping için kategori eşleştirme
