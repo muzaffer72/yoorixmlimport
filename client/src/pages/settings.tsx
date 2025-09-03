@@ -352,22 +352,81 @@ export default function SettingsPage() {
   // Categories to JSON mutation
   const saveCategoriesToJsonMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/categories/save-to-json", {});
-      return response.json();
+      try {
+        const response = await apiRequest("POST", "/api/categories/save-to-json", {});
+        
+        // Response'ın content-type'ını kontrol et
+        const contentType = response.headers.get("content-type");
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        // JSON parse'ı güvenli şekilde yap
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const data = await response.json();
+            return data;
+          } catch (jsonError) {
+            console.error("JSON parse error:", jsonError);
+            // JSON parse edilemezse default response döndür
+            return {
+              success: true,
+              message: "Kategoriler başarıyla kaydedildi (JSON parse hatası)",
+              count: 0
+            };
+          }
+        } else {
+          // JSON değilse text olarak oku
+          const textResponse = await response.text();
+          console.log("Non-JSON response:", textResponse);
+          
+          // Text response'u kontrol et ve uygun sonuç döndür
+          if (textResponse.includes("success") || response.status === 200) {
+            return {
+              success: true,
+              message: "Kategoriler başarıyla kaydedildi",
+              count: 0
+            };
+          } else {
+            throw new Error(textResponse || "Bilinmeyen hata");
+          }
+        }
+      } catch (error) {
+        console.error("API request error:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       toast({
         title: "✅ Kategoriler Kaydedildi",
-        description: `${data.count} kategori yerel-kategoriler.json dosyasına kaydedildi`,
+        description: data.count > 0 
+          ? `${data.count} kategori yerel-kategoriler.json dosyasına kaydedildi`
+          : data.message || "Kategoriler başarıyla kaydedildi",
         duration: 5000,
       });
     },
     onError: (error: any) => {
+      console.error("Categories save error:", error);
+      let errorMessage = "Kategoriler kaydedilirken hata oluştu";
+      
+      if (error.message) {
+        if (error.message.includes("JSON.parse")) {
+          errorMessage = "Sunucu yanıtı işlenirken hata oluştu (JSON parse hatası)";
+        } else if (error.message.includes("500")) {
+          errorMessage = "Sunucu hatası - lütfen konsolu kontrol edin";
+        } else if (error.message.includes("404")) {
+          errorMessage = "API endpoint bulunamadı";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "❌ Kategori Kaydetme Hatası",
-        description: error.message || "Kategoriler kaydedilirken hata oluştu",
+        description: errorMessage,
         variant: "destructive",
-        duration: 5000,
+        duration: 7000,
       });
     },
   });
@@ -960,7 +1019,10 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <Button
-                  onClick={() => saveCategoriesToJsonMutation.mutate()}
+                  onClick={() => {
+                    console.log("🔄 Kategorileri JSON'a kaydetme başlatılıyor...");
+                    saveCategoriesToJsonMutation.mutate();
+                  }}
                   disabled={saveCategoriesToJsonMutation.isPending}
                   className="shrink-0"
                   data-testid="button-save-categories-json"

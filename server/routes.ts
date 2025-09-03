@@ -3167,20 +3167,6 @@ async function updateProductPriceAndStock(productId: string, product: any, xmlSo
   console.log(`✅ Updated product ${productId}: Price=${finalPrice}, Stock=${product.stock || 0}`);
 }
 
-function extractProductData(productNode: Element, fieldMapping: any): any {
-  const product: any = {};
-  
-  // Field mapping'e göre veriyi çıkar
-  Object.keys(fieldMapping).forEach(localField => {
-    const xmlField = fieldMapping[localField];
-    if (xmlField && productNode.getElementsByTagName(xmlField)[0]) {
-      product[localField] = productNode.getElementsByTagName(xmlField)[0].textContent;
-    }
-  });
-  
-  return product;
-}
-
   // Categories to JSON endpoint
   app.post("/api/categories/save-to-json", async (req, res) => {
     try {
@@ -3227,4 +3213,21 @@ function extractProductData(productNode: Element, fieldMapping: any): any {
     }
   });
 
+  const server = createServer(app);
+  return server;
+}
+
+// Yardımcı Fonksiyonlar
+function extractProductData(productNode: Element, fieldMapping: any): any {
+  const product: any = {};
+  
+  // Field mapping'e göre veriyi çıkar
+  Object.keys(fieldMapping).forEach(localField => {
+    const xmlField = fieldMapping[localField];
+    if (xmlField && productNode.getElementsByTagName(xmlField)[0]) {
+      product[localField] = productNode.getElementsByTagName(xmlField)[0].textContent;
+    }
+  });
+  
+  return product;
 }
