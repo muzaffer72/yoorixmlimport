@@ -107,8 +107,6 @@ export default function SettingsPage() {
       selectedModel: geminiSettingsData.selected_model,
       isActive: geminiSettingsData.is_active,
       isConfigured: geminiSettingsData.is_configured,
-      useAiForShortDescription: geminiSettingsData.useAiForShortDescription || false,
-      useAiForFullDescription: geminiSettingsData.useAiForFullDescription || false,
     }
   ] : [];
 
@@ -668,36 +666,6 @@ export default function SettingsPage() {
                   />
                   <Label htmlFor="gemini-active">Bu ayarı aktif yap</Label>
                 </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="useAiForShortDescription" 
-                    data-testid="switch-ai-short-description"
-                    checked={geminiForm.watch("useAiForShortDescription") || false}
-                    onCheckedChange={(checked) => geminiForm.setValue("useAiForShortDescription", checked)}
-                  />
-                  <div>
-                    <Label htmlFor="useAiForShortDescription">Kısa açıklama için AI kullan</Label>
-                    <p className="text-sm text-muted-foreground">
-                      XML'den gelen metinleri AI ile 200 karakterlik SEO uyumlu kısa açıklamaya dönüştürür
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="useAiForFullDescription" 
-                    data-testid="switch-ai-full-description"
-                    checked={geminiForm.watch("useAiForFullDescription") || false}
-                    onCheckedChange={(checked) => geminiForm.setValue("useAiForFullDescription", checked)}
-                  />
-                  <div>
-                    <Label htmlFor="useAiForFullDescription">Tam açıklama için AI kullan</Label>
-                    <p className="text-sm text-muted-foreground">
-                      XML'den gelen metinleri AI ile HTML formatlı, SEO uyumlu ve özellik vurgulu açıklamaya dönüştürür
-                    </p>
-                  </div>
-                </div>
               </div>
               
               <div className="flex space-x-4">
@@ -1015,42 +983,6 @@ export default function SettingsPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="edit-useAiForShortDescription" 
-                    checked={editingGemini.useAiForShortDescription || false}
-                    onCheckedChange={(checked) => setEditingGemini({
-                      ...editingGemini,
-                      useAiForShortDescription: checked
-                    })}
-                  />
-                  <div>
-                    <Label htmlFor="edit-useAiForShortDescription">Kısa açıklama için AI kullan</Label>
-                    <p className="text-sm text-muted-foreground">
-                      XML'den gelen metinleri AI ile 200 karakterlik SEO uyumlu kısa açıklamaya dönüştürür
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="edit-useAiForFullDescription" 
-                    checked={editingGemini.useAiForFullDescription || false}
-                    onCheckedChange={(checked) => setEditingGemini({
-                      ...editingGemini,
-                      useAiForFullDescription: checked
-                    })}
-                  />
-                  <div>
-                    <Label htmlFor="edit-useAiForFullDescription">Tam açıklama için AI kullan</Label>
-                    <p className="text-sm text-muted-foreground">
-                      XML'den gelen metinleri AI ile HTML formatlı, SEO uyumlu ve özellik vurgulu açıklamaya dönüştürür
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
           )}
