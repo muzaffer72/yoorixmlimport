@@ -253,15 +253,7 @@ Bu ürün için detaylı, profesyonel ve satışa yönelik uzun açıklama yaz:
   }
 }
 
-// Test fonksiyonu
+// Test fonksiyonu - artık kullanılmıyor
 export async function testGeminiConnection() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY environment variable bulunamadı");
-  }
-  
-  const service = new GeminiService(apiKey);
-  const models = await service.testApiKeyAndGetModels(apiKey);
-  console.log("✅ Gemini bağlantısı başarılı, modeller:", models.map(m => m.name));
-  return models;
+  throw new Error("Bu fonksiyon artık kullanılmıyor. GeminiService.testAIConnection() kullanın.");
 }

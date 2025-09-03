@@ -2099,6 +2099,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Test endpoint (GET version) - debug için
+  app.get("/api/test-ai", async (req, res) => {
+    try {
+      // pageStorage'dan direkt getGeminiSettings çağır 
+      const geminiSettingsArray = await (pageStorage as any).getGeminiSettings();
+      if (!geminiSettingsArray || geminiSettingsArray.length === 0) {
+        return res.status(400).json({ message: "Gemini settings bulunamadı" });
+      }
+
+      const activeSettings = geminiSettingsArray.find((s: any) => s.isActive);
+      if (!activeSettings?.apiKey) {
+        return res.status(400).json({ message: "Aktif Gemini API key bulunamadı" });
+      }
+
+      const { GeminiService } = await import('./geminiService');
+      const geminiService = new GeminiService(activeSettings.apiKey);
+      
+      const testResult = await geminiService.testAIConnection();
+      res.json({ 
+        success: true, 
+        message: "AI test başarılı", 
+        response: testResult.substring(0, 200),
+        model: activeSettings.selectedModel 
+      });
+    } catch (error: any) {
+      console.error("AI test error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "AI test başarısız",
+        error: {
+          name: error.name,
+          message: error.message
+        }
+      });
+    }
+  });
+
   // Cronjob endpoints
   app.get("/api/cronjobs", async (req, res) => {
     try {
