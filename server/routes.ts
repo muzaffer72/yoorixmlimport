@@ -2276,6 +2276,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 XML Preview başlatılıyor: ${xmlSource.name}`);
       
+      // XML path detection fonksiyonu
+      const autoDetectProductPath = (rootObj: any): string | null => {
+        const commonPaths = [
+          "products.product",
+          "items.item", 
+          "Urunler.Urun",
+          "Products.Product",
+          "Items.Item",
+          "product_list.product",
+          "item_list.item",
+          "feed.product",
+          "channel.item",
+          "rss.channel.item"
+        ];
+        
+        for (const path of commonPaths) {
+          const pathParts = path.split('.');
+          let currentLevel = rootObj;
+          let pathExists = true;
+          
+          for (const part of pathParts) {
+            if (currentLevel && typeof currentLevel === 'object' && part in currentLevel) {
+              currentLevel = currentLevel[part];
+            } else {
+              pathExists = false;
+              break;
+            }
+          }
+          
+          if (pathExists && currentLevel && 
+              (Array.isArray(currentLevel) || (typeof currentLevel === 'object' && Object.keys(currentLevel).length > 0))) {
+            console.log(`🎯 Auto-detected XML path: "${path}"`);
+            return path;
+          }
+        }
+        
+        console.log(`❌ No common XML product patterns found`);
+        return null;
+      };
+      
       // XML'i indir ve parse et
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 saniye timeout
@@ -2299,8 +2339,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parser = new xml2js.Parser({ explicitArray: false });
       const xmlData = await parser.parseStringPromise(xmlText);
 
-      // İlk ürünü bul
-      const products = xmlData?.Urunler?.Urun;
+      // Dinamik XML path ile ürünleri al
+      let products;
+      if (xmlSource.xmlProductPath) {
+        // Mevcut path kullan
+        const pathParts = xmlSource.xmlProductPath.split('.');
+        let current = xmlData;
+        for (const part of pathParts) {
+          current = current?.[part];
+        }
+        products = current;
+      } else {
+        // Otomatik algılama yap
+        const detectedPath = autoDetectProductPath(xmlData);
+        if (detectedPath) {
+          const pathParts = detectedPath.split('.');
+          let current = xmlData;
+          for (const part of pathParts) {
+            current = current?.[part];
+          }
+          products = current;
+        } else {
+          products = xmlData?.Urunler?.Urun; // Fallback to default
+        }
+      }
+
       if (!products || (!Array.isArray(products) && typeof products !== 'object')) {
         return res.status(400).json({ message: "XML'de ürün verisi bulunamadı" });
       }
@@ -2309,7 +2372,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Field mapping'i uygula
       const fieldMapping = xmlSource.fieldMapping || {};
-      const mappedProduct = {};
+      const mappedProduct: any = {};
       
       // Standard field'ları mapple
       for (const [localField, xmlField] of Object.entries(fieldMapping)) {
@@ -2317,10 +2380,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (xmlField.includes(',')) {
             // Multiple fields (images gibi)
             const fields = xmlField.split(',').map(f => f.trim());
-            const values = fields.map(field => firstProduct[field]).filter(Boolean);
+            const values = fields.map(field => (firstProduct as any)[field]).filter(Boolean);
             mappedProduct[localField] = values;
           } else {
-            mappedProduct[localField] = firstProduct[xmlField];
+            mappedProduct[localField] = (firstProduct as any)[xmlField];
           }
         }
       }
@@ -2330,7 +2393,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         xmlSource: {
           name: xmlSource.name,
           url: xmlSource.url,
-          fieldMapping: xmlSource.fieldMapping || {}
+          fieldMapping: xmlSource.fieldMapping || {},
+          detectedPath: xmlSource.xmlProductPath || 'auto-detected'
         },
         rawXmlData: firstProduct,
         mappedData: mappedProduct,
@@ -2340,7 +2404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ Preview hazırlandı: ${preview.totalProducts} ürün bulundu`);
       res.json(preview);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("XML preview error:", error);
       res.status(500).json({ 
         message: error.name === 'AbortError' ? 
@@ -2351,7 +2415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // MySQL Import endpoint - XML'den ürünleri MySQL'e aktar
-  app.post("/api/xml-sources/:id/import-to-mysql", async (req, res) => {
+  app.post("/api/xml-sources/:id/import-to-mysql", async (req: any, res: any) => {
     try {
       const { id } = req.params;
       const xmlSource = await pageStorage.getXmlSource(id);

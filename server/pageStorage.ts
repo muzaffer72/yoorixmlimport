@@ -740,7 +740,6 @@ export class PageStorage {
       averageConfidence: number;
     };
   }> {
-    // Mock AI response
     const xmlSource = await this.getXmlSource(xmlSourceId);
     if (!xmlSource || !xmlSource.extractedCategories) {
       throw new Error("XML source not found or no categories extracted");
@@ -752,27 +751,79 @@ export class PageStorage {
       
     const localCategories = await this.getCategories();
     
-    const mappings = xmlCategories.map(xmlCat => {
-      // Basit string matching
-      const match = localCategories.find(localCat => 
-        localCat.name.toLowerCase().includes(xmlCat.toLowerCase()) ||
-        xmlCat.toLowerCase().includes(localCat.name.toLowerCase())
-      );
-      
-      return {
-        xmlCategory: xmlCat,
-        suggestedCategory: match || null,
-        confidence: match ? 0.85 : 0.0,
-        reasoning: match 
-          ? `"${xmlCat}" kategorisi "${match.name}" ile eşleştirildi` 
-          : `"${xmlCat}" için uygun kategori bulunamadı`
-      };
-    });
+    // Gemini API key kontrolü
+    const geminiSettings = await this.getGeminiSettings();
+    const useAI = geminiSettings && geminiSettings.api_key && geminiSettings.api_key.length > 10;
+    
+    if (useAI) {
+      console.log("🤖 AI kullanılarak kategori eşleştirmesi yapılıyor...");
+      try {
+        const aiMappings = await import('./geminiService').then(async ({ GeminiService }) => {
+          const geminiService = new GeminiService(geminiSettings.api_key);
+          return geminiService.mapCategoriesWithAI(
+            xmlCategories, 
+            localCategories.map(cat => ({ id: cat.id.toString(), name: cat.name })),
+            geminiSettings.selected_model || "gemini-1.5-flash"
+          );
+        });
+        
+        const mappings = aiMappings.map((mapping: any) => {
+          const suggestedCategory = mapping.suggestedCategory 
+            ? localCategories.find(cat => cat.id.toString() === mapping.suggestedCategory!.id)
+            : null;
+            
+          return {
+            xmlCategory: mapping.xmlCategory,
+            suggestedCategory: suggestedCategory || null,
+            confidence: mapping.confidence,
+            reasoning: mapping.reasoning
+          };
+        });
+        
+        const mapped = mappings.filter((m: any) => m.suggestedCategory !== null);
+        const averageConfidence = mapped.length > 0 
+          ? mapped.reduce((sum: number, m: any) => sum + m.confidence, 0) / mapped.length 
+          : 0;
+
+        console.log(`✅ AI Eşleştirme: ${mappings.length} kategori, ${mapped.length} eşleşti, ortalama güven: ${(averageConfidence * 100).toFixed(1)}%`);
+        
+        return {
+          mappings,
+          summary: {
+            total: mappings.length,
+            mapped: mapped.length,
+            unmapped: mappings.length - mapped.length,
+            averageConfidence
+          }
+        };
+        
+      } catch (error) {
+        console.error("❌ AI eşleştirme hatası, fallback kullanılıyor:", error);
+        // AI başarısız olursa fallback'e düş
+      }
+    } else {
+      console.log("⚠️ AI kullanılamıyor (API key yok veya geçersiz), gelişmiş algoritma kullanılıyor...");
+    }
+    
+    // Fallback: Gelişmiş CategoryMatcher algoritması kullan
+    const matcher = new CategoryMatcher();
+    const matcherResults = matcher.autoMapCategories(xmlCategories, localCategories);
+    
+    const mappings = matcherResults.map(result => ({
+      xmlCategory: result.xmlCategory,
+      suggestedCategory: result.suggestedCategory,
+      confidence: result.confidence,
+      reasoning: result.suggestedCategory 
+        ? `Algoritma ile eşleştirildi: "${result.xmlCategory}" → "${result.suggestedCategory.name}" (güven: ${(result.confidence * 100).toFixed(1)}%)`
+        : `"${result.xmlCategory}" için uygun kategori bulunamadı`
+    }));
 
     const mapped = mappings.filter(m => m.suggestedCategory !== null);
     const averageConfidence = mapped.length > 0 
       ? mapped.reduce((sum, m) => sum + m.confidence, 0) / mapped.length 
       : 0;
+
+    console.log(`✅ Algoritma Eşleştirme: ${mappings.length} kategori, ${mapped.length} eşleşti, ortalama güven: ${(averageConfidence * 100).toFixed(1)}%`);
 
     return {
       mappings,
