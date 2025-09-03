@@ -26,7 +26,16 @@ export default function CronjobPage() {
   const [selectedXmlSource, setSelectedXmlSource] = useState<string>("");
   const [selectedFrequency, setSelectedFrequency] = useState<string>("");
   const [cronjobName, setCronjobName] = useState<string>("");
+  const [jobType, setJobType] = useState<string>("import_products");
   const [isActive, setIsActive] = useState(true);
+  
+  // Yeni cronjob seçenekleri
+  const [updateExistingProducts, setUpdateExistingProducts] = useState(true);
+  const [updateDescriptions, setUpdateDescriptions] = useState(false);
+  const [useAiForDescriptions, setUseAiForDescriptions] = useState(false);
+  const [updatePricesAndStock, setUpdatePricesAndStock] = useState(true);
+  const [applyProfitMargin, setApplyProfitMargin] = useState(true);
+  
   const [importProgress, setImportProgress] = useState(0);
   const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
@@ -53,7 +62,13 @@ export default function CronjobPage() {
       setCronjobName("");
       setSelectedXmlSource("");
       setSelectedFrequency("");
+      setJobType("import_products");
       setIsActive(true);
+      setUpdateExistingProducts(true);
+      setUpdateDescriptions(false);
+      setUseAiForDescriptions(false);
+      setUpdatePricesAndStock(true);
+      setApplyProfitMargin(true);
       queryClient.invalidateQueries({ queryKey: ["/api/cronjobs"] });
     },
     onError: (error: any) => {
@@ -185,7 +200,13 @@ export default function CronjobPage() {
       name: cronjobName,
       xmlSourceId: selectedXmlSource,
       frequency: selectedFrequency,
+      jobType,
       isActive,
+      updateExistingProducts,
+      updateDescriptions,
+      useAiForDescriptions,
+      updatePricesAndStock,
+      applyProfitMargin
     });
   };
 
@@ -301,6 +322,82 @@ export default function CronjobPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="jobType">İşlem Türü</Label>
+              <Select value={jobType} onValueChange={setJobType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="İşlem türünü seçin" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="import_products">Ürünleri import et</SelectItem>
+                  <SelectItem value="update_products">Ürünleri güncelle</SelectItem>
+                  <SelectItem value="update_price_stock">Ürünün fiyatını ve stok durumunu güncelle</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Conditional options based on job type */}
+            {(jobType === 'import_products' || jobType === 'update_products') && (
+              <div className="grid gap-4 border rounded-lg p-4">
+                <h4 className="font-medium">Ürün İşlemi Seçenekleri</h4>
+                
+                {jobType === 'update_products' && (
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="updateExistingProducts"
+                      checked={updateExistingProducts}
+                      onCheckedChange={setUpdateExistingProducts}
+                    />
+                    <Label htmlFor="updateExistingProducts">Mevcut ürünleri güncelle</Label>
+                  </div>
+                )}
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="updateDescriptions"
+                    checked={updateDescriptions}
+                    onCheckedChange={setUpdateDescriptions}
+                  />
+                  <Label htmlFor="updateDescriptions">Ürün açıklamalarını güncelle</Label>
+                </div>
+
+                {updateDescriptions && (
+                  <div className="flex items-center space-x-2 ml-6">
+                    <Switch
+                      id="useAiForDescriptions"
+                      checked={useAiForDescriptions}
+                      onCheckedChange={setUseAiForDescriptions}
+                    />
+                    <Label htmlFor="useAiForDescriptions">AI ile açıklama optimizasyonu</Label>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {jobType === 'update_price_stock' && (
+              <div className="grid gap-4 border rounded-lg p-4">
+                <h4 className="font-medium">Fiyat ve Stok Seçenekleri</h4>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="updatePricesAndStock"
+                    checked={updatePricesAndStock}
+                    onCheckedChange={setUpdatePricesAndStock}
+                  />
+                  <Label htmlFor="updatePricesAndStock">Fiyat ve stok güncelle</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="applyProfitMargin"
+                    checked={applyProfitMargin}
+                    onCheckedChange={setApplyProfitMargin}
+                  />
+                  <Label htmlFor="applyProfitMargin">Kar marjı uygula</Label>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center space-x-2">
               <Switch 

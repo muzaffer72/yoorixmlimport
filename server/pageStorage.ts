@@ -306,6 +306,56 @@ export class PageStorage {
     return true;
   }
 
+  async getCronjobById(id: string): Promise<Cronjob | null> {
+    const data = this.loadJsonFile('cronjobs.json', { jobs: [] });
+    const job = data.jobs.find((job: any) => job.id === id);
+    return job || null;
+  }
+
+  async updateCronjobStatus(id: string, status: string): Promise<void> {
+    const data = this.loadJsonFile('cronjobs.json', { jobs: [] });
+    const jobIndex = data.jobs.findIndex((job: any) => job.id === id);
+    if (jobIndex !== -1) {
+      data.jobs[jobIndex].lastRunStatus = status;
+      data.jobs[jobIndex].lastRun = new Date().toISOString();
+      this.saveJsonFile('cronjobs.json', data);
+    }
+  }
+
+  async updateCronjobAfterRun(id: string, status: string, result: any): Promise<void> {
+    const data = this.loadJsonFile('cronjobs.json', { jobs: [] });
+    const jobIndex = data.jobs.findIndex((job: any) => job.id === id);
+    if (jobIndex !== -1) {
+      const job = data.jobs[jobIndex];
+      job.lastRunStatus = status;
+      job.lastRun = new Date().toISOString();
+      job.runCount = (job.runCount || 0) + 1;
+      
+      if (status === 'failed') {
+        job.failureCount = (job.failureCount || 0) + 1;
+      }
+      
+      // Next run zamanını hesapla (basit implementasyon)
+      if (job.frequency === 'hourly') {
+        job.nextRun = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      } else if (job.frequency === 'daily') {
+        job.nextRun = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      }
+      
+      this.saveJsonFile('cronjobs.json', data);
+      
+      // Log activity
+      await this.createActivityLog({
+        type: status === 'success' ? "cronjob_success" : "cronjob_failed",
+        title: `Cronjob ${status === 'success' ? 'başarılı' : 'başarısız'}`,
+        description: `${job.name} cronjob görevi ${status === 'success' ? 'başarıyla çalıştırıldı' : 'başarısız oldu'}`,
+        entityId: id,
+        entityType: "cronjob",
+        newValue: JSON.stringify(result)
+      });
+    }
+  }
+
   // Category Mappings Management
   async getCategoryMappings(xmlSourceId: string): Promise<CategoryMapping[]> {
     const data = this.loadJsonFile('category-mappings.json', { mappings: [] });

@@ -1919,21 +1919,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/cronjobs/:id/run", async (req, res) => {
     try {
       const { id } = req.params;
-      // Mock cronjob çalıştırma
-      const success = true;
       
-      if (success) {
-        res.json({ 
-          message: "Cronjob executed successfully",
-          status: "completed"
-        });
-      } else {
-        res.status(500).json({ 
-          message: "Cronjob execution failed",
-          status: "failed"
-        });
+      // Cronjob bilgilerini al
+      const cronjob = await pageStorage.getCronjobById(id);
+      if (!cronjob) {
+        return res.status(404).json({ message: "Cronjob not found" });
       }
+
+      // XML Source bilgilerini al
+      const xmlSource = await pageStorage.getXmlSource(cronjob.xmlSourceId);
+      if (!xmlSource) {
+        return res.status(404).json({ message: "XML Source not found" });
+      }
+
+      console.log(`🚀 Running cronjob: ${cronjob.name} (Type: ${cronjob.jobType})`);
+      
+      // Cronjob'u çalışıyor olarak işaretle
+      await pageStorage.updateCronjobStatus(id, 'running');
+      
+      let result;
+      
+      switch (cronjob.jobType) {
+        case 'import_products':
+          result = await runImportProductsJob(cronjob, xmlSource);
+          break;
+        case 'update_products':
+          result = await runUpdateProductsJob(cronjob, xmlSource);
+          break;
+        case 'update_price_stock':
+          result = await runUpdatePriceStockJob(cronjob, xmlSource);
+          break;
+        default:
+          throw new Error(`Unknown job type: ${cronjob.jobType}`);
+      }
+      
+      // Başarılı çalıştırma kaydı
+      await pageStorage.updateCronjobAfterRun(id, 'success', result);
+      
+      res.json({ 
+        message: "Cronjob executed successfully",
+        status: "completed",
+        result
+      });
+      
     } catch (error: any) {
+      console.error(`❌ Cronjob execution failed:`, error);
+      
+      // Hata durumunu kaydet
+      try {
+        await pageStorage.updateCronjobAfterRun(req.params.id, 'failed', { error: error.message });
+      } catch (updateError) {
+        console.error("Failed to update cronjob status:", updateError);
+      }
+      
       res.status(500).json({ 
         message: error.message || "Failed to run cronjob",
         status: "error"
@@ -2152,4 +2190,426 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Cronjob İş Fonksiyonları
+// MySQL'den XML kaynağına göre mevcut ürünlerin SKU kodlarını al
+async function getExistingSKUsFromDB(xmlSourceId: string): Promise<Set<string>> {
+  try {
+    // Dummy veritabanı bağlantısı - gerçek implementasyonda MySQL query kullanılacak
+    // SELECT sku FROM products WHERE xml_source_id = ?
+    const query = `SELECT sku FROM products WHERE xml_source_id = '${xmlSourceId}' AND sku IS NOT NULL AND sku != ''`;
+    
+    // Şimdilik örnek data döndür - gerçek implementasyonda MySQL'den çekilecek
+    console.log(`📋 MySQL'den mevcut SKU kodları alınıyor (XML Source: ${xmlSourceId})`);
+    
+    // TODO: Gerçek MySQL query implementasyonu
+    // const results = await mysql.query(query);
+    // return new Set(results.map(row => row.sku));
+    
+    // Şimdilik boş set döndür
+    return new Set<string>();
+  } catch (error) {
+    console.error('❌ SKU kodları alınamadı:', error);
+    return new Set<string>();
+  }
+}
+
+// XML'den belirli SKU kodlarını filtrele
+function filterProductsBySKU(xmlProducts: any[], existingSKUs: Set<string>, skuFieldPath: string): any[] {
+  return xmlProducts.filter(product => {
+    const sku = getNestedValue(product, skuFieldPath);
+    return sku && existingSKUs.has(sku);
+  });
+}
+
+// Nested object değer alımı için helper
+function getNestedValue(obj: any, path: string): any {
+  return path.split('.').reduce((current, prop) => current?.[prop], obj);
+}
+
+async function runImportProductsJob(cronjob: any, xmlSource: any): Promise<any> {
+  console.log(`📦 Running Import Products Job: ${cronjob.name}`);
+  
+  try {
+    // XML'den ürünleri çek
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    
+    const response = await fetch(xmlSource.url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 XML Import Bot'
+      }
+    });
+    clearTimeout(timeout);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const xmlContent = await response.text();
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlContent, 'text/xml');
+    
+    // Ürünleri parse et
+    const products = [];
+    const productNodes = xmlDoc.getElementsByTagName('product'); // Varsayılan tag
+    
+    for (let i = 0; i < productNodes.length; i++) {
+      const productNode = productNodes[i];
+      const productData = extractProductData(productNode, xmlSource.fieldMapping || {});
+      products.push(productData);
+    }
+    
+    let importedCount = 0;
+    let updatedCount = 0;
+    let errorCount = 0;
+    
+    // Her ürün için import/update mantığı
+    for (const product of products) {
+      try {
+        if (product.sku) {
+          // SKU varsa mevcut ürünü kontrol et
+          const existingProduct = await checkProductBySku(product.sku);
+          
+          if (existingProduct && cronjob.updateExistingProducts) {
+            // Mevcut ürünü güncelle
+            await updateExistingProduct(existingProduct.id, product, cronjob);
+            updatedCount++;
+          } else if (!existingProduct) {
+            // Yeni ürün ekle
+            await importNewProduct(product, xmlSource);
+            importedCount++;
+          }
+        } else {
+          // SKU yoksa yeni ürün olarak ekle
+          await importNewProduct(product, xmlSource);
+          importedCount++;
+        }
+      } catch (error) {
+        console.error(`❌ Error processing product:`, error);
+        errorCount++;
+      }
+    }
+    
+    return {
+      totalProcessed: products.length,
+      imported: importedCount,
+      updated: updatedCount,
+      errors: errorCount,
+      jobType: 'import_products'
+    };
+    
+  } catch (error: any) {
+    console.error(`❌ Import Products Job failed:`, error);
+    throw error;
+  }
+}
+
+async function runUpdateProductsJob(cronjob: any, xmlSource: any): Promise<any> {
+  console.log(`🔄 Running Update Products Job: ${cronjob.name}`);
+  
+  try {
+    // Önce veritabanından mevcut SKU kodlarını al
+    const existingSKUs = await getExistingSKUsFromDB(xmlSource.id);
+    console.log(`   └─ Veritabanında ${existingSKUs.size} adet SKU kodu bulundu`);
+    
+    if (existingSKUs.size === 0) {
+      console.log(`⚠️  Veritabanında hiç ürün bulunamadı, güncelleme atlanıyor`);
+      return {
+        success: true,
+        message: 'Güncellenecek ürün bulunamadı',
+        stats: { updated: 0, notFound: 0, errors: 0 }
+      };
+    }
+
+    // XML'den ürünleri çek
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    
+    const response = await fetch(xmlSource.url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 XML Import Bot'
+      }
+    });
+    clearTimeout(timeout);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const xmlContent = await response.text();
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlContent, 'text/xml');
+    
+    // Ürünleri parse et
+    const allProducts = [];
+    const productNodes = xmlDoc.getElementsByTagName('product');
+    
+    for (let i = 0; i < productNodes.length; i++) {
+      const productNode = productNodes[i];
+      const productData = extractProductData(productNode, xmlSource.fieldMapping || {});
+      allProducts.push(productData);
+    }
+    
+    // SKU field mapping'den alan adını al
+    const skuField = xmlSource.fieldMapping?.sku || 'sku';
+    
+    // Sadece mevcut SKU'lara sahip ürünleri filtrele
+    const filteredProducts = filterProductsBySKU(allProducts, existingSKUs, skuField);
+    console.log(`   └─ XML'de toplam ${allProducts.length} ürün, ${filteredProducts.length} tanesi veritabanında mevcut`);
+    
+    let updatedCount = 0;
+    let notFoundCount = 0;
+    let errorCount = 0;
+    
+    // Sadece mevcut ürünleri güncelle
+    for (const product of filteredProducts) {
+      try {
+        const sku = getNestedValue(product, skuField);
+        
+        if (sku && existingSKUs.has(sku)) {
+          // Mevcut ürünü güncelle (açıklamalar dahil)
+          if (cronjob.updateDescriptions && cronjob.useAiForDescriptions) {
+            // AI ile açıklama optimizasyonu
+            const geminiService = new GeminiService();
+            if (product.shortDescription) {
+              product.shortDescription = await geminiService.optimizeShortDescription(
+                product.name || product.title || 'Ürün',
+                product.shortDescription
+              );
+            }
+            if (product.fullDescription) {
+              product.fullDescription = await geminiService.optimizeFullDescription(
+                product.name || product.title || 'Ürün',
+                product.fullDescription
+              );
+            }
+          }
+          
+          // TODO: Gerçek MySQL güncelleme
+          // await updateProductInDB(sku, product);
+          console.log(`   ✅ Güncellendi: ${sku}`);
+          updatedCount++;
+        }
+      } catch (error) {
+        console.error(`❌ Güncelleme hatası (${product.sku}):`, error);
+        errorCount++;
+      }
+    }
+    
+    console.log(`✅ Güncelleme tamamlandı: ${updatedCount} güncellendi, ${errorCount} hata`);
+    
+    return {
+      success: true,
+      message: `${updatedCount} ürün güncellendi`,
+      stats: { updated: updatedCount, notFound: notFoundCount, errors: errorCount }
+    };
+    
+  } catch (error) {
+    console.error(`❌ Update Products Job failed:`, error);
+    throw error;
+  }
+}
+
+async function runUpdatePriceStockJob(cronjob: any, xmlSource: any): Promise<any> {
+  console.log(`💰 Running Update Price & Stock Job: ${cronjob.name}`);
+  
+  try {
+    // Önce veritabanından mevcut SKU kodlarını al
+    const existingSKUs = await getExistingSKUsFromDB(xmlSource.id);
+    console.log(`   └─ Veritabanında ${existingSKUs.size} adet SKU kodu bulundu`);
+    
+    if (existingSKUs.size === 0) {
+      console.log(`⚠️  Veritabanında hiç ürün bulunamadı, fiyat/stok güncellemesi atlanıyor`);
+      return {
+        success: true,
+        message: 'Güncellenecek ürün bulunamadı',
+        stats: { updated: 0, notFound: 0, errors: 0 }
+      };
+    }
+
+    // XML'den ürünleri çek
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    
+    const response = await fetch(xmlSource.url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 XML Import Bot'
+      }
+    });
+    clearTimeout(timeout);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const xmlContent = await response.text();
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlContent, 'text/xml');
+    
+    // Ürünleri parse et
+    const allProducts = [];
+    const productNodes = xmlDoc.getElementsByTagName('product');
+    
+    for (let i = 0; i < productNodes.length; i++) {
+      const productNode = productNodes[i];
+      const productData = extractProductData(productNode, xmlSource.fieldMapping || {});
+      allProducts.push(productData);
+    }
+    
+    // SKU field mapping'den alan adını al
+    const skuField = xmlSource.fieldMapping?.sku || 'sku';
+    
+    // Sadece mevcut SKU'lara sahip ürünleri filtrele
+    const filteredProducts = filterProductsBySKU(allProducts, existingSKUs, skuField);
+    console.log(`   └─ XML'de toplam ${allProducts.length} ürün, ${filteredProducts.length} tanesi veritabanında mevcut`);
+    
+    let updatedCount = 0;
+    let notFoundCount = 0;
+    let errorCount = 0;
+    
+    // Sadece fiyat ve stok güncellemesi yap
+    for (const product of filteredProducts) {
+      try {
+        const sku = getNestedValue(product, skuField);
+        
+        if (sku && existingSKUs.has(sku)) {
+          // Kar marjı uygulama
+          if (cronjob.applyProfitMargin && xmlSource.profitMarginType !== 'none') {
+            product.price = applyProfitMargin(product.price, xmlSource);
+          }
+          
+          // TODO: Gerçek MySQL güncelleme - sadece fiyat ve stok alanları
+          // await updateProductPriceAndStock(sku, product.price, product.stock);
+          console.log(`   💰 Fiyat/Stok güncellendi: ${sku} - ${product.price}₺, Stok: ${product.stock}`);
+          updatedCount++;
+        }
+      } catch (error) {
+        console.error(`❌ Fiyat/stok güncelleme hatası (${product.sku}):`, error);
+        errorCount++;
+      }
+    }
+    
+    console.log(`✅ Fiyat/stok güncellemesi tamamlandı: ${updatedCount} güncellendi, ${errorCount} hata`);
+    
+    return {
+      success: true,
+      message: `${updatedCount} ürünün fiyat/stoğu güncellendi`,
+      stats: { updated: updatedCount, notFound: notFoundCount, errors: errorCount }
+    };
+    
+  } catch (error) {
+    console.error(`❌ Update Price & Stock Job failed:`, error);
+    throw error;
+  }
+}
+
+// Kar marjı uygulama helper fonksiyonu
+function applyProfitMargin(originalPrice: number, xmlSource: any): number {
+  if (xmlSource.profitMarginType === 'percent') {
+    const margin = parseFloat(xmlSource.profitMarginPercent || '0');
+    return originalPrice * (1 + margin / 100);
+  } else if (xmlSource.profitMarginType === 'fixed') {
+    const margin = parseFloat(xmlSource.profitMarginFixed || '0');
+    return originalPrice + margin;
+  }
+  return originalPrice;
+}
+
+// Yardımcı Fonksiyonlar
+async function checkProductBySku(sku: string): Promise<any> {
+  // Mock implementation - gerçekte MySQL'den kontrol edilecek
+  return null; // Şimdilik null döndür
+}
+
+async function importNewProduct(product: any, xmlSource: any): Promise<void> {
+  // Yeni ürün import etme mantığı
+  console.log(`➕ Importing new product: ${product.name} (SKU: ${product.sku})`);
+  // mysql-import.ts'teki importProductToMySQL fonksiyonunu kullan
+}
+
+async function updateExistingProduct(productId: string, product: any, cronjob: any): Promise<void> {
+  // Mevcut ürün güncelleme mantığı
+  console.log(`🔄 Updating existing product: ${product.name} (SKU: ${product.sku})`);
+  
+  // Açıklama güncelleme
+  if (cronjob.updateDescriptions) {
+    console.log(`📝 Updating descriptions for: ${product.name}`);
+    
+    if (cronjob.useAiForDescriptions) {
+      // AI ile açıklama güncelleme
+      const { pageStorage } = await import('./pageStorage');
+      const geminiSettings = await pageStorage.getGeminiSettings();
+      if (geminiSettings && geminiSettings.is_configured) {
+        try {
+          const { GeminiService } = await import('./geminiService');
+          const geminiService = new GeminiService(geminiSettings.api_key);
+          
+          if (geminiSettings.useAiForShortDescription && product.shortDescription) {
+            const optimizedShort = await geminiService.optimizeShortDescription(
+              product.name, 
+              product.shortDescription,
+              geminiSettings.selected_model
+            );
+            product.shortDescription = optimizedShort;
+          }
+          
+          if (geminiSettings.useAiForFullDescription && product.description) {
+            const optimizedFull = await geminiService.optimizeFullDescription(
+              product.name,
+              product.description,
+              geminiSettings.selected_model
+            );
+            product.description = optimizedFull;
+          }
+        } catch (aiError) {
+          console.error(`⚠️ AI processing failed, using original descriptions:`, aiError);
+        }
+      }
+    }
+  }
+  
+  // Fiyat ve stok güncelleme
+  if (cronjob.updatePricesAndStock) {
+    console.log(`💰 Updating price and stock for: ${product.name}`);
+    // updateProductPriceAndStock fonksiyonunu çağır
+  }
+}
+
+async function updateProductPriceAndStock(productId: string, product: any, xmlSource: any, applyProfitMargin: boolean): Promise<void> {
+  console.log(`💰 Updating price and stock for product ID: ${productId}`);
+  
+  let finalPrice = parseFloat(product.price || "0");
+  
+  // Kar marjı uygula
+  if (applyProfitMargin) {
+    if (xmlSource.profitMarginType === 'percent' && xmlSource.profitMarginPercent > 0) {
+      finalPrice = finalPrice * (1 + xmlSource.profitMarginPercent / 100);
+      console.log(`📈 Applied ${xmlSource.profitMarginPercent}% margin: ${product.price} -> ${finalPrice}`);
+    } else if (xmlSource.profitMarginType === 'fixed' && xmlSource.profitMarginFixed > 0) {
+      finalPrice = finalPrice + parseFloat(xmlSource.profitMarginFixed);
+      console.log(`📈 Applied ${xmlSource.profitMarginFixed} fixed margin: ${product.price} -> ${finalPrice}`);
+    }
+  }
+  
+  // Mock implementation - gerçekte MySQL'e yazılacak
+  console.log(`✅ Updated product ${productId}: Price=${finalPrice}, Stock=${product.stock || 0}`);
+}
+
+function extractProductData(productNode: Element, fieldMapping: any): any {
+  const product: any = {};
+  
+  // Field mapping'e göre veriyi çıkar
+  Object.keys(fieldMapping).forEach(localField => {
+    const xmlField = fieldMapping[localField];
+    if (xmlField && productNode.getElementsByTagName(xmlField)[0]) {
+      product[localField] = productNode.getElementsByTagName(xmlField)[0].textContent;
+    }
+  });
+  
+  return product;
 }

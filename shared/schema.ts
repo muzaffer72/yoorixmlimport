@@ -39,6 +39,7 @@ export const cronjobs = mysqlTable("cronjobs", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   name: text("name").notNull(),
   xmlSourceId: varchar("xml_source_id", { length: 36 }).notNull(),
+  jobType: varchar("job_type", { length: 50 }).notNull().default("import_products"), // import_products, update_products, update_price_stock
   frequency: varchar("frequency", { length: 50 }).notNull(), // hourly, daily, weekly, custom
   cronExpression: text("cron_expression"), // For custom frequencies
   isActive: boolean("is_active").default(true),
@@ -47,6 +48,11 @@ export const cronjobs = mysqlTable("cronjobs", {
   lastRunStatus: varchar("last_run_status", { length: 50 }), // success, failed, running
   runCount: int("run_count").default(0),
   failureCount: int("failure_count").default(0),
+  updateExistingProducts: boolean("update_existing_products").default(true), // SKU'ya göre güncelleme
+  updateDescriptions: boolean("update_descriptions").default(false), // Açıklamaları güncelle
+  useAiForDescriptions: boolean("use_ai_for_descriptions").default(false), // AI ile açıklama güncelle
+  updatePricesAndStock: boolean("update_prices_and_stock").default(true), // Fiyat ve stok güncelle
+  applyProfitMargin: boolean("apply_profit_margin").default(true), // Kar marjı uygula
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
