@@ -8409,13 +8409,16 @@ Lütfen şu JSON formatında yanıt ver:
           ? localCategories.find(cat => cat.id === mapping.suggestedCategoryId) || null
           : null;
 
+        // Eşleşme yoksa güven skorunu 0 yap
+        const confidence = suggestedCategory ? Math.min(Math.max(mapping.confidence || 0, 0), 1) : 0;
+
         return {
           xmlCategory: mapping.xmlCategory || "",
           suggestedCategory: suggestedCategory ? {
             id: suggestedCategory.id,
             name: suggestedCategory.name
           } : null,
-          confidence: Math.min(Math.max(mapping.confidence || 0, 0), 1), // 0-1 arası sınırla
+          confidence: confidence, // 0-1 arası sınırla
           reasoning: (mapping.reasoning || "Açıklama yok").substring(0, 200) // Uzun açıklamaları kısalt
         };
       });
