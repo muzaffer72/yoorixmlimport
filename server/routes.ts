@@ -2258,19 +2258,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 // MySQL'den XML kaynağına göre mevcut ürünlerin SKU kodlarını al
 async function getExistingSKUsFromDB(xmlSourceId: string): Promise<Set<string>> {
   try {
-    // Dummy veritabanı bağlantısı - gerçek implementasyonda MySQL query kullanılacak
-    // SELECT sku FROM products WHERE xml_source_id = ?
-    const query = `SELECT sku FROM products WHERE xml_source_id = '${xmlSourceId}' AND sku IS NOT NULL AND sku != ''`;
+    const { getImportConnection } = await import('./mysql-import');
+    const connection = getImportConnection();
     
-    // Şimdilik örnek data döndür - gerçek implementasyonda MySQL'den çekilecek
+    if (!connection) {
+      console.log(`⚠️  MySQL bağlantısı yok, boş SKU seti döndürülüyor`);
+      return new Set<string>();
+    }
+    
     console.log(`📋 MySQL'den mevcut SKU kodları alınıyor (XML Source: ${xmlSourceId})`);
     
-    // TODO: Gerçek MySQL query implementasyonu
-    // const results = await mysql.query(query);
-    // return new Set(results.map(row => row.sku));
+    // Gerçek MySQL query
+    const query = `SELECT sku FROM products WHERE xml_source_id = ? AND sku IS NOT NULL AND sku != ''`;
+    const [results] = await connection.execute(query, [xmlSourceId]);
     
-    // Şimdilik boş set döndür
-    return new Set<string>();
+    const skuSet = new Set<string>();
+    if (Array.isArray(results)) {
+      results.forEach((row: any) => {
+        if (row.sku) {
+          skuSet.add(row.sku);
+        }
+      });
+    }
+    
+    console.log(`   └─ Veritabanından ${skuSet.size} adet SKU kodu bulundu`);
+    return skuSet;
+    
   } catch (error) {
     console.error('❌ SKU kodları alınamadı:', error);
     return new Set<string>();
@@ -2283,6 +2296,88 @@ function filterProductsBySKU(xmlProducts: any[], existingSKUs: Set<string>, skuF
     const sku = getNestedValue(product, skuFieldPath);
     return sku && existingSKUs.has(sku);
   });
+}
+
+// MySQL'de ürün güncelleme fonksiyonu
+async function updateProductInMySQL(sku: string, productData: any, cronjob: any): Promise<boolean> {
+  try {
+    const { getImportConnection } = await import('./mysql-import');
+    const connection = getImportConnection();
+    
+    if (!connection) {
+      console.log(`⚠️  MySQL bağlantısı yok, ürün güncellenemedi: ${sku}`);
+      return false;
+    }
+
+    // Güncelleme alanlarını hazırla
+    const updateFields = [];
+    const updateValues = [];
+    
+    if (productData.name) {
+      updateFields.push('name = ?');
+      updateValues.push(productData.name);
+    }
+    
+    if (productData.price !== undefined) {
+      updateFields.push('price = ?');
+      updateValues.push(parseFloat(productData.price).toString());
+    }
+    
+    if (productData.stock !== undefined) {
+      updateFields.push('stock = ?');
+      updateValues.push(parseInt(productData.stock).toString());
+    }
+    
+    if (cronjob.updateDescriptions && productData.shortDescription) {
+      updateFields.push('short_description = ?');
+      updateValues.push(productData.shortDescription);
+    }
+    
+    if (cronjob.updateDescriptions && productData.fullDescription) {
+      updateFields.push('description = ?');
+      updateValues.push(productData.fullDescription);
+    }
+    
+    if (updateFields.length === 0) {
+      console.log(`⚠️  Güncellenecek alan bulunamadı: ${sku}`);
+      return false;
+    }
+    
+    // Güncelleme tarihi ekle
+    updateFields.push('updated_at = NOW()');
+    updateValues.push(sku); // WHERE koşulu için
+    
+    const query = `UPDATE products SET ${updateFields.join(', ')} WHERE sku = ?`;
+    const [result] = await connection.execute(query, updateValues);
+    
+    return (result as any).affectedRows > 0;
+    
+  } catch (error) {
+    console.error(`❌ MySQL ürün güncelleme hatası (${sku}):`, error);
+    return false;
+  }
+}
+
+// MySQL'de sadece fiyat ve stok güncelleme fonksiyonu
+async function updateProductPriceStockInMySQL(sku: string, price: number, stock: number): Promise<boolean> {
+  try {
+    const { getImportConnection } = await import('./mysql-import');
+    const connection = getImportConnection();
+    
+    if (!connection) {
+      console.log(`⚠️  MySQL bağlantısı yok, fiyat/stok güncellenemedi: ${sku}`);
+      return false;
+    }
+
+    const query = `UPDATE products SET price = ?, stock = ?, updated_at = NOW() WHERE sku = ?`;
+    const [result] = await connection.execute(query, [price.toString(), stock.toString(), sku]);
+    
+    return (result as any).affectedRows > 0;
+    
+  } catch (error) {
+    console.error(`❌ MySQL fiyat/stok güncelleme hatası (${sku}):`, error);
+    return false;
+  }
 }
 
 // Nested object değer alımı için helper
@@ -2373,6 +2468,19 @@ async function runUpdateProductsJob(cronjob: any, xmlSource: any): Promise<any> 
   console.log(`🔄 Running Update Products Job: ${cronjob.name}`);
   
   try {
+    // MySQL bağlantısını kontrol et
+    const { getImportConnection } = await import('./mysql-import');
+    const connection = getImportConnection();
+    
+    if (!connection) {
+      console.log(`❌ MySQL bağlantısı yok! Güncelleme işlemi durduruldu.`);
+      return {
+        success: false,
+        message: 'MySQL bağlantısı bulunamadı',
+        stats: { updated: 0, notFound: 0, errors: 1 }
+      };
+    }
+
     // Önce veritabanından mevcut SKU kodlarını al
     const existingSKUs = await getExistingSKUsFromDB(xmlSource.id);
     console.log(`   └─ Veritabanında ${existingSKUs.size} adet SKU kodu bulundu`);
@@ -2451,10 +2559,15 @@ async function runUpdateProductsJob(cronjob: any, xmlSource: any): Promise<any> 
             }
           }
           
-          // TODO: Gerçek MySQL güncelleme
-          // await updateProductInDB(sku, product);
-          console.log(`   ✅ Güncellendi: ${sku}`);
-          updatedCount++;
+          // MySQL'de ürün güncelleme
+          const success = await updateProductInMySQL(sku, product, cronjob);
+          if (success) {
+            console.log(`   ✅ Güncellendi: ${sku}`);
+            updatedCount++;
+          } else {
+            console.log(`   ❌ Güncellenemedi: ${sku}`);
+            errorCount++;
+          }
         }
       } catch (error) {
         console.error(`❌ Güncelleme hatası (${product.sku}):`, error);
@@ -2480,6 +2593,19 @@ async function runUpdatePriceStockJob(cronjob: any, xmlSource: any): Promise<any
   console.log(`💰 Running Update Price & Stock Job: ${cronjob.name}`);
   
   try {
+    // MySQL bağlantısını kontrol et
+    const { getImportConnection } = await import('./mysql-import');
+    const connection = getImportConnection();
+    
+    if (!connection) {
+      console.log(`❌ MySQL bağlantısı yok! Fiyat/stok güncellemesi durduruldu.`);
+      return {
+        success: false,
+        message: 'MySQL bağlantısı bulunamadı',
+        stats: { updated: 0, notFound: 0, errors: 1 }
+      };
+    }
+
     // Önce veritabanından mevcut SKU kodlarını al
     const existingSKUs = await getExistingSKUsFromDB(xmlSource.id);
     console.log(`   └─ Veritabanında ${existingSKUs.size} adet SKU kodu bulundu`);
@@ -2545,10 +2671,15 @@ async function runUpdatePriceStockJob(cronjob: any, xmlSource: any): Promise<any
             product.price = applyProfitMargin(product.price, xmlSource);
           }
           
-          // TODO: Gerçek MySQL güncelleme - sadece fiyat ve stok alanları
-          // await updateProductPriceAndStock(sku, product.price, product.stock);
-          console.log(`   💰 Fiyat/Stok güncellendi: ${sku} - ${product.price}₺, Stok: ${product.stock}`);
-          updatedCount++;
+          // MySQL'de fiyat ve stok güncelleme
+          const success = await updateProductPriceStockInMySQL(sku, product.price, product.stock);
+          if (success) {
+            console.log(`   💰 Fiyat/Stok güncellendi: ${sku} - ${product.price}₺, Stok: ${product.stock}`);
+            updatedCount++;
+          } else {
+            console.log(`   ❌ Fiyat/stok güncellenemedi: ${sku}`);
+            errorCount++;
+          }
         }
       } catch (error) {
         console.error(`❌ Fiyat/stok güncelleme hatası (${product.sku}):`, error);

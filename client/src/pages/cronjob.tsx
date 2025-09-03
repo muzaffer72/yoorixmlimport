@@ -54,22 +54,28 @@ export default function CronjobPage() {
       const response = await apiRequest("POST", "/api/cronjobs", data);
       return response.json();
     },
-    onSuccess: (data: any) => {
+    onSuccess: async (data: any) => {
       const webhookUrl = getWebhookUrl(data.id);
+      const copySuccess = await copyToClipboard(webhookUrl);
+      
       toast({
         title: "✅ Cronjob Oluşturuldu",
-        description: (
+        description: copySuccess ? (
           <div>
             <p>Cronjob başarıyla oluşturuldu!</p>
             <p className="text-xs mt-1 p-1 bg-gray-100 rounded font-mono">
               Tetikleme URL'si panoya kopyalandı
             </p>
           </div>
+        ) : (
+          <div>
+            <p>Cronjob başarıyla oluşturuldu!</p>
+            <p className="text-xs mt-1 text-yellow-600">
+              URL'yi manuel olarak kopyalayın
+            </p>
+          </div>
         ),
       });
-      
-      // URL'yi otomatik olarak panoya kopyala
-      navigator.clipboard.writeText(webhookUrl);
       
       setCronjobName("");
       setSelectedXmlSource("");
@@ -256,6 +262,33 @@ export default function CronjobPage() {
   const formatDate = (date: Date | string | null) => {
     if (!date) return "-";
     return new Date(date).toLocaleString("tr-TR");
+  };
+
+  // Güvenli clipboard kopyalama fonksiyonu
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    try {
+      // Modern tarayıcılarda clipboard API'sini dene
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } else {
+        // Fallback yöntemi - eski tarayıcılar için
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
+      }
+    } catch (error) {
+      console.error('Clipboard kopyalama hatası:', error);
+      return false;
+    }
   };
 
   const getWebhookUrl = (cronjobId: string) => {
@@ -480,11 +513,14 @@ export default function CronjobPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="h-6 w-6 p-0"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(getWebhookUrl(cronjob.id!));
+                                onClick={async () => {
+                                  const success = await copyToClipboard(getWebhookUrl(cronjob.id!));
                                   toast({
-                                    title: "✅ Kopyalandı",
-                                    description: "Tetikleme URL'si panoya kopyalandı",
+                                    title: success ? "✅ Kopyalandı" : "⚠️ Kopyalanamadı",
+                                    description: success 
+                                      ? "Tetikleme URL'si panoya kopyalandı"
+                                      : "URL'yi manuel olarak seçip kopyalayın",
+                                    variant: success ? "default" : "destructive"
                                   });
                                 }}
                                 data-testid={`button-copy-webhook-${cronjob.id}`}
