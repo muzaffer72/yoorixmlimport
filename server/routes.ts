@@ -2008,6 +2008,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public cronjob trigger URL (cron servislerinden çağrılabilir)
+  app.get("/api/trigger-cronjob/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Cronjob bilgilerini al
+      const cronjob = await pageStorage.getCronjobById(id);
+      if (!cronjob) {
+        return res.status(404).json({ message: "Cronjob not found" });
+      }
+
+      if (!cronjob.isActive) {
+        return res.status(400).json({ message: "Cronjob is not active" });
+      }
+
+      // XML Source bilgilerini al
+      const xmlSource = await pageStorage.getXmlSource(cronjob.xmlSourceId);
+      if (!xmlSource) {
+        return res.status(404).json({ message: "XML Source not found" });
+      }
+
+      console.log(`🌐 Public trigger - Running cronjob: ${cronjob.name}`);
+      
+      // Cronjob'u çalışıyor olarak işaretle
+      await pageStorage.updateCronjobStatus(id, 'running');
+      
+      let result;
+      
+      switch (cronjob.jobType) {
+        case 'import_products':
+          result = await runImportProductsJob(cronjob, xmlSource);
+          break;
+        case 'update_products':
+          result = await runUpdateProductsJob(cronjob, xmlSource);
+          break;
+        case 'update_price_stock':
+          result = await runUpdatePriceStockJob(cronjob, xmlSource);
+          break;
+        default:
+          throw new Error(`Unknown job type: ${cronjob.jobType}`);
+      }
+      
+      // Sonucu kaydet
+      await pageStorage.updateCronjobAfterRun(id, result.success ? 'success' : 'failed', result);
+      
+      res.json({ 
+        success: true, 
+        message: result.message,
+        stats: result.stats || result,
+        triggeredBy: 'public-url'
+      });
+      
+    } catch (error) {
+      console.error("❌ Public cronjob trigger failed:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error",
+        triggeredBy: 'public-url'
+      });
+    }
+  });
+
   // XML Preview endpoint - İthalat öncesi önizleme
   app.post("/api/xml-sources/:id/preview", async (req, res) => {
     try {

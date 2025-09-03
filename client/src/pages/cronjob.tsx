@@ -315,6 +315,7 @@ export default function CronjobPage() {
                   <SelectValue placeholder="Sıklık seçin" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="minutely">Dakikalık</SelectItem>
                   <SelectItem value="hourly">Saatlik</SelectItem>
                   <SelectItem value="daily">Günlük</SelectItem>
                   <SelectItem value="weekly">Haftalık</SelectItem>
@@ -479,9 +480,11 @@ export default function CronjobPage() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
+                            {cronjob.frequency === 'minutely' && 'Dakikalık'}
                             {cronjob.frequency === 'hourly' && 'Saatlik'}
                             {cronjob.frequency === 'daily' && 'Günlük'}
                             {cronjob.frequency === 'weekly' && 'Haftalık'}
+                            {cronjob.frequency === 'monthly' && 'Aylık'}
                             {cronjob.frequency === 'monthly' && 'Aylık'}
                           </Badge>
                         </TableCell>

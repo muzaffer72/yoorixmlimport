@@ -40,7 +40,7 @@ export const cronjobs = mysqlTable("cronjobs", {
   name: text("name").notNull(),
   xmlSourceId: varchar("xml_source_id", { length: 36 }).notNull(),
   jobType: varchar("job_type", { length: 50 }).notNull().default("import_products"), // import_products, update_products, update_price_stock
-  frequency: varchar("frequency", { length: 50 }).notNull(), // hourly, daily, weekly, custom
+  frequency: varchar("frequency", { length: 50 }).notNull(), // minutely, hourly, daily, weekly, custom
   cronExpression: text("cron_expression"), // For custom frequencies
   isActive: boolean("is_active").default(true),
   lastRun: timestamp("last_run"),
