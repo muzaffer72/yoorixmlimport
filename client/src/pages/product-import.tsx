@@ -435,6 +435,22 @@ export default function ProductImport() {
                   <div><strong>Kaynak:</strong> {previewData.xmlSource.name}</div>
                   <div><strong>URL:</strong> {previewData.xmlSource.url}</div>
                   <div><strong>Toplam Ürün:</strong> {previewData.totalProducts.toLocaleString()} adet</div>
+                  {previewData.xmlSource.detectedPath && (
+                    <div><strong>XML Path:</strong> {previewData.xmlSource.detectedPath}</div>
+                  )}
+                  
+                  {/* Kar Oranı Bilgileri */}
+                  {previewData.xmlSource.profitMargin && (
+                    <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-700">
+                      <div><strong>Kar Oranı:</strong> {
+                        previewData.xmlSource.profitMargin.type === 'percent' 
+                          ? `%${previewData.xmlSource.profitMargin.percent} (Yüzde)` 
+                          : previewData.xmlSource.profitMargin.type === 'fixed'
+                          ? `${previewData.xmlSource.profitMargin.fixed} TL (Sabit)`
+                          : 'Uygulanmıyor'
+                      }</div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -466,17 +482,43 @@ export default function ProductImport() {
                 <div className="mb-4">
                   <h4 className="font-medium text-sm mb-2">Eşleştirilmiş Veriler:</h4>
                   <div className="grid grid-cols-1 gap-2 text-sm">
-                    {Object.entries(previewData.mappedData || {}).map(([field, value]) => (
-                      <div key={field} className="flex items-start justify-between p-2 bg-white dark:bg-gray-800 rounded border">
-                        <span className="font-medium text-yellow-700 dark:text-yellow-300 capitalize">{field}:</span>
-                        <span className="text-gray-600 dark:text-gray-400 text-right max-w-xs truncate">
-                          {Array.isArray(value) ? 
-                            `[${value.length} öğe: ${value.filter(Boolean).slice(0, 2).join(', ')}${value.length > 2 ? '...' : ''}]` : 
-                            String(value).substring(0, 100) + (String(value).length > 100 ? '...' : '')
-                          }
-                        </span>
-                      </div>
-                    ))}
+                    {Object.entries(previewData.mappedData || {}).map(([field, value]) => {
+                      // Kar oranı uygulanmış fiyat alanları için özel stil
+                      const isProfitField = field === 'finalPrice' || field === 'originalPrice';
+                      const isMarginApplied = previewData.mappedData.profitMarginApplied;
+                      
+                      return (
+                        <div 
+                          key={field} 
+                          className={`flex items-start justify-between p-2 rounded border ${
+                            isProfitField && isMarginApplied 
+                              ? 'bg-green-100 dark:bg-green-900/20 border-green-300 dark:border-green-700' 
+                              : 'bg-white dark:bg-gray-800'
+                          }`}
+                        >
+                          <span className={`font-medium capitalize ${
+                            isProfitField && isMarginApplied 
+                              ? 'text-green-700 dark:text-green-300' 
+                              : 'text-yellow-700 dark:text-yellow-300'
+                          }`}>
+                            {field === 'finalPrice' ? '💰 Final Fiyat' : 
+                             field === 'originalPrice' ? '💸 Orijinal Fiyat' :
+                             field}:
+                          </span>
+                          <span className={`text-right max-w-xs truncate ${
+                            isProfitField && isMarginApplied 
+                              ? 'text-green-600 dark:text-green-400 font-semibold' 
+                              : 'text-gray-600 dark:text-gray-400'
+                          }`}>
+                            {Array.isArray(value) ? 
+                              `[${value.length} öğe: ${value.filter(Boolean).slice(0, 2).join(', ')}${value.length > 2 ? '...' : ''}]` : 
+                              (isProfitField && isMarginApplied ? `${value} TL` : 
+                               String(value).substring(0, 100) + (String(value).length > 100 ? '...' : ''))
+                            }
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

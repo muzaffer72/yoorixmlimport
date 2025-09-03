@@ -2388,13 +2388,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Kar oranı uygulama (preview için)
+      let previewPrice = mappedProduct.price ? parseFloat(mappedProduct.price) : 0;
+      let originalPrice = previewPrice;
+      
+      if (previewPrice > 0) {
+        if (xmlSource.profitMarginType === "percent" && xmlSource.profitMarginPercent > 0) {
+          previewPrice = previewPrice * (1 + xmlSource.profitMarginPercent / 100);
+          console.log(`💰 Preview: Yüzde kar oranı uygulandı: %${xmlSource.profitMarginPercent} -> ${previewPrice} TL`);
+        } else if (xmlSource.profitMarginType === "fixed" && xmlSource.profitMarginFixed > 0) {
+          previewPrice = previewPrice + xmlSource.profitMarginFixed;
+          console.log(`💰 Preview: Sabit kar oranı uygulandı: +${xmlSource.profitMarginFixed} TL -> ${previewPrice} TL`);
+        }
+        
+        // Güncellenmiş fiyatı mappedData'ya ekle
+        if (previewPrice !== originalPrice) {
+          mappedProduct.finalPrice = previewPrice.toFixed(2);
+          mappedProduct.originalPrice = originalPrice.toFixed(2);
+          mappedProduct.profitMarginApplied = true;
+        }
+      }
+
       // XML raw data'yı da ekle
       const preview = {
         xmlSource: {
           name: xmlSource.name,
           url: xmlSource.url,
           fieldMapping: xmlSource.fieldMapping || {},
-          detectedPath: xmlSource.xmlProductPath || 'auto-detected'
+          detectedPath: xmlSource.xmlProductPath || 'auto-detected',
+          profitMargin: {
+            type: xmlSource.profitMarginType,
+            percent: xmlSource.profitMarginPercent,
+            fixed: xmlSource.profitMarginFixed
+          }
         },
         rawXmlData: firstProduct,
         mappedData: mappedProduct,

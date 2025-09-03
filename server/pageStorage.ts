@@ -753,13 +753,23 @@ export class PageStorage {
     
     // Gemini API key kontrolü
     const geminiSettings = await this.getGeminiSettings();
+    console.log("🔧 Gemini Settings Check:", { 
+      found: !!geminiSettings, 
+      hasApiKey: !!(geminiSettings?.api_key), 
+      keyLength: geminiSettings?.api_key?.length || 0,
+      model: geminiSettings?.selected_model 
+    });
+    
     const useAI = geminiSettings && geminiSettings.api_key && geminiSettings.api_key.length > 10;
+    console.log(`🤖 AI kullanım kararı: ${useAI}`);
     
     if (useAI) {
       console.log("🤖 AI kullanılarak kategori eşleştirmesi yapılıyor...");
+      console.log(`📊 Input: ${xmlCategories.length} XML kategorisi, ${localCategories.length} yerel kategori`);
       try {
         const aiMappings = await import('./geminiService').then(async ({ GeminiService }) => {
           const geminiService = new GeminiService(geminiSettings.api_key);
+          console.log("🔗 GeminiService instance oluşturuldu");
           return geminiService.mapCategoriesWithAI(
             xmlCategories, 
             localCategories.map(cat => ({ id: cat.id.toString(), name: cat.name })),
@@ -848,7 +858,7 @@ export class PageStorage {
   // Test Gemini API key
   testGeminiApiKey(apiKey: string): boolean {
     // Mock test - always return true for demo
-    return apiKey && apiKey.length > 10;
+    return !!(apiKey && apiKey.length > 10);
   }
 
   // XML Source bazlı kategori yönetimi
