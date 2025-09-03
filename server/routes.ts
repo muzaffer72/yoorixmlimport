@@ -183,21 +183,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await parser.parseStringPromise(xmlText);
       console.log("XML parsed successfully");
       
-      // Extract field names from first product in Urunler.Urun structure
-      const extractProductFields = (rootObj: any): string[] => {
+      // Extract field names with dynamic XML product path support
+      const extractProductFields = (rootObj: any, xmlProductPath?: string): string[] => {
         const fields = new Set<string>();
         
-        // Doğrudan Urunler.Urun yapısına eriş
-        const productList = rootObj?.Urunler?.Urun;
-        if (!productList) {
-          console.log("No Urunler.Urun structure found, falling back to full structure");
-          // Fallback: Eğer Urunler.Urun yoksa eski mantığı kullan
+        // XML product path'ini dinamik olarak kullan (varsayılan: "Urunler.Urun")
+        const productPath = xmlProductPath || "Urunler.Urun";
+        console.log(`🔍 XML Product Path kullanılıyor: "${productPath}"`);
+        
+        // Path'i parçalara böl (örn: "Urunler.Urun" -> ["Urunler", "Urun"])
+        const pathParts = productPath.split('.');
+        
+        // Dynamic path navigation
+        let currentLevel = rootObj;
+        let navigationSuccess = true;
+        let navigatedPath = [];
+        
+        for (const part of pathParts) {
+          if (currentLevel && typeof currentLevel === 'object' && part in currentLevel) {
+            currentLevel = currentLevel[part];
+            navigatedPath.push(part);
+          } else {
+            console.log(`❌ XML path navigation failed at: "${part}", available keys: [${Object.keys(currentLevel || {}).join(', ')}]`);
+            navigationSuccess = false;
+            break;
+          }
+        }
+        
+        if (!navigationSuccess || !currentLevel) {
+          console.log(`❌ XML product path "${productPath}" bulunamadı, fallback kullanılıyor`);
+          console.log(`📋 XML root keys: [${Object.keys(rootObj).join(', ')}]`);
+          
+          // Auto-detect product array structure
+          const autoDetectedPath = autoDetectProductPath(rootObj);
+          if (autoDetectedPath) {
+            console.log(`🔍 Auto-detected product path: "${autoDetectedPath}"`);
+            return extractProductFields(rootObj, autoDetectedPath);
+          }
+          
+          // Complete fallback
           return extractTagsIterative(rootObj);
         }
         
+        console.log(`✅ XML path navigation başarılı: ${navigatedPath.join('.')} -> ${Array.isArray(currentLevel) ? `Array[${currentLevel.length}]` : typeof currentLevel}`);
+        
         // İlk ürünü analiz et
-        const firstProduct = Array.isArray(productList) ? productList[0] : productList;
+        const firstProduct = Array.isArray(currentLevel) ? currentLevel[0] : currentLevel;
         if (firstProduct && typeof firstProduct === 'object') {
+          console.log(`🔍 First product keys: [${Object.keys(firstProduct).slice(0, 10).join(', ')}${Object.keys(firstProduct).length > 10 ? '...' : ''}]`);
+          
           // Sadece ilk seviye field'ları al (adi, fiyat, kod vs.)
           for (const key in firstProduct) {
             if (typeof firstProduct[key] !== 'object' || firstProduct[key] === null) {
@@ -212,7 +246,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
+        console.log(`✅ Extracted ${fields.size} fields: [${Array.from(fields).slice(0, 10).join(', ')}${fields.size > 10 ? '...' : ''}]`);
         return Array.from(fields);
+      };
+      
+      // Auto-detect common product array patterns
+      const autoDetectProductPath = (rootObj: any): string | null => {
+        const commonPaths = [
+          "products.product",
+          "items.item", 
+          "Urunler.Urun",
+          "Products.Product",
+          "Items.Item",
+          "product_list.product",
+          "item_list.item",
+          "feed.product",
+          "channel.item",
+          "rss.channel.item"
+        ];
+        
+        for (const path of commonPaths) {
+          const pathParts = path.split('.');
+          let currentLevel = rootObj;
+          let pathExists = true;
+          
+          for (const part of pathParts) {
+            if (currentLevel && typeof currentLevel === 'object' && part in currentLevel) {
+              currentLevel = currentLevel[part];
+            } else {
+              pathExists = false;
+              break;
+            }
+          }
+          
+          if (pathExists && currentLevel && 
+              (Array.isArray(currentLevel) || (typeof currentLevel === 'object' && Object.keys(currentLevel).length > 0))) {
+            console.log(`🎯 Auto-detected XML path: "${path}"`);
+            return path;
+          }
+        }
+        
+        console.log(`❌ No common XML product patterns found`);
+        return null;
       };
       
       // Fallback function for non-standard XML structures
@@ -256,17 +331,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       console.log("Extracting product fields from XML structure...");
-      const tags = extractProductFields(result);
+      // Default veya auto-detect kullan
+      const tags = extractProductFields(result); // Auto-detect kullanılacak
       console.log("Found", tags.length, "product fields");
       
-      // İlk ürünün yapısını al
-      const productList = result?.Urunler?.Urun;
-      const firstProduct = Array.isArray(productList) ? productList[0] : productList;
+      // Auto-detected path'den first product'ı al
+      const detectedPath = autoDetectProductPath(result) || "Urunler.Urun";
+      const pathParts = detectedPath.split('.');
+      let currentLevel = result;
+      for (const part of pathParts) {
+        if (currentLevel && typeof currentLevel === 'object' && part in currentLevel) {
+          currentLevel = currentLevel[part];
+        }
+      }
+      const firstProduct = Array.isArray(currentLevel) ? currentLevel[0] : currentLevel;
+      
+      // Find all possible product paths
+      const findAllProductPaths = (rootObj: any): string[] => {
+        const commonPaths = [
+          "products.product",
+          "items.item", 
+          "Urunler.Urun",
+          "Products.Product",
+          "Items.Item",
+          "product_list.product",
+          "item_list.item",
+          "feed.product",
+          "channel.item",
+          "rss.channel.item"
+        ];
+        
+        const foundPaths: string[] = [];
+        
+        for (const path of commonPaths) {
+          const pathParts = path.split('.');
+          let currentLevel = rootObj;
+          let pathExists = true;
+          
+          for (const part of pathParts) {
+            if (currentLevel && typeof currentLevel === 'object' && part in currentLevel) {
+              currentLevel = currentLevel[part];
+            } else {
+              pathExists = false;
+              break;
+            }
+          }
+          
+          if (pathExists && currentLevel && 
+              (Array.isArray(currentLevel) || (typeof currentLevel === 'object' && Object.keys(currentLevel).length > 0))) {
+            foundPaths.push(path);
+          }
+        }
+        
+        return foundPaths;
+      };
+      
+      const detectedProductPaths = findAllProductPaths(result);
       
       res.json({ 
         message: "XML yapısı başarıyla alındı",
         tags: tags.sort(),
         sampleStructure: firstProduct || {},
+        detectedProductPaths,
+        recommendedPath: detectedPath,
         sampleData: JSON.stringify(result, null, 2).substring(0, 1000) + "..."
       });
     } catch (error: any) {
@@ -752,17 +879,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         console.log(`📋 ADIM 5/8: Ürünler XML'den çıkarılıyor...`);
         
-        let debugCount = 0;
-        // Doğrudan ürün listesine eriş (Preview ile aynı mantık)
-        const productList = data?.Urunler?.Urun;
-        if (!productList) {
-          console.log(`❌ XML'de Urunler.Urun yapısı bulunamadı`);
+        // Auto-detect function for this scope
+        const autoDetectProductPathLocal = (rootObj: any): string | null => {
+          const commonPaths = [
+            "products.product",
+            "items.item", 
+            "Urunler.Urun",
+            "Products.Product",
+            "Items.Item",
+            "product_list.product",
+            "item_list.item",
+            "feed.product",
+            "channel.item",
+            "rss.channel.item"
+          ];
+          
+          for (const path of commonPaths) {
+            const pathParts = path.split('.');
+            let currentLevel = rootObj;
+            let pathExists = true;
+            
+            for (const part of pathParts) {
+              if (currentLevel && typeof currentLevel === 'object' && part in currentLevel) {
+                currentLevel = currentLevel[part];
+              } else {
+                pathExists = false;
+                break;
+              }
+            }
+            
+            if (pathExists && currentLevel && 
+                (Array.isArray(currentLevel) || (typeof currentLevel === 'object' && Object.keys(currentLevel).length > 0))) {
+              console.log(`🎯 Auto-detected XML path: "${path}"`);
+              return path;
+            }
+          }
+          
+          return null;
+        };
+        
+        // XML source'dan product path'i al, yoksa auto-detect et
+        const xmlProductPath = (xmlSource as any).xmlProductPath || autoDetectProductPathLocal(data) || "Urunler.Urun";
+        console.log(`🔍 XML Product Path: "${xmlProductPath}"`);
+        
+        // Dynamic path navigation
+        const pathParts = xmlProductPath.split('.');
+        let currentLevel = data;
+        let navigationSuccess = true;
+        
+        for (const part of pathParts) {
+          if (currentLevel && typeof currentLevel === 'object' && part in currentLevel) {
+            currentLevel = currentLevel[part];
+          } else {
+            console.log(`❌ XML path navigation failed at: "${part}"`);
+            navigationSuccess = false;
+            break;
+          }
+        }
+        
+        if (!navigationSuccess || !currentLevel) {
+          console.log(`❌ XML'de "${xmlProductPath}" yapısı bulunamadı`);
+          console.log(`📋 Available root keys: [${Object.keys(data).join(', ')}]`);
           return products;
         }
         
-        const productArray = Array.isArray(productList) ? productList : [productList];
-        console.log(`✅ XML'de ${productArray.length} ürün bulundu`);
+        const productArray = Array.isArray(currentLevel) ? currentLevel : [currentLevel];
+        console.log(`✅ XML'de ${productArray.length} ürün bulundu (path: ${xmlProductPath})`);
         
+        let debugCount = 0;
         productArray.forEach((obj, index) => {
           if (typeof obj === "object" && obj !== null) {
               
@@ -817,13 +1001,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Extract all products - filtering will happen later during import
               if (hasRequiredFields) {
-                // ROBUST FIELD MAPPING - Supports deep object navigation from XML root
+                // ROBUST FIELD MAPPING - Supports deep object navigation with dynamic XML paths
                 const extractValue = (mapping: string | undefined) => {
                   if (!mapping) return null;
                   
-                  // Artık Urunler.Urun seviyesindeki objedeyiz, 
-                  // "Urunler.Urun.adi" gibi path'lerde sadece son kısmı kullan
+                  // Dynamic path handling - remove detected XML path prefix if present
                   let actualField = mapping;
+                  
+                  // If mapping starts with detected XML path, remove it
+                  if (mapping.includes(xmlProductPath + '.')) {
+                    actualField = mapping.split(xmlProductPath + '.').pop() || mapping;
+                  }
+                  
+                  // Legacy support for old mappings
                   if (mapping.includes('Urunler.Urun.')) {
                     actualField = mapping.split('Urunler.Urun.').pop() || mapping;
                   }

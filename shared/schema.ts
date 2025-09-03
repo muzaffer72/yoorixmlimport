@@ -24,6 +24,9 @@ export const xmlSources = mysqlTable("xml_sources", {
   useAiForFullDescription: boolean("use_ai_for_full_description").default(false),
   aiShortDescriptionPrompt: text("ai_short_description_prompt"), // Özel prompt tanımı
   aiFullDescriptionPrompt: text("ai_full_description_prompt"), // Özel prompt tanımı
+  // XML şema ayarları - her XML kaynağı için özel şema yapısı
+  xmlProductPath: text("xml_product_path").default("Urunler.Urun"), // Ürünlerin bulunduğu XML path (örn: "Urunler.Urun", "products.product", "items.item")
+  xmlRootStructure: json("xml_root_structure"), // XML root yapısının örneği
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

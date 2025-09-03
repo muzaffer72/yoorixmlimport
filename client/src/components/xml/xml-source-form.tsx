@@ -40,6 +40,10 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
   const [profitMarginFixed, setProfitMarginFixed] = useState<string>("0");
   const [sampleStructure, setSampleStructure] = useState<any>({});
   
+  // XML şema ayarları
+  const [xmlProductPath, setXmlProductPath] = useState<string>("Urunler.Urun");
+  const [detectedPaths, setDetectedPaths] = useState<string[]>([]);
+  
   // AI ayarları
   const [useAiForShortDescription, setUseAiForShortDescription] = useState<boolean>(false);
   const [useAiForFullDescription, setUseAiForFullDescription] = useState<boolean>(false);
@@ -131,10 +135,17 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
     onSuccess: (data) => {
       setXmlTags(data.tags);
       setSampleStructure(data.sampleStructure || {});
+      setDetectedPaths(data.detectedProductPaths || []);
+      
+      // Set recommended path if available
+      if (data.recommendedPath) {
+        setXmlProductPath(data.recommendedPath);
+      }
+      
       onXmlTagsReceived?.(data.tags); // Parent component'e gönder
       toast({
         title: "XML Yapısı Alındı",
-        description: `${data.tags.length} etiket bulundu`,
+        description: `${data.tags.length} etiket bulundu${data.detectedProductPaths?.length ? `, ${data.detectedProductPaths.length} ürün yapısı tespit edildi` : ''}`,
       });
     },
     onError: (error: any) => {
@@ -155,6 +166,8 @@ export default function XmlSourceForm({ onXmlTagsReceived }: XmlSourceFormProps 
       profitMarginPercent: profitMarginType === "percent" ? parseFloat(profitMarginPercent) || 0 : 0,
       profitMarginFixed: profitMarginType === "fixed" ? parseFloat(profitMarginFixed) || 0 : 0,
       extractedCategories: xmlCategories.length > 0 ? xmlCategories : undefined,
+      // XML şema ayarları
+      xmlProductPath: xmlProductPath !== "Urunler.Urun" ? xmlProductPath : undefined,
       // AI ayarları
       useAiForShortDescription,
       useAiForFullDescription,
