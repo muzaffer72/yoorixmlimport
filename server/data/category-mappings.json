@@ -879,6 +879,16 @@
       "id": "aa070079-321f-4b23-bc5f-fdfd91f827d0",
       "createdAt": "2025-09-02T21:04:09.312Z",
       "updatedAt": "2025-09-02T21:04:09.312Z"
+    },
+    {
+      "xmlSourceId": "8041e0ff-6a55-42f7-b3c1-e09e09b79d42",
+      "xmlCategoryName": "Fantazi Sütyen",
+      "localCategoryId": 3109,
+      "confidence": "1.00",
+      "isManual": true,
+      "id": "5ffdbd10-7191-4583-bf28-843b120b8382",
+      "createdAt": "2025-09-03T19:36:40.521Z",
+      "updatedAt": "2025-09-03T19:36:40.521Z"
     }
   ]
 }

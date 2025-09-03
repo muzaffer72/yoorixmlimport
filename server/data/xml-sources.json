@@ -3528,6 +3528,100 @@
       "updatedAt": "2025-09-02T21:02:21.087Z",
       "productCount": 0,
       "lastFetch": null
+    },
+    {
+      "name": "cono",
+      "url": "https://colezium.com/index.php?route=feed/universal_feed&feed=deneme.xml",
+      "status": "active",
+      "fieldMapping": {
+        "name": "name",
+        "price": "price",
+        "short_description": "description",
+        "description": "description",
+        "barcode": "barkod",
+        "currentStock": "quantity",
+        "thumbnail": "image",
+        "image1": "additional_image_1"
+      },
+      "sampleStructure": {
+        "product_id": "14345",
+        "model": "CTM1123",
+        "category": "Fantazi Sütyen",
+        "categories": "Kadın Giyim>Fantazi Giyim>Fantazi Sütyen",
+        "tax": "10",
+        "name": "Transparan Fantazi Takım",
+        "price": "120.78",
+        "description": "<ul>\n\t<li><span =\"font-size: 13px;\"><font face=\"Tahoma\">%90 Polyester %10 Elastan</font></span></li>\n\t<li><span =\"font-size: 13px;\"><font face=\"Tahoma\">&Uuml;r&uuml;nleri maksimum 30 derece suda ve elde yıkayınız. Asarak kurutunuz.</font></span></li>\n\t<li><span =\"font-size: 13px;\"><font face=\"Tahoma\">Gizli paketleme ile g&ouml;nderilir.  &uuml;zerinde &uuml;r&uuml;n adı ve i&ccedil;eriği kesinlikle yazmaz</font></span></li>\n\t<li><span =\"font-size: 13px;\"><font face=\"Tahoma\">Hijyen koşulları nedeniyle i&ccedil; giyim &uuml;r&uuml;nlerinde iade ve değişim bulunktadır.</font></span></li>\n</ul>",
+        "quantity": "24",
+        "image": "https://colezium.com/image/catalog/i/leynacomtr/zw3d2lqi2qqqvgyhnfzrolpssdwhvukzyq1dr/images/urunler/6352830e5fe5e-34100-1.jpg",
+        "currency": "TRY",
+        "brand": "colezium6",
+        "url": "https://colezium.com/index.php?route=product/product&product_id=14345&currency=TRY",
+        "title": "Transparan Fantazi Takım",
+        "status": "1",
+        "barkod": "CTM1123",
+        "desi": "2",
+        "kargo": "Aras Kargo",
+        "kargo_tags_trentyol": "",
+        "attributes": "",
+        "options": {
+          "option": [
+            {
+              "option_code": "CTM1123-01",
+              "option_barkod": "CTM112302",
+              "option_Renk": "Siyah",
+              "option_Beden": "S",
+              "option_quantity": "7"
+            },
+            {
+              "option_code": "CTM1123-03",
+              "option_barkod": "CTM112304",
+              "option_Renk": "Siyah",
+              "option_Beden": "M",
+              "option_quantity": "6"
+            },
+            {
+              "option_code": "CTM1123-05",
+              "option_barkod": "CTM112306",
+              "option_Renk": "Siyah",
+              "option_Beden": "L",
+              "option_quantity": "3"
+            },
+            {
+              "option_code": "CTM1123-07",
+              "option_barkod": "CTM112308",
+              "option_Renk": "Siyah",
+              "option_Beden": "XL",
+              "option_quantity": "0"
+            },
+            {
+              "option_code": "CTM1123-09",
+              "option_barkod": "CTM112310",
+              "option_Renk": "Siyah",
+              "option_Beden": "XS",
+              "option_quantity": "8"
+            }
+          ]
+        },
+        "additional_image_1": "https://colezium.com/image/catalog/i/leynacomtr/zw3d2lqi2qqqvgyhnfzrolpssdwhvukzyq1dr/images/urunler/6352830eddb46-88344-2.jpg"
+      },
+      "categoryTag": "category",
+      "useDefaultCategory": false,
+      "defaultCategoryId": "",
+      "extractedCategories": [
+        "Fantazi Sütyen"
+      ],
+      "profitMarginType": "percent",
+      "profitMarginPercent": "50",
+      "profitMarginFixed": "0",
+      "useAiForShortDescription": true,
+      "useAiForFullDescription": true,
+      "xmlProductPath": "products.product",
+      "id": "8041e0ff-6a55-42f7-b3c1-e09e09b79d42",
+      "createdAt": "2025-09-03T19:36:03.425Z",
+      "updatedAt": "2025-09-03T19:36:04.455Z",
+      "productCount": 0,
+      "lastFetch": null
     }
   ]
 }
