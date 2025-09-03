@@ -694,11 +694,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(categories.map(cat => ({
-        id: cat.category_id, // MySQL'den gelen category_id field'ını kullan
+        id: cat.categoryId, // MySQL'den gelen categoryId field'ını kullan
         name: cat.title,
         title: cat.title
       })));
-    } catch (error) {
+    } catch (error: any) {
       console.error("MySQL categories fetch error:", error);
       res.status(500).json({ 
         message: `MySQL bağlantısı başarısız: ${error.message}`,
@@ -711,7 +711,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/brands", async (req, res) => {
     try {
       // Mock brands
-      const brands = [];
+      const brands: any[] = [];
       res.json(brands);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch brands" });
@@ -912,7 +912,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`   └─ Parse başarılı: ${typeof result} tipi`);
         console.log(`   └─ Ana anahtarlar: [${Object.keys(result || {}).join(', ')}]`);
         console.log(`✅ ADIM 4 TAMAMLANDI: XML parse edildi\n`);
-      } catch (parseError) {
+      } catch (parseError: any) {
         console.log(`❌ HATA: XML parse başarısız!`);
         console.error(`   └─ Parse hatası:`, parseError.message);
         throw new Error(`XML parse failed: ${parseError.message}`);
@@ -1199,12 +1199,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 let finalPrice = parseFloat(priceValue as string) || 0;
                 
                 // XML source'dan kar oranı ayarlarını al
-                if (xmlSource.profitMarginType === "percent" && xmlSource.profitMarginPercent > 0) {
-                  finalPrice = finalPrice * (1 + xmlSource.profitMarginPercent / 100);
-                  console.log(`💰 Yüzde kar oranı uygulandı: %${xmlSource.profitMarginPercent} -> ${finalPrice} TL`);
-                } else if (xmlSource.profitMarginType === "fixed" && xmlSource.profitMarginFixed > 0) {
-                  finalPrice = finalPrice + xmlSource.profitMarginFixed;
-                  console.log(`💰 Sabit kar tutarı uygulandı: +${xmlSource.profitMarginFixed} TL -> ${finalPrice} TL`);
+                if (xmlSource.profitMarginType === "percent" && xmlSource.profitMarginPercent && parseFloat(xmlSource.profitMarginPercent) > 0) {
+                  const marginPercent = parseFloat(xmlSource.profitMarginPercent);
+                  finalPrice = finalPrice * (1 + marginPercent / 100);
+                  console.log(`💰 Yüzde kar oranı uygulandı: %${marginPercent} -> ${finalPrice} TL`);
+                } else if (xmlSource.profitMarginType === "fixed" && xmlSource.profitMarginFixed && parseFloat(xmlSource.profitMarginFixed) > 0) {
+                  const marginFixed = parseFloat(xmlSource.profitMarginFixed);
+                  finalPrice = finalPrice + marginFixed;
+                  console.log(`💰 Sabit kar tutarı uygulandı: +${marginFixed} TL -> ${finalPrice} TL`);
                 }
 
                 // STRICT NAME VALIDATION - No dummy names allowed
@@ -1658,10 +1660,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("MySQL test connection error:", error);
       
       let errorMessage = `Veritabanı bağlantısı başarısız: ${error.message}`;
-      let suggestions = [];
+      let suggestions: string[] = [];
       
       // Hata türüne göre öneriler
       if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+        const { host } = req.body;
         if (host === 'localhost' || host === '127.0.0.1') {
           suggestions = [
             "Kullanıcı adı veya şifre yanlış",
@@ -1677,6 +1680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ];
         }
       } else if (error.code === 'ECONNREFUSED') {
+        const { host } = req.body;
         if (host === 'localhost' || host === '127.0.0.1') {
           suggestions = [
             "MySQL servisi çalışmıyor: sudo service mysql start",
@@ -1764,8 +1768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         port: dbSettings.port,
         user: dbSettings.username,
         password: dbSettings.password,
-        database: dbSettings.database,
-        ssl: false
+        database: dbSettings.database
       });
 
       // xmlkaynagi sütunu ile eşleşen ürünleri sil
@@ -1780,14 +1783,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ ${deletedCount} ürün silindi.`);
       
       // Activity log ekle
-      await pageStorage.addActivity({
+      await pageStorage.createActivityLog({
         type: 'products_deleted',
         title: 'XML Kaynak Ürünleri Silindi',
         description: `${deletedCount} ürün ${xmlSourceId} XML kaynağından silindi`,
-        metadata: {
-          xmlSourceId,
-          deletedProducts: deletedCount
-        }
+        entityId: xmlSourceId,
+        entityType: 'products'
       });
       
       res.json({
@@ -2613,12 +2614,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let originalPrice = previewPrice;
       
       if (previewPrice > 0) {
-        if (xmlSource.profitMarginType === "percent" && xmlSource.profitMarginPercent > 0) {
-          previewPrice = previewPrice * (1 + xmlSource.profitMarginPercent / 100);
-          console.log(`💰 Preview: Yüzde kar oranı uygulandı: %${xmlSource.profitMarginPercent} -> ${previewPrice} TL`);
-        } else if (xmlSource.profitMarginType === "fixed" && xmlSource.profitMarginFixed > 0) {
-          previewPrice = previewPrice + xmlSource.profitMarginFixed;
-          console.log(`💰 Preview: Sabit kar oranı uygulandı: +${xmlSource.profitMarginFixed} TL -> ${previewPrice} TL`);
+        if (xmlSource.profitMarginType === "percent" && xmlSource.profitMarginPercent && parseFloat(xmlSource.profitMarginPercent) > 0) {
+          const marginPercent = parseFloat(xmlSource.profitMarginPercent);
+          previewPrice = previewPrice * (1 + marginPercent / 100);
+          console.log(`💰 Preview: Yüzde kar oranı uygulandı: %${marginPercent} -> ${previewPrice} TL`);
+        } else if (xmlSource.profitMarginType === "fixed" && xmlSource.profitMarginFixed && parseFloat(xmlSource.profitMarginFixed) > 0) {
+          const marginFixed = parseFloat(xmlSource.profitMarginFixed);
+          previewPrice = previewPrice + marginFixed;
+          console.log(`💰 Preview: Sabit kar oranı uygulandı: +${marginFixed} TL -> ${previewPrice} TL`);
         }
         
         // Güncellenmiş fiyatı mappedData'ya ekle
@@ -2726,7 +2729,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     productData.shortDescription = await geminiService.optimizeShortDescription(
                       productData.description, 
                       productData.name,
-                      customPrompt
+                      customPrompt || undefined
                     );
                   } catch (error) {
                     console.error(`❌ AI kısa açıklama hatası (${productData.sku}):`, error);
@@ -2740,7 +2743,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     productData.fullDescription = await geminiService.optimizeFullDescription(
                       productData.description, 
                       productData.name,
-                      customPrompt
+                      customPrompt || undefined
                     );
                   } catch (error) {
                     console.error(`❌ AI tam açıklama hatası (${productData.sku}):`, error);
@@ -3306,47 +3309,19 @@ function applyProfitMargin(originalPrice: number, xmlSource: any): number {
   }
   return originalPrice;
 }
-  // Mevcut ürün güncelleme mantığı
-  console.log(`🔄 Updating existing product: ${product.name} (SKU: ${product.sku})`);
+
+// Helper function to extract product data from XML node
+function extractProductData(productNode: any, fieldMapping: any): any {
+  const productData: any = {};
   
-  // Açıklama güncelleme
-  if (cronjob.updateDescriptions) {
-    console.log(`📝 Updating descriptions for: ${product.name}`);
-    
-    if (cronjob.useAiForDescriptions) {
-      // AI ile açıklama güncelleme
-      const { pageStorage } = await import('./pageStorage');
-      const geminiSettings = await pageStorage.getGeminiSettings();
-      if (geminiSettings && geminiSettings.is_configured) {
-        try {
-          const { GeminiService } = await import('./geminiService');
-          const geminiService = new GeminiService(geminiSettings.api_key);
-          
-          if (geminiSettings.useAiForShortDescription && product.shortDescription) {
-            const optimizedShort = await geminiService.optimizeShortDescription(
-              product.name, 
-              product.shortDescription,
-              geminiSettings.selected_model
-            );
-            product.shortDescription = optimizedShort;
-          }
-          
-          if (geminiSettings.useAiForFullDescription && product.description) {
-            const optimizedFull = await geminiService.optimizeFullDescription(
-              product.name,
-              product.description,
-              geminiSettings.selected_model
-            );
-            product.description = optimizedFull;
-          }
-        } catch (aiError) {
-          console.error(`⚠️ AI processing failed, using original descriptions:`, aiError);
-        }
-      }
+  // Apply field mappings
+  for (const [localField, xmlField] of Object.entries(fieldMapping)) {
+    if (typeof xmlField === 'string') {
+      productData[localField] = productNode[xmlField] || '';
     }
   }
   
-  // Fiyat ve stok güncelleme
+  return productData;
 }
 
 // Yardımcı Fonksiyonlar
