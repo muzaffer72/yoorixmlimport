@@ -439,7 +439,7 @@ export class PageStorage {
     const data = this.loadJsonFile('settings.json', { 
       gemini: { 
         apiKey: "", 
-        selectedModel: "gemini-2.5-flash", 
+        selectedModel: "gemini-1.5-flash", 
         isActive: false, 
         isConfigured: false,
         useAiForShortDescription: false,
@@ -449,7 +449,7 @@ export class PageStorage {
     });
     
     return {
-      api_key: data.gemini.isConfigured ? '***API_KEY_SET***' : '',
+      api_key: data.gemini.apiKey || '', // GERÇEK API KEY'İ DÖNDÜR
       selected_model: data.gemini.selectedModel,
       is_active: data.gemini.isActive,
       is_configured: data.gemini.isConfigured,
@@ -751,8 +751,18 @@ export class PageStorage {
       
     const localCategories = await this.getCategories();
     
-    // Gemini API key kontrolü
-    const geminiSettings = await this.getGeminiSettings();
+    // Gemini API key kontrolü - ZORLA DEBUG
+    console.log("🔧 === GEMINI DEBUG BAŞLADI ===");
+    
+    let geminiSettings;
+    try {
+      geminiSettings = await this.getGeminiSettings();
+      console.log("🔧 getGeminiSettings sonucu:", JSON.stringify(geminiSettings, null, 2));
+    } catch (settingsError) {
+      console.error("❌ getGeminiSettings hatası:", settingsError);
+      geminiSettings = null;
+    }
+    
     console.log("🔧 Gemini Settings Check:", { 
       found: !!geminiSettings, 
       hasApiKey: !!(geminiSettings?.api_key), 
@@ -773,6 +783,7 @@ export class PageStorage {
     
     const useAI = geminiSettings && geminiSettings.api_key && geminiSettings.api_key.length > 10;
     console.log(`🤖 AI kullanım kararı: ${useAI}`);
+    console.log("🔧 === GEMINI DEBUG BİTTİ ===");
     
     if (useAI) {
       console.log("🤖 AI kullanılarak kategori eşleştirmesi yapılıyor...");
