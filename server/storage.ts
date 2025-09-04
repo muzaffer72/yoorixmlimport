@@ -515,16 +515,18 @@ export class MemStorage implements IStorage {
       
       if (mysqlCategories && mysqlCategories.length > 0) {
         // MySQL kategorilerini Category formatına çevir
-        const convertedCategories: Category[] = mysqlCategories.map(cat => ({
-          id: cat.categoryId.toString(), // category_id field'ını kullan
-          name: cat.title,
-          parentId: null, // MySQL'de parent bilgisi yoksa
-          description: null,
-          isActive: true,
-          sortOrder: null,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }));
+        const convertedCategories: Category[] = mysqlCategories
+          .filter(cat => cat.category_id != null && cat.title) // null/undefined kontrol et
+          .map(cat => ({
+            id: cat.category_id.toString(), // category_id field'ını kullan (underscore)
+            name: cat.title,
+            parentId: null, // MySQL'de parent bilgisi yoksa
+            description: null,
+            isActive: true,
+            sortOrder: null,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }));
         
         console.log(`✅ Found ${convertedCategories.length} categories from MySQL category_languages table`);
         return convertedCategories;
