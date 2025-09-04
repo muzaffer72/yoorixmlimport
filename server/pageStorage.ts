@@ -660,39 +660,47 @@ export class PageStorage {
 
   // Categories (from MySQL database)
   async getCategories(): Promise<Category[]> {
+    // Önce MySQL'den kategorileri dene (production'da genellikle bu çalışır)
     try {
-      // Önce kendi veritabanımızdaki kategorileri dene
+      console.log("🔍 Trying MySQL category_languages table first...");
+      const { getLocalCategories } = await import('./mysql-import');
+      const mysqlCategories = await getLocalCategories();
+      
+      if (mysqlCategories && mysqlCategories.length > 0) {
+        // MySQL kategorilerini Category formatına çevir
+        const convertedCategories: Category[] = mysqlCategories.map(cat => ({
+          id: cat.categoryId.toString(), // category_id field'ını kullan
+          name: cat.title,
+          parentId: null, // MySQL'de parent bilgisi yoksa
+          description: null,
+          isActive: true,
+          sortOrder: null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }));
+        
+        console.log(`✅ Found ${convertedCategories.length} categories from MySQL category_languages table`);
+        return convertedCategories;
+      }
+    } catch (mysqlError) {
+      console.log("⚠️ MySQL categories failed, trying local database...", mysqlError instanceof Error ? mysqlError.message : String(mysqlError));
+    }
+
+    // MySQL başarısız olursa lokal veritabanını dene
+    try {
       const dbCategories = await db.select().from(categories);
       
       if (dbCategories && dbCategories.length > 0) {
         console.log(`✅ Found ${dbCategories.length} categories from local database`);
         return dbCategories;
       }
-      
-      // Eğer lokal veritabanında kategori yoksa, MySQL'den çek
-      console.log("⚠️ No categories found in local database, trying MySQL category_languages table...");
-      const { getLocalCategories } = await import('./mysql-import');
-      const mysqlCategories = await getLocalCategories();
-      
-      // MySQL kategorilerini Category formatına çevir
-      const convertedCategories: Category[] = mysqlCategories.map(cat => ({
-        id: cat.categoryId.toString(), // category_id field'ını kullan
-        name: cat.title,
-        parentId: null, // MySQL'de parent bilgisi yoksa
-        description: null,
-        isActive: true,
-        sortOrder: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }));
-      
-      console.log(`✅ Found ${convertedCategories.length} categories from MySQL category_languages table`);
-      return convertedCategories;
-      
-    } catch (error) {
-      console.error("❌ Error fetching categories from both databases:", error);
-      throw new Error("Kategoriler alınamadı - hem lokal hem de MySQL veritabanında hata oluştu");
+    } catch (localDbError) {
+      console.log("⚠️ Local database also failed:", localDbError instanceof Error ? localDbError.message : String(localDbError));
     }
+    
+    // Her ikisi de başarısız olursa hata fırlat
+    console.error("❌ Both MySQL and local database failed");
+    throw new Error("Kategoriler alınamadı - hem MySQL hem de lokal veritabanında hata oluştu");
   }
 
   // Auto-mapping için kategori eşleştirme
