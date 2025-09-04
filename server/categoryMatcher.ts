@@ -1,36 +1,42 @@
 import type { Category } from "@shared/schema";
+import Fuse from 'fuse.js';
 
-// Metin benzerlik hesaplama algoritmaları
+// Fuse.js tabanlı gelişmiş kategori eşleştirme sınıfı
 export class CategoryMatcher {
+  private fuse: Fuse<Category>;
   
-  // Levenshtein Distance algoritması - iki string arasındaki mesafeyi hesaplar
-  private levenshteinDistance(str1: string, str2: string): number {
-    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+  constructor(categories: Category[]) {
+    // Fuse.js konfigürasyonu - Türkçe karakterler için optimize edilmiş
+    const fuseOptions = {
+      keys: [
+        { name: 'name', weight: 1 },
+        { name: 'description', weight: 0.3 }
+      ],
+      threshold: 0.4, // 0.0 = tam eşleşme, 1.0 = her şey eşleşir
+      distance: 100, // Maksimum karakter mesafesi
+      minMatchCharLength: 2, // Minimum eşleşme karakter uzunluğu
+      includeScore: true, // Skor bilgisini dahil et
+      includeMatches: true, // Eşleşen kısımları dahil et
+      ignoreLocation: true, // Konumu göz ardı et (metin içinde herhangi bir yerde eşleşebilir)
+      useExtendedSearch: false, // Genişletilmiş arama sözdizimi
+      findAllMatches: true, // Tüm eşleşmeleri bul
+      shouldSort: true // Sonuçları skora göre sırala
+    };
     
-    for (let i = 0; i <= str1.length; i++) {
-      matrix[0][i] = i;
-    }
+    // Kategorileri normalize et ve Fuse instance'ı oluştur
+    const normalizedCategories = categories.map(category => ({
+      ...category,
+      name: this.normalizeText(category.name),
+      description: category.description ? this.normalizeText(category.description) : ''
+    }));
     
-    for (let j = 0; j <= str2.length; j++) {
-      matrix[j][0] = j;
-    }
-    
-    for (let j = 1; j <= str2.length; j++) {
-      for (let i = 1; i <= str1.length; i++) {
-        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
-        matrix[j][i] = Math.min(
-          matrix[j][i - 1] + 1, // deletion
-          matrix[j - 1][i] + 1, // insertion
-          matrix[j - 1][i - 1] + indicator // substitution
-        );
-      }
-    }
-    
-    return matrix[str2.length][str1.length];
+    this.fuse = new Fuse(normalizedCategories, fuseOptions);
   }
   
   // Metinleri normalize etme - Türkçe karakterler ve büyük/küçük harf
   private normalizeText(text: string): string {
+    if (!text) return '';
+    
     return text
       .toLowerCase()
       .replace(/ç/g, 'c')
@@ -39,56 +45,42 @@ export class CategoryMatcher {
       .replace(/ö/g, 'o')
       .replace(/ş/g, 's')
       .replace(/ü/g, 'u')
-      .replace(/[^a-z0-9\s]/g, '') // Özel karakterleri kaldır
+      .replace(/[^a-z0-9\s]/g, ' ') // Özel karakterleri boşluğa çevir
       .replace(/\s+/g, ' ') // Çoklu boşlukları tek boşluğa çevir
       .trim();
   }
   
-  // Kelime bazlı benzerlik hesaplama
-  private calculateWordSimilarity(str1: string, str2: string): number {
-    const words1 = this.normalizeText(str1).split(' ');
-    const words2 = this.normalizeText(str2).split(' ');
+  // Tek bir kategoriyi arama
+  public findCategory(xmlCategory: string): {
+    category: Category | null;
+    confidence: number;
+    alternatives: Array<{ category: Category; confidence: number }>;
+  } {
+    const normalizedQuery = this.normalizeText(xmlCategory);
+    const results = this.fuse.search(normalizedQuery, { limit: 5 });
     
-    let matches = 0;
-    let totalWords = Math.max(words1.length, words2.length);
-    
-    for (const word1 of words1) {
-      for (const word2 of words2) {
-        if (word1 === word2 || this.levenshteinDistance(word1, word2) <= 1) {
-          matches++;
-          break;
-        }
-      }
+    if (results.length === 0) {
+      return {
+        category: null,
+        confidence: 0,
+        alternatives: []
+      };
     }
     
-    return matches / totalWords;
-  }
-  
-  // Genel benzerlik skoru hesaplama (0-1 arası)
-  private calculateSimilarity(xmlCategory: string, localCategory: string): number {
-    const norm1 = this.normalizeText(xmlCategory);
-    const norm2 = this.normalizeText(localCategory);
+    // Fuse.js skoru tersine çevir (düşük skor = yüksek benzerlik)
+    const bestMatch = results[0];
+    const confidence = 1 - (bestMatch.score || 1);
     
-    // Tam eşleşme kontrolü
-    if (norm1 === norm2) {
-      return 1.0;
-    }
+    const alternatives = results.slice(1, 3).map(result => ({
+      category: result.item,
+      confidence: 1 - (result.score || 1)
+    }));
     
-    // Substring kontrolü
-    if (norm1.includes(norm2) || norm2.includes(norm1)) {
-      return 0.9;
-    }
-    
-    // Levenshtein distance bazlı benzerlik
-    const maxLen = Math.max(norm1.length, norm2.length);
-    const distance = this.levenshteinDistance(norm1, norm2);
-    const levenshteinSimilarity = 1 - (distance / maxLen);
-    
-    // Kelime bazlı benzerlik
-    const wordSimilarity = this.calculateWordSimilarity(xmlCategory, localCategory);
-    
-    // Ağırlıklı ortalama (kelime benzerliği daha önemli)
-    return (levenshteinSimilarity * 0.4) + (wordSimilarity * 0.6);
+    return {
+      category: confidence > 0.6 ? bestMatch.item : null,
+      confidence,
+      alternatives
+    };
   }
   
   // XML kategorilerini yerel kategorilerle eşleştirme
@@ -104,19 +96,13 @@ export class CategoryMatcher {
     const results = [];
     
     for (const xmlCategory of xmlCategories) {
-      const similarities = localCategories.map(category => ({
-        category,
-        confidence: this.calculateSimilarity(xmlCategory, category.name)
-      })).sort((a, b) => b.confidence - a.confidence);
-      
-      const bestMatch = similarities[0];
-      const alternatives = similarities.slice(1, 3); // En iyi 2 alternatif
+      const result = this.findCategory(xmlCategory);
       
       results.push({
         xmlCategory,
-        suggestedCategory: bestMatch && bestMatch.confidence > 0.3 ? bestMatch.category : null,
-        confidence: bestMatch ? bestMatch.confidence : 0,
-        alternatives: alternatives.filter(alt => alt.confidence > 0.2)
+        suggestedCategory: result.category,
+        confidence: result.confidence,
+        alternatives: result.alternatives
       });
     }
     
@@ -130,15 +116,46 @@ export class CategoryMatcher {
     confidence: number;
   }>): {
     high: Array<any>; // confidence > 0.8
-    medium: Array<any>; // 0.5 < confidence <= 0.8
-    low: Array<any>; // 0.3 < confidence <= 0.5
-    noMatch: Array<any>; // confidence <= 0.3
+    medium: Array<any>; // 0.6 < confidence <= 0.8
+    low: Array<any>; // 0.4 < confidence <= 0.6
+    noMatch: Array<any>; // confidence <= 0.4
   } {
     return {
       high: mappings.filter(m => m.confidence > 0.8),
-      medium: mappings.filter(m => m.confidence > 0.5 && m.confidence <= 0.8),
-      low: mappings.filter(m => m.confidence > 0.3 && m.confidence <= 0.5),
-      noMatch: mappings.filter(m => m.confidence <= 0.3)
+      medium: mappings.filter(m => m.confidence > 0.6 && m.confidence <= 0.8),
+      low: mappings.filter(m => m.confidence > 0.4 && m.confidence <= 0.6),
+      noMatch: mappings.filter(m => m.confidence <= 0.4)
     };
+  }
+  
+  // Çoklu arama - birden fazla kategori önerisi
+  public findMultipleCategories(xmlCategory: string, limit: number = 5): Array<{
+    category: Category;
+    confidence: number;
+    matches?: Array<{ key: string; value: string; indices: readonly [number, number][] }>;
+  }> {
+    const normalizedQuery = this.normalizeText(xmlCategory);
+    const results = this.fuse.search(normalizedQuery, { limit });
+    
+    return results.map(result => ({
+      category: result.item,
+      confidence: 1 - (result.score || 1),
+      matches: result.matches?.map(match => ({
+        key: match.key || '',
+        value: match.value || '',
+        indices: match.indices || []
+      }))
+    }));
+  }
+  
+  // Kategori önerisi güncelleme - yeni kategoriler eklendiğinde
+  public updateCategories(categories: Category[]): void {
+    const normalizedCategories = categories.map(category => ({
+      ...category,
+      name: this.normalizeText(category.name),
+      description: category.description ? this.normalizeText(category.description) : ''
+    }));
+    
+    this.fuse.setCollection(normalizedCategories);
   }
 }

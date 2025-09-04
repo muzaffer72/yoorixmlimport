@@ -661,24 +661,37 @@ export class PageStorage {
   // Categories (from MySQL database)
   async getCategories(): Promise<Category[]> {
     try {
-      // Mevcut veritabanından kategorileri çek
+      // Önce kendi veritabanımızdaki kategorileri dene
       const dbCategories = await db.select().from(categories);
-      return dbCategories;
-    } catch (error) {
-      console.error("Error fetching categories from database:", error);
-      console.log("Replit environment detected, returning demo categories");
       
-      // Demo kategoriler - gerçek MySQL ID'leri ile
-      return [
-        { id: "368", name: "Aksesuar", title: "Aksesuar", parentId: null, createdAt: new Date() },
-        { id: "369", name: "Diğer Aksesuarlar", title: "Diğer Aksesuarlar", parentId: "368", createdAt: new Date() },
-        { id: "371", name: "Kol Düğmesi", title: "Kol Düğmesi", parentId: "368", createdAt: new Date() },
-        { id: "400", name: "Elektronik", title: "Elektronik Ürünler", parentId: null, createdAt: new Date() },
-        { id: "401", name: "Telefon", title: "Akıllı Telefonlar", parentId: "400", createdAt: new Date() },
-        { id: "402", name: "Bilgisayar", title: "Bilgisayar ve Laptop", parentId: "400", createdAt: new Date() },
-        { id: "450", name: "Giyim", title: "Giyim ve Aksesuar", parentId: null, createdAt: new Date() },
-        { id: "500", name: "Ev", title: "Ev ve Yaşam", parentId: null, createdAt: new Date() }
-      ];
+      if (dbCategories && dbCategories.length > 0) {
+        console.log(`✅ Found ${dbCategories.length} categories from local database`);
+        return dbCategories;
+      }
+      
+      // Eğer lokal veritabanında kategori yoksa, MySQL'den çek
+      console.log("⚠️ No categories found in local database, trying MySQL category_languages table...");
+      const { getLocalCategories } = await import('./mysql-import');
+      const mysqlCategories = await getLocalCategories();
+      
+      // MySQL kategorilerini Category formatına çevir
+      const convertedCategories: Category[] = mysqlCategories.map(cat => ({
+        id: cat.categoryId.toString(), // category_id field'ını kullan
+        name: cat.title,
+        parentId: null, // MySQL'de parent bilgisi yoksa
+        description: null,
+        isActive: true,
+        sortOrder: null,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }));
+      
+      console.log(`✅ Found ${convertedCategories.length} categories from MySQL category_languages table`);
+      return convertedCategories;
+      
+    } catch (error) {
+      console.error("❌ Error fetching categories from both databases:", error);
+      throw new Error("Kategoriler alınamadı - hem lokal hem de MySQL veritabanında hata oluştu");
     }
   }
 
@@ -709,7 +722,7 @@ export class PageStorage {
       
     const localCategories = await this.getCategories();
     
-    const matcher = new CategoryMatcher();
+    const matcher = new CategoryMatcher(localCategories);
     const mappings = matcher.autoMapCategories(xmlCategories, localCategories);
     
     // Özet istatistik hesapla
@@ -816,7 +829,7 @@ export class PageStorage {
     }
     
     // Fallback: Gelişmiş CategoryMatcher algoritması kullan
-    const matcher = new CategoryMatcher();
+    const matcher = new CategoryMatcher(localCategories);
     const matcherResults = matcher.autoMapCategories(xmlCategories, localCategories);
     
     const mappings = matcherResults.map(result => ({

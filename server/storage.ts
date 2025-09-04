@@ -508,13 +508,37 @@ export class MemStorage implements IStorage {
   // Category and Brand methods
   async getCategories(): Promise<Category[]> {
     try {
-      // Mevcut veritabanından kategorileri çek
+      // Önce kendi veritabanımızdaki kategorileri dene
       const dbCategories = await db.select().from(categories);
-      return dbCategories;
+      
+      if (dbCategories && dbCategories.length > 0) {
+        console.log(`✅ Found ${dbCategories.length} categories from local database`);
+        return dbCategories;
+      }
+      
+      // Eğer lokal veritabanında kategori yoksa, MySQL'den çek
+      console.log("⚠️ No categories found in local database, trying MySQL category_languages table...");
+      const { getLocalCategories } = await import('./mysql-import');
+      const mysqlCategories = await getLocalCategories();
+      
+      // MySQL kategorilerini Category formatına çevir
+      const convertedCategories: Category[] = mysqlCategories.map(cat => ({
+        id: cat.categoryId.toString(), // category_id field'ını kullan
+        name: cat.title,
+        parentId: null, // MySQL'de parent bilgisi yoksa
+        description: null,
+        isActive: true,
+        sortOrder: null,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }));
+      
+      console.log(`✅ Found ${convertedCategories.length} categories from MySQL category_languages table`);
+      return convertedCategories;
+      
     } catch (error) {
-      console.error("Error fetching categories from database:", error);
-      // Fallback olarak memory'den çek
-      return Array.from(this.categories.values());
+      console.error("❌ Error fetching categories from both databases:", error);
+      throw new Error("Kategoriler alınamadı - hem lokal hem de MySQL veritabanında hata oluştu");
     }
   }
 
@@ -545,7 +569,7 @@ export class MemStorage implements IStorage {
       
     const localCategories = await this.getCategories();
     
-    const matcher = new CategoryMatcher();
+    const matcher = new CategoryMatcher(localCategories);
     const mappings = matcher.autoMapCategories(xmlCategories, localCategories);
     
     // Özet istatistik hesapla
